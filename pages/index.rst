@@ -1,4 +1,4 @@
-Introduction au Python
+Introduction aux fondamentaux de l'apprentissage supervisé et du Deep Learning
 ===============
 
 .. slide::
