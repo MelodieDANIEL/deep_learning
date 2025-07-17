@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" type="text/css" href="css/style.css" />
+<title>Intro Python - Chapitre 2 - Conditions et boucles</title>
+
+                <meta http-equiv="X-UA-Compatible" content="IE=edge">
+                <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            
+
+                <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+                <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+            
+<link href="https://fonts.googleapis.com/css2?family=Gentium+Basic&display=swap" rel="stylesheet"> 
+<link rel="stylesheet" type="text/css" href="slidey/bootstrap/css/bootstrap.min.css" />
+<link rel="stylesheet" type="text/css" href="slidey/bootstrap-icons/font/bootstrap-icons.css" />
+<link rel="stylesheet" type="text/css" href="slidey/highlight.css" />
+<link rel="stylesheet" type="text/css" href="slidey/slidey.css" />
+<link rel="stylesheet" type="text/css" href="slidey/slidey.menu.css" />
+<link rel="stylesheet" type="text/css" href="slidey/slidey.step.css" />
+<link rel="stylesheet" type="text/css" href="slidey/slidey.code.css" />
+<link rel="stylesheet" type="text/css" href="slidey/slidey.slide.css" />
+<script type="text/javascript" src="slidey/js/jquery.js"></script>
+<script type="text/javascript" src="slidey/js/slidey.permalink.js"></script>
+<script type="text/javascript" src="slidey/js/slidey.menu.js"></script>
+<script type="text/javascript" src="slidey/js/slidey.mobile.js"></script>
+<script type="text/javascript" src="slidey/js/slidey.spoilers.js"></script>
+<script type="text/javascript" src="slidey/js/slidey.steps.js"></script>
+<script type="text/javascript" src="slidey/js/slidey.js"></script>
+<script type="text/javascript" src="slidey/js/main.js"></script>
+<script type="text/javascript" src="slidey/bootstrap/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="slidey/highlight/highlight.pack.js"></script>
+<link rel="icon" type="image/x-icon" href="favicon.ico" />
+</head>
+<body>
+<!-- Modal log-in window -->
+<div class="modal fade" id="loginWindow">
+  <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Log-in</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>    
+        <div class="modal-body">
+            <form>
+                Mot de passe&nbsp;:<br />
+                <input class="form-control" type="password" name="password" />
+            </form>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div>
+
+<div class="core">
+
+    <script>hljs.highlightAll();</script>
+
+<!-- Extra-controls for mobile device -->
+<div class="mobileControls">
+    <div class="btn-group">
+        <a href="javascript:void(0)" class="left btn btn-light btn-lg">
+            <i class="bi bi-arrow-up"></i>
+        </a>
+        <a href="javascript:void(0)" class="right btn btn-light btn-lg">
+            <i class="bi bi-arrow-down"></i>
+        </a>
+        <a href="javascript:void(0)" class="up btn btn-light btn-lg">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <a href="javascript:void(0)" class="down btn btn-light btn-lg">
+            <i class="bi bi-arrow-right"></i>
+        </a>
+        <a href="javascript:void(0)" class="login btn btn-light btn-lg">
+            <i class="bi bi-lock"></i>
+        </a>
+    </div>
+</div>
+
+<!-- Controls -->
+<div class="slideMode">
+    <div class="btn-group">
+        <a href="javascript:void(0)" class="btn btn-light btn-lg slideModeSlide"><i class="bi bi-film"></i></a>
+        <a href="javascript:void(0)" class="btn btn-light btn-lg followMode"><i class="bi bi-stopwatch"></i> </a>
+        <a href="index.html" class="btn btn-light btn-lg goHome"><i class="bi bi-house"></i></a>
+    </div>
+</div>
+
+<div class="exitSlideMode">
+    <div class="btn-group">
+        <a href="javascript:void(0)" class="btn btn-light btn-lg followMode"><i class="bi bi-stopwatch"></i></a>
+        <a href="javascript:void(0)" class="btn btn-light btn-lg showMobile"><i class="bi bi-phone"></i></a>
+        <a href="javascript:void(0)" class="btn btn-light btn-lg stopShow">
+            <span class="currentSlideNumber">
+            </span>
+            <i class="bi bi-x-lg"></i>
+        </a>
+    </div>
+</div>
+
+<!-- Browsing menu -->
+<div class="menu">
+</div>
+
+<div class="contents container">
+
+<div class="slide ">
+<a id="title.1"></a><h1>Chapitre 2 - Conditions et boucles</h1>
+<a id="title.1.1"></a><h2>🎯 Objectifs du Chapitre</h2>
+<div class="alert alert-light p-2 fs-5 text-center"><ul><li class="dash">Apprendre à écrire des programmes dynamiques en utilisant des conditions (<code>if</code>, <code>else</code>) et des boucles (<code>for</code>, <code>while</code>).</li>
+<li class="dash">Comprendre l’importance des structures de contrôle pour gérer le flux d&#039;exécution d&#039;un programme.</li>
+</ul>
+
+</div>
+</div><div class="slide ">
+<a id="title.1.2"></a><h2>📖 Les conditions (Structures de décision)</h2>
+<a id="title.1.2.1"></a><h3>Principe des conditions</h3>
+<p>Les structures conditionnelles permettent de prendre des décisions dans un programme. En fonction de certaines conditions, différentes parties du code peuvent être exécutées.</p>
+<ul><li class="discover"><code>if</code> : vérifie une condition et exécute le bloc de code associé si elle est vraie.</li>
+<li class="discover"><code>elif</code> : vérifie une autre condition lorsque la première est fausse et exécute le bloc de code associé si cette nouvelle condition est vraie.</li>
+<li class="discover"><code>else</code> : exécute un bloc de code si toutes les conditions précédentes sont fausses</li>
+</ul>
+
+<div class="alert alert-warning"><p>Exemple :</p>
+<pre><code class="python hljs">if condition:
+    # Bloc de code exécuté si la condition est vraie
+elif autre_condition:
+    # Bloc exécuté si la première condition est fausse et l’autre condition est vraie
+else:
+    # Bloc exécuté si toutes les conditions précédentes sont fausses</code></pre>
+</div>
+<div class="alert alert-info"><p>Contrairement à d&#039;autres langages tels que C/C++ ou même Java, Python utilise l’indentation (l&#039;espace en début de ligne) pour délimiter les blocs de code.
+Cette indentation est réalisée avec la touche <code>Tab</code> du clavier. Le raccourci <code>Shift + Tab</code> permet de retirer une indentation.</p>
+</div>
+</div><div class="slide ">
+<a id="title.1.2.2"></a><h3>Opérateurs de comparaison</h3>
+<p>Les opérateurs de comparaison permettent de comparer deux valeurs. Ils sont utilisés dans les conditions pour vérifier si une condition est vraie ou fausse :</p>
+<ul><li class="discover"><code>==</code> : égal à</li>
+<li class="discover"><code>!=</code> : différent de</li>
+<li class="discover"><code>&lt;</code> : inférieur à</li>
+<li class="discover"><code>&gt;</code> : supérieur à</li>
+<li class="discover"><code>&lt;=</code> : inférieur ou égal à</li>
+<li class="discover"><code>&gt;=</code> : supérieur ou égal à</li>
+</ul>
+
+<div class="alert alert-warning"><p>Exemple :</p>
+<pre><code class="python hljs">age = 18
+
+if age &gt;= 18:
+    print(&quot;Vous êtes majeur.&quot;)
+else:
+    print(&quot;Vous êtes mineur.&quot;)</code></pre>
+</div>
+</div><div class="slide ">
+<a id="title.1.2.3"></a><h3>Opérateurs logiques</h3>
+<p>On peut combiner plusieurs conditions grâce aux opérateurs logiques :</p>
+<ul><li class="discover"><code>and</code> :  toutes les conditions doivent être vraies.</li>
+<li class="discover"><code>or</code> : au moins une des conditions doit être vraie.</li>
+<li class="discover"><code>not</code> : inverse la condition.</li>
+</ul>
+
+<div class="alert alert-warning"><p>Exemple :</p>
+<pre><code class="python hljs">x = 10
+y = 5
+
+if x &gt; 5 and y &lt; 10:
+    print(&quot;Les deux conditions sont vraies.&quot;)</code></pre>
+</div>
+</div><div class="slide ">
+<a id="title.1.3"></a><h2>✏️ Exercice 3 : Un dressing intelligent</h2>
+<p>Un exemple d&#039;organisation de vos dossiers/fichiers vous a été donné dans le chapitre précédent, vous pouvez vous en inspirer pour continuer à travailler de manière organisée tout au long de ce cours.</p>
+<div class="alert alert-info"><p>Rappel : Toujours ouvrir un dossier à l&#039;ouverture de VSCode pour travailler à l&#039;intérieur de celui-ci.</p>
+</div>
+<p><strong>Objectif</strong> : Écrire un programme qui aide l’utilisateur à choisir une tenue en fonction de la température qu&#039;il donne. </p>
+<div class="step" data-params="reset"><p><strong>Consigne</strong> : Le programme demande à l’utilisateur la température extérieure et affiche une tenue de votre choix adaptée à la température en fonction des 4 cas suivants :</p>
+<ul><li class="discover">Si la température est inférieure à 0°C</li>
+<li class="discover">Si la température est entre 0°C et 10°C</li>
+<li class="discover">Si la température est entre 10°C et 20°C</li>
+<li class="discover">Si la température est supérieure à 20°C</li>
+</ul>
+
+</div>
+<div class="alert alert-success"><p>Vous savez maintenant écrire des conditions simples.</p>
+</div>
+</div><div class="slide ">
+<a id="title.1.4"></a><h2>✏️ Exercice 4 : Les tables de vérité</h2>
+<p>Voici un tableaux représentant le resultats des opérations logiques <code>and</code> et <code>or</code> :</p>
+<div class="center"><table class="table table-striped"><tbody><tr><th>A</th><th>B</th><th>A and B</th><th>A or B</th></tr><tr><td>False</td><td>False</td><td>False</td><td>False</td></tr><tr><td>False</td><td>True</td><td><strong>?</strong></td><td><strong>?</strong></td></tr><tr><td>True</td><td>True</td><td><strong>?</strong></td><td><strong>?</strong></td></tr><tr><td>True</td><td>False</td><td><strong>?</strong></td><td><strong>?</strong></td></tr></tbody></table>
+</div>
+<p>Ce tableau s&#039;appelle une table de vérité. Elle permet de déterminer le résultat d&#039;une opération logique en fonction des valeurs de vérité des variables <code>A</code> et <code>B</code>.</p>
+<div class="step" data-params="reset"><p>Ecrire un programme qui demande à l&#039;utilisateur les valeurs de vérité de <code>A</code> et <code>B</code> et affiche les résultats des opérations logiques <code>and</code> et <code>or</code> afin de compléter les tableaux ci-dessus. </p>
+<div class="alert alert-info"><p>La fonction <code>bool()</code> ne permet pas de convertir les chaînes de caractères <code>&quot;True&quot;</code> ou <code>&quot;False&quot;</code> en booléens. Pour cela, on utilise la fonction <code>eval()</code>.</p>
+</div>
+</div>
+<div class="step"><p>Quel est la différence entre le fonctionnement de la fonction <code>bool()</code> et de la fonction <code>eval()</code> ?</p>
+</div>
+</div><div class="slide ">
+<div class="step"><p>Faire de même pour la table de vérité de l&#039;opération <code>not(A and B)</code> :</p>
+<div class="center"><table class="table table-striped"><tbody><tr><th>A</th><th>B</th><th>not(A and B)</th></tr><tr><td>False</td><td>False</td><td><strong>?</strong></td></tr><tr><td>False</td><td>True</td><td><strong>?</strong></td></tr><tr><td>True</td><td>True</td><td><strong>?</strong></td></tr><tr><td>True</td><td>False</td><td><strong>?</strong></td></tr></tbody></table>
+</div>
+</div>
+</div><div class="slide ">
+<div class="step"><p><strong>Sans utiliser l&#039;ordinateur</strong>, remplissez à la main la table de vérité de l&#039;opération <code>not a or not b</code> suivante:</p>
+<div class="center"><table class="table table-striped"><tbody><tr><th>A</th><th>B</th><th>not A</th><th>not B</th><th>not A or not B</th></tr><tr><td>False</td><td>False</td><td><strong>?</strong></td><td><strong>?</strong></td><td><strong>?</strong></td></tr><tr><td>False</td><td>True</td><td><strong>?</strong></td><td><strong>?</strong></td><td><strong>?</strong></td></tr><tr><td>True</td><td>True</td><td><strong>?</strong></td><td><strong>?</strong></td><td><strong>?</strong></td></tr><tr><td>True</td><td>False</td><td><strong>?</strong></td><td><strong>?</strong></td><td><strong>?</strong></td></tr></tbody></table>
+</div>
+</div>
+<div class="alert alert-success"><p>Vous savez maintenant manipuler les opérateurs logiques et avez découvert les tables de vérité.</p>
+</div>
+</div><div class="slide ">
+<a id="title.1.5"></a><h2>✏️ Exercice 5 : Un dressing encore plus intelligent</h2>
+<p><strong>Objectif</strong> : Améliorer le programme de l&#039;exercice 3 en ajoutant à la température une condition sur le temps (pluie, soleil, nuageux).</p>
+<div class="step" data-params="reset"><p><strong>Consigne</strong> : Reprenez le code de l&#039;exercice 2. En plus de la température, vous devez offrir un choix de temps à l&#039;utilisateur. Votre programme doit donc fonctionner de la manière suivante :</p>
+<ol><li class="">Demander la température extérieure.</li>
+<li class="">Demander le temps qu&#039;il fait.</li>
+<li class="">Afficher une tenue adaptée à la température et au temps.</li>
+</ol>
+
+<div class="alert alert-warning"><p>Exemple : </p>
+<pre><code class="python hljs">&gt;&gt; Quelle est la température extérieure (en °C) ? 
+25
+&gt;&gt; Quel temps fait-il ? (choisissez une réponse en tapant le numéro correspondant)
+&gt;&gt; 1. Pluie
+&gt;&gt; 2. Soleil
+&gt;&gt; 3. Nuageux
+2
+&gt;&gt; Vous devriez porter un t-shirt et un short.</code></pre>
+</div>
+</div>
+</div><div class="slide ">
+<a id="title.1.6"></a><h2>📖 Les boucles (Structures itératives)</h2>
+<a id="title.1.6.1"></a><h3>La boucle <code>for</code></h3>
+<p>La boucle <code>for</code> permet de répéter un bloc de code un nombre déterminé de fois. Elle est souvent utilisée pour parcourir des séquences (listes, chaînes de caractères, etc.)</p>
+<div class="alert alert-warning"><p>Exemple :</p>
+<pre><code class="python hljs">for variable in séquence:
+    # Bloc de code exécuté pour chaque élément de la séquence</code></pre>
+<pre><code class="python hljs">for i in range(5): # range(5) génère les nombres de 0 à 4 (5 exclus).
+    print(i)</code></pre>
+</div>
+</div><div class="slide ">
+<a id="title.1.6.2"></a><h3>La boucle <code>while</code></h3>
+<p>La boucle <code>while</code> exécute un bloc de code tant qu’une condition est vraie. </p>
+<div class="alert alert-warning"><p>Exemple :</p>
+<pre><code class="python hljs">while condition:
+    # Bloc de code exécuté tant que la condition est vraie</code></pre>
+<pre><code class="python hljs">compteur = 0
+while compteur &lt; 5:
+    print(compteur)
+    compteur += 1</code></pre>
+</div>
+</div><div class="slide ">
+<a id="title.1.6.3"></a><h3>Boucle infinie et <code>break</code></h3>
+<p>Une boucle infinie se produit quand la condition de sortie n’est jamais atteinte. Cela peut bloquer l’exécution du programme.
+On peut interrompre une boucle avec l’instruction <code>break</code>.</p>
+<div class="alert alert-warning"><p>Exemple :</p>
+<pre><code class="python hljs">compteur = 0
+while True:
+    print(compteur)
+    compteur += 1
+    if compteur == 5:
+        break</code></pre>
+</div>
+</div><div class="slide ">
+<a id="title.1.7"></a><h2>✏️ Exercice 6 : Le juste prix</h2>
+<div class="step" data-params="reset"><p>Écrire un programme qui demande à l’utilisateur de deviner un nombre entier entre 1 et 20 en utilisant le module <code>random</code>. En fonction de sa réponse, il affiche :</p>
+<ul><li class="discover">Si le nombre est trop petit, &quot;Trop petit ! Essayez encore.&quot;</li>
+<li class="discover">Si le nombre est trop grand, &quot;Trop grand ! Essayez encore.&quot;</li>
+<li class="discover">Si c’est correct, &quot;Bravo, vous avez trouvé !&quot;</li>
+</ul>
+
+</div>
+<div class="step"><p>Cherchez sur internet et expliquer ce qu&#039;est un module en Python et comment l&#039;utiliser.</p>
+</div>
+<div class="alert alert-success"><p>Vous savez maintenant importer et utiliser un module simple (random) ainsi que vous servir d&#039;une boucle <code>while</code>.</p>
+</div>
+</div><div class="slide ">
+<a id="title.1.8"></a><h2>✅ Récapitulatif de Chapitre</h2>
+<div class="center"><img src="images/recap_chap2.png"  alt="Récapitulatif du Chapitre 2" width="100%" />
+</div>
+</div><div class="slide ">
+<a id="title.1.9"></a><h2>🏋️ Exercices supplémentaires</h2>
+<div class="toc"><ul><li><a href="exos_sup_chap2.html#title.1">🏋️ Exercices supplémentaires</a></li><ul><li><a href="exos_sup_chap2.html#title.1.1">🍀 Exercice Sup. 1 : Déterminer si une année est bissextile</a></li><li><a href="exos_sup_chap2.html#title.1.2">🍀 Exercice Sup. 2 : Calculs mathématiques de base</a></li><li><a href="exos_sup_chap2.html#title.1.3">🍀 Exercice Sup. 3 : Résolution d’un polynome</a></li><li><a href="exos_sup_chap2.html#title.1.4">⚖️ Exercice Sup. 4 : Facturation de télécommunication</a></li><li><a href="exos_sup_chap2.html#title.1.5">⚖️ Exercice Sup. 5 : Triangle de Pascal</a></li></ul></ul></div>
+</div>
+<nav><ul class="pagination justify-content-center"><li class="page-item"><a class="page-link" href="chap1.html">&larr; Chapitre 1 - Comprendre les bases</a></li><li class="page-item"><a class="page-link" href="index.html"><i class="bi bi-folder2"></i> Introduction au Python</a></li><li class="page-item"><a class="page-link" href="chap3.html">Chapitre 3 - Fonctions et types construits &rarr;</a></li></ul></nav>
+
+</div> <!-- /contents -->
+</div> <!-- /core -->
+
+</body>
+</html>

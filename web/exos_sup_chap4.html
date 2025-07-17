@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" type="text/css" href="css/style.css" />
+<title>Intro Python - 🏋️ Exercices supplémentaires</title>
+
+                <meta http-equiv="X-UA-Compatible" content="IE=edge">
+                <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            
+
+                <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+                <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+            
+<link href="https://fonts.googleapis.com/css2?family=Gentium+Basic&display=swap" rel="stylesheet"> 
+<link rel="stylesheet" type="text/css" href="slidey/bootstrap/css/bootstrap.min.css" />
+<link rel="stylesheet" type="text/css" href="slidey/bootstrap-icons/font/bootstrap-icons.css" />
+<link rel="stylesheet" type="text/css" href="slidey/highlight.css" />
+<link rel="stylesheet" type="text/css" href="slidey/slidey.css" />
+<link rel="stylesheet" type="text/css" href="slidey/slidey.menu.css" />
+<link rel="stylesheet" type="text/css" href="slidey/slidey.step.css" />
+<link rel="stylesheet" type="text/css" href="slidey/slidey.code.css" />
+<link rel="stylesheet" type="text/css" href="slidey/slidey.slide.css" />
+<script type="text/javascript" src="slidey/js/jquery.js"></script>
+<script type="text/javascript" src="slidey/js/slidey.permalink.js"></script>
+<script type="text/javascript" src="slidey/js/slidey.menu.js"></script>
+<script type="text/javascript" src="slidey/js/slidey.mobile.js"></script>
+<script type="text/javascript" src="slidey/js/slidey.spoilers.js"></script>
+<script type="text/javascript" src="slidey/js/slidey.steps.js"></script>
+<script type="text/javascript" src="slidey/js/slidey.js"></script>
+<script type="text/javascript" src="slidey/js/main.js"></script>
+<script type="text/javascript" src="slidey/bootstrap/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="slidey/highlight/highlight.pack.js"></script>
+<link rel="icon" type="image/x-icon" href="favicon.ico" />
+</head>
+<body>
+<!-- Modal log-in window -->
+<div class="modal fade" id="loginWindow">
+  <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Log-in</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>    
+        <div class="modal-body">
+            <form>
+                Mot de passe&nbsp;:<br />
+                <input class="form-control" type="password" name="password" />
+            </form>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div>
+
+<div class="core">
+
+    <script>hljs.highlightAll();</script>
+
+<!-- Extra-controls for mobile device -->
+<div class="mobileControls">
+    <div class="btn-group">
+        <a href="javascript:void(0)" class="left btn btn-light btn-lg">
+            <i class="bi bi-arrow-up"></i>
+        </a>
+        <a href="javascript:void(0)" class="right btn btn-light btn-lg">
+            <i class="bi bi-arrow-down"></i>
+        </a>
+        <a href="javascript:void(0)" class="up btn btn-light btn-lg">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <a href="javascript:void(0)" class="down btn btn-light btn-lg">
+            <i class="bi bi-arrow-right"></i>
+        </a>
+        <a href="javascript:void(0)" class="login btn btn-light btn-lg">
+            <i class="bi bi-lock"></i>
+        </a>
+    </div>
+</div>
+
+<!-- Controls -->
+<div class="slideMode">
+    <div class="btn-group">
+        <a href="javascript:void(0)" class="btn btn-light btn-lg slideModeSlide"><i class="bi bi-film"></i></a>
+        <a href="javascript:void(0)" class="btn btn-light btn-lg followMode"><i class="bi bi-stopwatch"></i> </a>
+        <a href="index.html" class="btn btn-light btn-lg goHome"><i class="bi bi-house"></i></a>
+    </div>
+</div>
+
+<div class="exitSlideMode">
+    <div class="btn-group">
+        <a href="javascript:void(0)" class="btn btn-light btn-lg followMode"><i class="bi bi-stopwatch"></i></a>
+        <a href="javascript:void(0)" class="btn btn-light btn-lg showMobile"><i class="bi bi-phone"></i></a>
+        <a href="javascript:void(0)" class="btn btn-light btn-lg stopShow">
+            <span class="currentSlideNumber">
+            </span>
+            <i class="bi bi-x-lg"></i>
+        </a>
+    </div>
+</div>
+
+<!-- Browsing menu -->
+<div class="menu">
+</div>
+
+<div class="contents container">
+
+<a id="title.1"></a><h1>🏋️ Exercices supplémentaires</h1>
+<div class="slide ">
+<p>Sur cette page se trouvent des exercices supplémentaires pour vous entraîner. Ils sont classés par niveau de difficulté :</p>
+<ul><li class="discover">Facile : 🍀</li>
+<li class="discover">Moyen : ⚖️</li>
+<li class="discover">Difficile : 🌶️</li>
+</ul>
+
+<a id="title.1.1"></a><h2>⚖️ Exercice 13 : Gestion de budget personnel avec des modules et formatage</h2>
+<p><strong>Objectif</strong> :
+Créer un programme de gestion de budget personnel permettant de simuler les revenus et les dépenses mensuelles, de calculer le solde mensuel et d&#039;afficher un résumé formaté des finances. Ce programme fera appel à des modules intégrés de Python et utilisera des techniques d&#039;affichage avancé.</p>
+<p><strong>Modules à utiliser</strong> :</p>
+<ul><li class="dash"><code>math</code> : pour arrondir les valeurs numériques.</li>
+<li class="dash"><code>random</code> : pour générer aléatoirement des revenus et des dépenses.</li>
+<li class="dash"><code>datetime</code> : pour afficher la date actuelle.</li>
+<li class="dash"><code>statistics</code> (optionnel) : pour calculer des statistiques avancées (par exemple, la moyenne des dépenses).</li>
+</ul>
+
+<p><strong>Consignes</strong> :</p>
+<div class="step" data-params="reset"><p><strong>Créer et implémenter les fonctions suivantes</strong> :</p>
+<ul><li class="dash"><code>generer_revenus()</code> :</li>
+<ul><li class="dash">Retourne un revenu mensuel aléatoire compris entre 2000€ et 5000€.</li>
+</ul>
+<li class="dash"><code>generer_depenses()</code> :</li>
+<ul><li class="dash">Retourne une liste de dépenses aléatoires comprenant des catégories telles que le loyer, la nourriture, le transport et les loisirs. Chaque dépense doit avoir un montant aléatoire compris entre 100€ et 1500€.</li>
+</ul>
+<li class="dash"><code>calculer_solde(revenus, depenses)</code> :</li>
+<ul><li class="dash">Calcule le solde mensuel en soustrayant la somme totale des dépenses du revenu.</li>
+</ul>
+<li class="dash"><code>afficher_resume_financier(revenus, depenses, solde)</code> :</li>
+<ul><li class="dash">Affiche un résumé formaté, incluant les détails des revenus, des dépenses et du solde mensuel.</li>
+</ul>
+</ul>
+
+</div>
+<div class="step"><p><strong>Formatage de l&#039;affichage</strong> :</p>
+<ul><li class="dash">Utilisez des <strong>f-strings</strong> pour afficher les montants financiers arrondis à deux décimales.</li>
+<li class="dash">Alignez les résultats de manière soignée pour créer un tableau clair.</li>
+<li class="dash">Affichez le mois et l&#039;année actuels en utilisant <code>datetime</code> pour donner un contexte temporel.</li>
+</ul>
+
+</div>
+<p><strong>Exemple de sortie attendue</strong> :</p>
+<pre><code class="bash hljs">&gt;&gt; Rapport financier du mois de Novembre 2024
+&gt;&gt; -----------------------------------------
+&gt;&gt; Revenus totaux : 3,472.50 €
+&gt;&gt; Dépenses :
+&gt;&gt; - Loyer                : 1,200.00 €
+&gt;&gt; - Nourriture           :   650.50 €
+&gt;&gt; - Transport            :   300.75 €
+&gt;&gt; - Loisirs              :   500.00 €
+&gt;&gt; -----------------------------------------
+&gt;&gt; Solde mensuel          :   821.25 € (Positif)</code></pre>
+<p><strong>Conseils</strong> :</p>
+<ul><li class="dash">Utilisez <code>random.uniform()</code> pour générer des montants avec des valeurs décimales.</li>
+<li class="dash">Employez <code>math.ceil()</code>, <code>math.floor()</code> et <code>round()</code> pour tester différentes méthodes d&#039;arrondi si nécessaire.</li>
+<li class="dash">Organisez le code pour assurer une lisibilité optimale.</li>
+</ul>
+
+<a id="title.1.2"></a><h2>🌶️ Exercice 14 : Simulation de navigation robotique intelligente</h2>
+<p><strong>Objectif</strong> :
+Dans cet exercice, vous allez créer un programme de simulation de navigation robotique. Le programme simulera un robot se déplaçant sur une grille 10x10, évitant des obstacles et atteignant un objectif fixé. Ce programme utilisera des concepts de base en intelligence artificielle, tels que la prise de décision et la navigation autonome.</p>
+<p><strong>Modules à utiliser</strong> :</p>
+<ul><li class="dash"><code>random</code> : pour générer des positions aléatoires d&#039;obstacles et de l&#039;objectif.</li>
+<li class="dash"><code>math</code> : pour calculer la distance entre le robot et l&#039;objectif.</li>
+<li class="dash"><code>datetime</code> (optionnel) : pour mesurer le temps pris par le robot pour atteindre l&#039;objectif.</li>
+</ul>
+
+<p><strong>Consignes</strong> :</p>
+<div class="step" data-params="reset"><p><strong>Créer et implémenter les fonctions suivantes</strong> :</p>
+<ul><li class="dash"><code>initialiser_grille()</code> :</li>
+<ul><li class="dash">Crée et retourne une grille 10x10 remplie de caractères vides <code>&quot;.&quot;</code>.</li>
+</ul>
+<li class="dash"><code>placer_obstacles(grille, nombre_obstacles)</code> :</li>
+<ul><li class="dash">Place un nombre donné d&#039;obstacles <code>&quot;#&quot;</code> de manière aléatoire sur la grille sans chevaucher la position de départ du robot ni l&#039;objectif.</li>
+</ul>
+<li class="dash"><code>placer_robot_et_objectif(grille)</code> :</li>
+<ul><li class="dash">Place le robot <code>&quot;R&quot;</code> au coin supérieur gauche de la grille et l&#039;objectif <code>&quot;X&quot;</code> à une position aléatoire de la grille.</li>
+</ul>
+<li class="dash"><code>afficher_grille(grille)</code> :</li>
+<ul><li class="dash">Affiche la grille sous un format lisible pour suivre l&#039;état de la simulation.</li>
+</ul>
+<li class="dash"><code>calculer_distance(robot, objectif)</code> :</li>
+<ul><li class="dash">Calcule la distance euclidienne entre la position du robot et l&#039;objectif.</li>
+</ul>
+<li class="dash"><code>deplacer_robot(grille, robot, objectif)</code> :</li>
+<ul><li class="dash">Déplace le robot vers l&#039;objectif en prenant des décisions intelligentes pour éviter les obstacles et atteindre l&#039;objectif.</li>
+<li class="dash">Le robot doit évaluer ses déplacements possibles (haut, bas, gauche, droite) et choisir celui qui minimise la distance vers l&#039;objectif sans entrer en collision avec un obstacle.</li>
+</ul>
+</ul>
+
+</div>
+<div class="step"><p><strong>Conditions de déplacement du robot</strong> :</p>
+<ul><li class="dash">Le robot peut se déplacer dans les quatre directions : haut, bas, gauche, droite.</li>
+<li class="dash">Si le robot rencontre un obstacle, il doit recalculer sa trajectoire.</li>
+<li class="dash">Implémentez un système basique de prise de décision pour choisir le meilleur mouvement possible à chaque étape.</li>
+</ul>
+
+</div>
+<p><strong>Étapes détaillées</strong> :</p>
+<div class="step"><p><strong>Étape 1 : Initialisation de la grille</strong></p>
+<ul><li class="dash">Implémentez <code>initialiser_grille()</code> pour créer une grille 10x10 vide.</li>
+<li class="dash">Implémentez <code>placer_obstacles()</code> pour ajouter des obstacles de manière aléatoire sur la grille.</li>
+<li class="dash">Implémentez <code>placer_robot_et_objectif()</code> pour positionner le robot et l&#039;objectif.</li>
+</ul>
+
+</div>
+<div class="step"><p><strong>Étape 2 : Déplacement et logique du robot</strong></p>
+<ul><li class="dash">Implémentez <code>calculer_distance()</code> pour aider le robot à choisir le mouvement le rapprochant de l&#039;objectif.</li>
+<li class="dash">Implémentez <code>deplacer_robot()</code> pour gérer les déplacements et les décisions du robot.</li>
+<li class="dash">Intégrez un mécanisme de vérification pour empêcher le robot de sortir des limites de la grille ou de traverser des obstacles.</li>
+</ul>
+
+</div>
+<div class="step"><p><strong>Étape 3 : Affichage et suivi de l&#039;état</strong></p>
+<ul><li class="dash">Implémentez <code>afficher_grille()</code> pour afficher l&#039;état de la grille après chaque mouvement du robot.</li>
+<li class="dash">Suivez les déplacements du robot jusqu&#039;à ce qu&#039;il atteigne l&#039;objectif et affichez le nombre total de mouvements effectués.</li>
+</ul>
+
+</div>
+<p><strong>Exemple de sortie attendue</strong> :</p>
+<pre><code class="bash hljs">&gt;&gt; Grille initiale :
+&gt;&gt; R . . . . . . . . .
+&gt;&gt; . . . # . . . . . .
+&gt;&gt; . . . . . . # . . .
+&gt;&gt; . . . . . . . . . .
+&gt;&gt; . # . . . . . . . .
+&gt;&gt; . . . . . . . . . X
+&gt;&gt; . . # . . . . . . .
+&gt;&gt; . . . . . . # . . .
+&gt;&gt; . . . . . . . . . .
+&gt;&gt; . . . . . # . . . .
+
+&gt;&gt; Déplacement 1 : vers le bas
+&gt;&gt; Déplacement 2 : vers la droite
+&gt;&gt; ...
+&gt;&gt; Objectif atteint en 23 mouvements.</code></pre>
+<p><strong>Conseils</strong> :</p>
+<ul><li class="dash">Utilisez <code>random.randint()</code> pour choisir des positions aléatoires sur la grille.</li>
+<li class="dash">Pour le déplacement intelligent, comparez la distance actuelle à la distance résultante de chaque mouvement possible.</li>
+<li class="dash">Implémentez un suivi de la position du robot et assurez-vous de marquer chaque position parcourue pour éviter de repasser par le même endroit.</li>
+</ul>
+
+<p><strong>Bonus</strong> :</p>
+<ul><li class="dash">Ajoutez un compteur de temps pour mesurer la durée totale de la simulation en utilisant <code>datetime</code>.</li>
+<li class="dash">Implémentez une stratégie de contournement plus sophistiquée en utilisant un algorithme de recherche de chemin simplifié.</li>
+</ul>
+
+</div><div class="slide ">
+<a id="title.1.3"></a><h2>🌶️ Exercice Sup. 15 : Le Vrai Jeu d&#039;Echecs</h2>
+<p><strong>Consigne</strong> : A partir du code de l&#039;Exercice Sup. 12 du Chapitre 3, créez un jeu d&#039;échecs complet. </p>
+<p><strong>Règles du Jeu d&#039;Echecs</strong> : Vous pouvez trouver les règles du jeu d&#039;échecs <a href="https://www.apprendre-les-echecs-24h.com/apprendre-a-jouer-aux-echecs/regles-jeu-dechecs/">ici</a>.</p>
+</div>
+<nav><ul class="pagination justify-content-center"><li class="page-item"><a class="page-link" href="chap4.html"><i class="bi bi-folder2"></i> Chapitre 4 - Modules, Affichage avancé</a></li></ul></nav>
+
+</div> <!-- /contents -->
+</div> <!-- /core -->
+
+</body>
+</html>
