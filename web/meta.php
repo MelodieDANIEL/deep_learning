@@ -62,14 +62,56 @@
           ),
           1 => 
           array (
-            0 => '📖 1. Quest-ce que PyTorch ? ',
+            0 => '📖 1. Qu&#039;est-ce que PyTorch ? ',
             1 => 
             array (
             ),
           ),
           2 => 
           array (
-            0 => '📖 2. Installation de PyTorch',
+            0 => '📖 2. Créer un environnement virtuel',
+            1 => 
+            array (
+              0 => 
+              array (
+                0 => '2.1 Qu&#039;est-ce qu&#039;un environnement virtuel ?',
+                1 => 
+                array (
+                ),
+              ),
+              1 => 
+              array (
+                0 => '2.2 Tester si <code>venv</code> est disponible',
+                1 => 
+                array (
+                ),
+              ),
+              2 => 
+              array (
+                0 => '2.3 Créer l’environnement',
+                1 => 
+                array (
+                ),
+              ),
+              3 => 
+              array (
+                0 => '2.4 Activer l’environnement virtuel',
+                1 => 
+                array (
+                ),
+              ),
+              4 => 
+              array (
+                0 => '2.5 Désactiver l’environnement virtuel',
+                1 => 
+                array (
+                ),
+              ),
+            ),
+          ),
+          3 => 
+          array (
+            0 => '📖 3. Installation de PyTorch',
             1 => 
             array (
             ),
@@ -80,7 +122,7 @@
     'tocs' => 
     array (
     ),
-    'ctime' => 1752847488,
+    'ctime' => 1752850755,
     'depends' => 
     array (
     ),
