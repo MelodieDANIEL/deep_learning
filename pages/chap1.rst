@@ -38,13 +38,13 @@ B) Le module ``autograd``, qui permet de calculer automatiquement les gradients 
 
 D'autres bibliothèques Python similaires existent, comme :
 
-- **TensorFlow** : développé par Google, très utilisé pour des déploiements à grande échelle.
-- **Keras** : interface haut niveau de TensorFlow, plus simple mais moins flexible.
-- **JAX** : plus récent, optimisé pour la recherche et les calculs scientifiques à haute performance.
+- TensorFlow : développé par Google, très utilisé pour des déploiements à grande échelle.
+- Keras : interface haut niveau de TensorFlow, plus simple mais moins flexible.
+- JAX : plus récent, optimisé pour la recherche et les calculs scientifiques à haute performance.
 
 .. slide::
 
-Dans le cadre de ce cours, nous utiliserons **PyTorch** car :
+Dans le cadre de ce cours, nous utiliserons PyTorch car :
 
 - il est largement adopté par la communauté de la recherche en deep learning,
 - il est plus lisible et plus facile à déboguer que TensorFlow et JAX,
@@ -62,7 +62,7 @@ Pour installer proprement PyTorch et les bibliothèques nécessaires, nous allon
 2.1 Qu'est-ce qu'un environnement virtuel ?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Un environnement virtuel (ou Virtual Env en anglais) est un dossier isolé dans lequel on peut installer des bibliothèques Python sans interférer avec le reste du système.
+Un environnement virtuel (ou Virtual Environment en anglais) est un dossier isolé dans lequel on peut installer des bibliothèques Python sans interférer avec le reste du système.
 
 En pratique, cela permet :
 
@@ -143,7 +143,67 @@ Pour désactiver l'environnement virtuel, vous pouvez utiliser la commande :
 📖 3. Installation de PyTorch
 ----------------------
 
+Une fois l’environnement virtuel activé, vous pouvez installer PyTorch et les bibliothèques associées. 
+
+
+3.1 Choisir la version de PyTorch
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+PyTorch propose différentes versions adaptées à divers systèmes d'exploitation et configurations matérielles (CPU, GPU). Dans ce cours, nous utiliserons la version de PyTorch qui est compatible par défaut avec GPU. Cependant, cette version fonctionnera sur toutes les machines (avec ou sans GPU).
+
+Dans le terminal (dans lequel l'environnement virtuel est activé), entrez :
+
+.. code-block:: bash
+
+   pip install torch torchvision torchaudio
+
+Cela installera :
+
+- **torch** : la bibliothèque principale de PyTorch,
+- **torchvision** : des outils pour manipuler des images, modèles pré-entraînés, etc.,
+- **torchaudio** : pour les données audio (utile pour d'autres projets).
+
+3.2. Lister les paquets installés
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Vous pouvez afficher la liste des bibliothèques installées dans l’environnement virtuel avec :
+
+.. code-block:: bash
+
+   pip freeze
+
+Cela vous permettra de voir les versions exactes de `torch`, `torchvision`, etc.
+
+3.3 Vérifier l’installation de PyTorch
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Vous pouvez maintenant tester l’installation de PyTorch avec ce petit script Python :
+
+.. code-block:: python
+
+   import torch
+
+   print("Version de PyTorch :", torch.__version__)
+   print("CUDA disponible ?  :", torch.cuda.is_available())
+
+- Si l'import fonctionne sans erreur, PyTorch est installé correctement.
+- Si `torch.cuda.is_available()` renvoie `False`, cela signifie que votre machine n’a pas de GPU compatible CUDA ou qu'elle n'a pas accès au .
 
 #####################################
-A FAIRE : ILLUSTRER AVEC DES FIGURES
+A FAIRE : fin de la phrase + partie nvidia-sim
+#####################################
+
+
+📖 4. Installer Jupyter (optionnel mais recommandé)
+----------------------
+
+Pour coder les TPs vous pouvez utiliser VSCode ou des notebook Jupyter. Pour installer Jupyter, vous devrez d'abord vous assurer que l'environnement virtuel est activé, puis exécuter la commande suivante :
+
+.. code-block:: bash
+
+   pip install notebook
+
+
+#####################################
+A FAIRE : ILLUSTRER AVEC DES FIGURES + de la doc
 #####################################

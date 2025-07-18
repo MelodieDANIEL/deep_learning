@@ -114,6 +114,34 @@
             0 => '📖 3. Installation de PyTorch',
             1 => 
             array (
+              0 => 
+              array (
+                0 => '3.1 Choisir la version de PyTorch',
+                1 => 
+                array (
+                ),
+              ),
+              1 => 
+              array (
+                0 => '3.2. Lister les paquets installés',
+                1 => 
+                array (
+                ),
+              ),
+              2 => 
+              array (
+                0 => '3.3 Vérifier l’installation de PyTorch',
+                1 => 
+                array (
+                ),
+              ),
+            ),
+          ),
+          4 => 
+          array (
+            0 => '📖 4. Installer Jupyter (optionnel mais recommandé)',
+            1 => 
+            array (
             ),
           ),
         ),
@@ -122,7 +150,7 @@
     'tocs' => 
     array (
     ),
-    'ctime' => 1752850755,
+    'ctime' => 1752854378,
     'depends' => 
     array (
     ),
