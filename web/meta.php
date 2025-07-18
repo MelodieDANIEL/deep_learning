@@ -45,17 +45,31 @@
   array (
     'file' => 'chap1',
     'url' => 'chap1.html',
-    'title' => 'Chapitre 1 - Introduction à PyTorch',
+    'title' => 'Chapitre 1 - Introduction à PyTorch et Optimisation de Modèles',
     'titles' => 
     array (
       0 => 
       array (
-        0 => 'Chapitre 1 - Introduction à PyTorch',
+        0 => 'Chapitre 1 - Introduction à PyTorch et Optimisation de Modèles',
         1 => 
         array (
           0 => 
           array (
             0 => '🎯 Objectifs du Chapitre',
+            1 => 
+            array (
+            ),
+          ),
+          1 => 
+          array (
+            0 => '📖 1. Quest-ce que PyTorch ? ',
+            1 => 
+            array (
+            ),
+          ),
+          2 => 
+          array (
+            0 => '📖 2. Installation de PyTorch',
             1 => 
             array (
             ),
@@ -66,7 +80,7 @@
     'tocs' => 
     array (
     ),
-    'ctime' => 1752745784,
+    'ctime' => 1752847488,
     'depends' => 
     array (
     ),

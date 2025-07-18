@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <link rel="stylesheet" type="text/css" href="css/style.css" />
-<title>Intro Python - Chapitre 1 - Introduction à PyTorch</title>
+<title>Intro Python - Chapitre 1 - Introduction à PyTorch et Optimisation de Modèles</title>
 
                 <meta http-equiv="X-UA-Compatible" content="IE=edge">
                 <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -105,12 +105,45 @@
 <div class="contents container">
 
 <div class="slide ">
-<a id="title.1"></a><h1>Chapitre 1 - Introduction à PyTorch</h1>
+<a id="title.1"></a><h1>Chapitre 1 - Introduction à PyTorch et Optimisation de Modèles</h1>
 <a id="title.1.1"></a><h2>🎯 Objectifs du Chapitre</h2>
-<div class="alert alert-light p-2 fs-5 text-center"><ul><li class="dash">1er chap.</li>
+<div class="alert alert-light p-2 fs-5 text-center"><p>À la fin de ce chapitre, vous saurez : </p>
+<ul><li class="dash">Créer et manipuler des tenseurs PyTorch sur CPU et GPU.</li>
+<li class="dash">Calculer automatiquement les gradients à l’aide de <code>autograd</code>.</li>
+<li class="dash">Définir une fonction de coût.</li>
+<li class="dash">Utiliser un optimiseur pour ajuster les paramètres d’un modèle.</li>
+<li class="dash">Implémenter une boucle d&#039;entraînement simple.</li>
 </ul>
 
 </div>
+</div><div class="slide ">
+<a id="title.1.2"></a><h2>📖 1. Quest-ce que PyTorch ? </h2>
+<p>PyTorch est une bibliothèque Python de machine learning open-source développée par Facebook (FAIR). Elle est conçue pour faciliter la création et l&#039;entraînement de modèles, en particulier dans le domaine du deep learning. </p>
+<p>Elle repose principalement sur deux éléments :
+A) Les <em>tenseurs</em>, des structures de données similaires aux tableaux NumPy (`ndarray`), mais avec des fonctionnalités supplémentaires pour :</p>
+<ul><li class="dash">le calcul différentiel automatique,</li>
+<li class="dash">l&#039;accélération GPU,</li>
+<li class="dash">l’entraînement de réseaux de neurones.</li>
+</ul>
+
+<p>B) Le module <code>autograd</code>, qui permet de calculer automatiquement les gradients nécessaires à l&#039;entraînement des modèles, en suivant toutes les opérations effectuées sur les tenseurs.</p>
+</div><div class="slide ">
+<p>D&#039;autres bibliothèques Python similaires existent, comme :</p>
+<ul><li class="dash"><strong>TensorFlow</strong> : développé par Google, très utilisé pour des déploiements à grande échelle.</li>
+<li class="dash"><strong>Keras</strong> : interface haut niveau de TensorFlow, plus simple mais moins flexible.</li>
+<li class="dash"><strong>JAX</strong> : plus récent, optimisé pour la recherche et les calculs scientifiques à haute performance.</li>
+</ul>
+
+</div><div class="slide ">
+<p>Dans le cadre de ce cours, nous utiliserons <strong>PyTorch</strong> car :</p>
+<ul><li class="dash">il est largement adopté par la communauté de la recherche en deep learning,</li>
+<li class="dash">il est plus lisible et plus facile à déboguer que TensorFlow et JAX,</li>
+<li class="dash">il offre plus de possibilités que Keras,</li>
+<li class="dash">il est bien documenté et l&#039;une des bibliothèques les plus utiliser en DataScience.</li>
+</ul>
+
+</div><div class="slide ">
+<a id="title.1.3"></a><h2>📖 2. Installation de PyTorch</h2>
 </div>
 <nav><ul class="pagination justify-content-center"><li class="page-item"><a class="page-link" href="index.html"><i class="bi bi-folder2"></i> Introduction aux fondamentaux de l&#039;apprentissage supervisé et du Deep Learning</a></li></ul></nav>
 

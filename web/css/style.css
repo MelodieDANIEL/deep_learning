@@ -1,0 +1,13 @@
+.red {
+    color:red;
+}
+
+div.alert,
+div.alert.important ul,
+div.alert.important p {
+    text-align: left !important;
+}
+
+div.admonition.important {
+    background-color: lightyellow !important;
+}
