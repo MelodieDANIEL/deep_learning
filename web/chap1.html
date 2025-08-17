@@ -143,85 +143,8 @@
 </ul>
 
 </div><div class="slide ">
-<a id="title.1.3"></a><h2>📖 2. Créer un environnement virtuel</h2>
-<p>Pour installer proprement PyTorch et les bibliothèques nécessaires, nous allons d’abord créer un environnement virtuel. </p>
-</div><div class="slide ">
-<a id="title.1.3.1"></a><h3>2.1 Qu&#039;est-ce qu&#039;un environnement virtuel ?</h3>
-<p>Un environnement virtuel (ou Virtual Environment en anglais) est un dossier isolé dans lequel on peut installer des bibliothèques Python sans interférer avec le reste du système.</p>
-<p>En pratique, cela permet :</p>
-<ul><li class="dash">d’avoir une version précise des bibliothèques pour un projet donné,</li>
-<li class="dash">d’éviter les conflits entre différentes versions de packages,</li>
-<li class="dash">de tester des versions spécifiques de bibliothèques sans risque,</li>
-<li class="dash">de partager facilement le projet avec d&#039;autres personnes,</li>
-<li class="dash">de garantir que le code fonctionne de la même manière sur différentes machines,</li>
-<li class="dash">de ne pas polluer l’installation Python globale de votre ordinateur.</li>
-</ul>
-
-<p>C’est une pratique essentielle pour tous les projets en Machine Learning.</p>
-</div><div class="slide ">
-<a id="title.1.3.2"></a><h3>2.2 Tester si <code>venv</code> est disponible</h3>
-<p>Le module <code>venv</code>, inclus normalement avec Python 3, permet de créer un environnement virtuel. Avant de l’utiliser, vous pouvez vérifier s’il est installé en tapant la commande suivante dans votre terminal : </p>
-<pre><code class="bash hljs">python3 -m venv --help</code></pre>
-<ul><li class="dash">Si l’aide s’affiche, le module est disponible.</li>
-<li class="dash">Sinon, vous verrez une erreur indiquant que <code>venv</code> est introuvable. Dans ce cas, installez-le avec :</li>
-</ul>
-
-<pre><code class="bash hljs">sudo apt install python3-venv</code></pre>
-</div><div class="slide ">
-<a id="title.1.3.3"></a><h3>2.3 Créer l’environnement</h3>
-<p>Pour créer un environnement virtuel, vous pouvez utiliser la commande suivante dans votre terminal :</p>
-<pre><code class="bash hljs">python -m venv nom_de_l_environnement</code></pre>
-<p>où <code>nom_de_l_environnement</code> est le nom que vous souhaitez donner à votre environnement virtuel.</p>
-<p>Placez-vous dans le dossier de travail de votre projet (par exemple <code>cours_dl/</code>), puis créez un environnement virtuel avec :</p>
-<pre><code class="bash hljs">python3 -m venv nom_de_l_environnement</code></pre>
-<p>Cela crée un sous-dossier nommé <code>nom_de_l_environnement</code> contenant une version isolée de Python. Par exemple, si vous nommez votre environnement <code>env_dl</code>, vous aurez un dossier <code>env_dl</code> dans votre répertoire de travail.</p>
-</div><div class="slide ">
-<a id="title.1.3.4"></a><h3>2.4 Activer l’environnement virtuel</h3>
-<p>Vous devez ensuite activer l’environnement pour l’utiliser en tapant dans votre terminal :</p>
-<pre><code class="bash hljs">source nom_de_l_environnement/bin/activate</code></pre>
-<p>Vous saurez que l&#039;environnement est activé lorsque le nom de l&#039;environnement apparaîtra entre parenthèses au début de votre invite de commande dans le terminal.</p>
-</div><div class="slide ">
-<a id="title.1.3.5"></a><h3>2.5 Désactiver l’environnement virtuel</h3>
-<p>Pour désactiver l&#039;environnement virtuel, vous pouvez utiliser la commande :</p>
-<pre><code class="bash hljs">deactivate</code></pre>
-</div><div class="slide ">
-<a id="title.1.4"></a><h2>📖 3. Installation de PyTorch</h2>
-<p>Une fois l’environnement virtuel activé, vous pouvez installer PyTorch et les bibliothèques associées. </p>
-<a id="title.1.4.1"></a><h3>3.1 Choisir la version de PyTorch</h3>
-<p>PyTorch propose différentes versions adaptées à divers systèmes d&#039;exploitation et configurations matérielles (CPU, GPU). Dans ce cours, nous utiliserons la version de PyTorch compatible par défaut avec GPU. Cependant, cette version fonctionnera sur toutes les machines (avec ou sans GPU).</p>
-<p>Dans le terminal (dans lequel l&#039;environnement virtuel est activé), tapez :</p>
-<pre><code class="bash hljs">pip install torch torchvision torchaudio</code></pre>
-<p>Cela installera :</p>
-<ul><li class="dash"><strong>torch</strong> : la bibliothèque principale de PyTorch,</li>
-<li class="dash"><strong>torchvision</strong> : des outils pour manipuler des images, modèles pré-entraînés, etc.,</li>
-<li class="dash"><strong>torchaudio</strong> : pour les données audio (utile pour d&#039;autres projets).</li>
-</ul>
-
-<a id="title.1.4.2"></a><h3>3.2. Lister les paquets installés</h3>
-<p>Vous pouvez afficher la liste des bibliothèques installées dans l’environnement virtuel avec :</p>
-<pre><code class="bash hljs">pip freeze</code></pre>
-<p>Cela vous permettra de voir les versions exactes de <code>torch</code>, <code>torchvision</code>, etc.</p>
-<a id="title.1.4.3"></a><h3>3.3 Vérifier l’installation de PyTorch</h3>
-<p>Vous pouvez maintenant tester l’installation de PyTorch avec ce petit script Python :</p>
-<pre><code class="python hljs">import torch
-
-print(&quot;Version de PyTorch :&quot;, torch.__version__)
-print(&quot;CUDA disponible ?  :&quot;, torch.cuda.is_available())</code></pre>
-<ul><li class="dash">Si l&#039;import fonctionne sans erreur, PyTorch est installé correctement.</li>
-<li class="dash">Si <code>torch.cuda.is_available()</code> renvoie <code>False</code>, cela signifie que votre machine n’a pas de GPU compatible CUDA ou qu&#039;elle n&#039;a pas accès au .</li>
-</ul>
-
-<p>#####################################
-A FAIRE : fin de la phrase + partie nvidia-sim
-#####################################</p>
-<a id="title.1.5"></a><h2>📖 4. Installer Jupyter (optionnel mais recommandé)</h2>
-<p>Pour coder les TPs vous pouvez utiliser VSCode ou des notebook Jupyter. Pour installer Jupyter, vous devrez d&#039;abord vous assurer que l&#039;environnement virtuel est activé, puis exécuter la commande suivante :</p>
-<pre><code class="bash hljs">pip install notebook</code></pre>
-<p>#####################################
-A FAIRE : ILLUSTRER AVEC DES FIGURES + de la doc
-#####################################</p>
 </div>
-<nav><ul class="pagination justify-content-center"><li class="page-item"><a class="page-link" href="index.html"><i class="bi bi-folder2"></i> Introduction aux fondamentaux de l&#039;apprentissage supervisé et du Deep Learning</a></li></ul></nav>
+<nav><ul class="pagination justify-content-center"><li class="page-item"><a class="page-link" href="chap0.html">&larr; Chapitre 0 - Installation des paquets et bibliothques nécessaires pour le cours</a></li><li class="page-item"><a class="page-link" href="index.html"><i class="bi bi-folder2"></i> Introduction aux fondamentaux de l&#039;apprentissage supervisé et du Deep Learning</a></li></ul></nav>
 
 </div> <!-- /contents -->
 </div> <!-- /core -->

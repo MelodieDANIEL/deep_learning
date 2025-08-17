@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" type="text/css" href="css/style.css" />
+<title>Intro Python - Chapitre 0 - Installation des paquets et bibliothques nécessaires pour le cours</title>
+
+                <meta http-equiv="X-UA-Compatible" content="IE=edge">
+                <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            
+
+                <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+                <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+            
+<link href="https://fonts.googleapis.com/css2?family=Gentium+Basic&display=swap" rel="stylesheet"> 
+<link rel="stylesheet" type="text/css" href="slidey/bootstrap/css/bootstrap.min.css" />
+<link rel="stylesheet" type="text/css" href="slidey/bootstrap-icons/font/bootstrap-icons.css" />
+<link rel="stylesheet" type="text/css" href="slidey/highlight.css" />
+<link rel="stylesheet" type="text/css" href="slidey/slidey.css" />
+<link rel="stylesheet" type="text/css" href="slidey/slidey.menu.css" />
+<link rel="stylesheet" type="text/css" href="slidey/slidey.step.css" />
+<link rel="stylesheet" type="text/css" href="slidey/slidey.code.css" />
+<link rel="stylesheet" type="text/css" href="slidey/slidey.slide.css" />
+<script type="text/javascript" src="slidey/js/jquery.js"></script>
+<script type="text/javascript" src="slidey/js/slidey.permalink.js"></script>
+<script type="text/javascript" src="slidey/js/slidey.menu.js"></script>
+<script type="text/javascript" src="slidey/js/slidey.mobile.js"></script>
+<script type="text/javascript" src="slidey/js/slidey.spoilers.js"></script>
+<script type="text/javascript" src="slidey/js/slidey.steps.js"></script>
+<script type="text/javascript" src="slidey/js/slidey.js"></script>
+<script type="text/javascript" src="slidey/js/main.js"></script>
+<script type="text/javascript" src="slidey/bootstrap/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="slidey/highlight/highlight.pack.js"></script>
+<link rel="icon" type="image/x-icon" href="favicon.ico" />
+</head>
+<body>
+<!-- Modal log-in window -->
+<div class="modal fade" id="loginWindow">
+  <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Log-in</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>    
+        <div class="modal-body">
+            <form>
+                Mot de passe&nbsp;:<br />
+                <input class="form-control" type="password" name="password" />
+            </form>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div>
+
+<div class="core">
+
+    <script>hljs.highlightAll();</script>
+
+<!-- Extra-controls for mobile device -->
+<div class="mobileControls">
+    <div class="btn-group">
+        <a href="javascript:void(0)" class="left btn btn-light btn-lg">
+            <i class="bi bi-arrow-up"></i>
+        </a>
+        <a href="javascript:void(0)" class="right btn btn-light btn-lg">
+            <i class="bi bi-arrow-down"></i>
+        </a>
+        <a href="javascript:void(0)" class="up btn btn-light btn-lg">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <a href="javascript:void(0)" class="down btn btn-light btn-lg">
+            <i class="bi bi-arrow-right"></i>
+        </a>
+        <a href="javascript:void(0)" class="login btn btn-light btn-lg">
+            <i class="bi bi-lock"></i>
+        </a>
+    </div>
+</div>
+
+<!-- Controls -->
+<div class="slideMode">
+    <div class="btn-group">
+        <a href="javascript:void(0)" class="btn btn-light btn-lg slideModeSlide"><i class="bi bi-film"></i></a>
+        <a href="javascript:void(0)" class="btn btn-light btn-lg followMode"><i class="bi bi-stopwatch"></i> </a>
+        <a href="index.html" class="btn btn-light btn-lg goHome"><i class="bi bi-house"></i></a>
+    </div>
+</div>
+
+<div class="exitSlideMode">
+    <div class="btn-group">
+        <a href="javascript:void(0)" class="btn btn-light btn-lg followMode"><i class="bi bi-stopwatch"></i></a>
+        <a href="javascript:void(0)" class="btn btn-light btn-lg showMobile"><i class="bi bi-phone"></i></a>
+        <a href="javascript:void(0)" class="btn btn-light btn-lg stopShow">
+            <span class="currentSlideNumber">
+            </span>
+            <i class="bi bi-x-lg"></i>
+        </a>
+    </div>
+</div>
+
+<!-- Browsing menu -->
+<div class="menu">
+</div>
+
+<div class="contents container">
+
+<div class="slide ">
+<a id="title.1"></a><h1>Chapitre 0 - Installation des paquets et bibliothques nécessaires pour le cours</h1>
+<a id="title.1.1"></a><h2>🎯 Objectifs du Chapitre</h2>
+<div class="alert alert-light p-2 fs-5 text-center"><p>À la fin de ce chapitre, vous saurez : </p>
+<ul><li class="dash">Créer un environnement virtuel Python.</li>
+<li class="dash">Installer PyTorch et les bibliothèques associées.</li>
+<li class="dash">Vérifier l&#039;installation de PyTorch.</li>
+<li class="dash">Installer Jupyter Notebook (optionnel mais recommandé).</li>
+</ul>
+
+</div>
+</div><div class="slide ">
+<a id="title.1.2"></a><h2>📖 1. Créer un environnement virtuel</h2>
+<p>Pour installer proprement PyTorch et les bibliothèques nécessaires, nous allons d’abord créer un environnement virtuel. </p>
+<a id="title.1.2.1"></a><h3>1.1 Qu&#039;est-ce qu&#039;un environnement virtuel ?</h3>
+<p>Un environnement virtuel (ou Virtual Environment en anglais) est un dossier isolé dans lequel on peut installer des bibliothèques Python sans interférer avec le reste du système.</p>
+<p>En pratique, cela permet :</p>
+<ul><li class="dash">d’avoir une version précise des bibliothèques pour un projet donné,</li>
+<li class="dash">d’éviter les conflits entre différentes versions de packages,</li>
+<li class="dash">de tester des versions spécifiques de bibliothèques sans risque,</li>
+<li class="dash">de partager facilement le projet avec d&#039;autres personnes,</li>
+<li class="dash">de garantir que le code fonctionne de la même manière sur différentes machines,</li>
+<li class="dash">de ne pas polluer l’installation Python globale de votre ordinateur.</li>
+</ul>
+
+<p>C’est une pratique essentielle pour tous les projets en Machine Learning.</p>
+</div><div class="slide ">
+<a id="title.1.2.2"></a><h3>1.2 Tester si <code>venv</code> est disponible</h3>
+<p>Le module <code>venv</code>, inclus normalement avec Python 3, permet de créer un environnement virtuel. Avant de l’utiliser, vous pouvez vérifier s’il est installé en tapant la commande suivante dans votre terminal : </p>
+<pre><code class="bash hljs">python3 -m venv --help</code></pre>
+<ul><li class="dash">Si l’aide s’affiche, le module est disponible.</li>
+<li class="dash">Sinon, vous verrez une erreur indiquant que <code>venv</code> est introuvable. Dans ce cas, installez-le avec :</li>
+</ul>
+
+<pre><code class="bash hljs">sudo apt install python3-venv</code></pre>
+</div><div class="slide ">
+<a id="title.1.2.3"></a><h3>1.3 Créer l’environnement</h3>
+<p>Pour créer un environnement virtuel, vous pouvez utiliser la commande suivante dans votre terminal :</p>
+<pre><code class="bash hljs">python -m venv nom_de_l_environnement</code></pre>
+<p>où <code>nom_de_l_environnement</code> est le nom que vous souhaitez donner à votre environnement virtuel.</p>
+<p>Placez-vous dans le dossier de travail de votre projet (par exemple <code>cours_dl/</code>), puis créez un environnement virtuel avec :</p>
+<pre><code class="bash hljs">python3 -m venv nom_de_l_environnement</code></pre>
+<p>Cela crée un sous-dossier nommé <code>nom_de_l_environnement</code> contenant une version isolée de Python. Par exemple, si vous nommez votre environnement <code>env_dl</code>, vous aurez un dossier <code>env_dl</code> dans votre répertoire de travail.</p>
+</div><div class="slide ">
+<a id="title.1.2.4"></a><h3>1.4 Activer l’environnement virtuel</h3>
+<p>Vous devez ensuite activer l’environnement pour l’utiliser en tapant dans votre terminal :</p>
+<pre><code class="bash hljs">source nom_de_l_environnement/bin/activate</code></pre>
+<p>Vous saurez que l&#039;environnement est activé lorsque le nom de l&#039;environnement apparaîtra entre parenthèses au début de votre invite de commande dans le terminal.</p>
+</div><div class="slide ">
+<a id="title.1.2.5"></a><h3>1.5 Désactiver l’environnement virtuel</h3>
+<p>Pour désactiver l&#039;environnement virtuel, vous pouvez utiliser la commande :</p>
+<pre><code class="bash hljs">deactivate</code></pre>
+</div><div class="slide ">
+<a id="title.1.3"></a><h2>📖 2. Installation de PyTorch</h2>
+<p>Une fois l’environnement virtuel activé, vous pouvez installer PyTorch et les bibliothèques associées. </p>
+<a id="title.1.3.1"></a><h3>2.1 Choisir la version de PyTorch</h3>
+<p>PyTorch propose différentes versions adaptées à divers systèmes d&#039;exploitation et configurations matérielles (CPU, GPU). Dans ce cours, nous utiliserons la version de PyTorch compatible par défaut avec GPU. Cependant, cette version fonctionnera sur toutes les machines (avec ou sans GPU).</p>
+<p>Dans le terminal (dans lequel l&#039;environnement virtuel est activé), tapez :</p>
+<pre><code class="bash hljs">pip install torch torchvision torchaudio</code></pre>
+<p>Cela installera :</p>
+<ul><li class="dash"><strong>torch</strong> : la bibliothèque principale de PyTorch,</li>
+<li class="dash"><strong>torchvision</strong> : des outils pour manipuler des images, modèles pré-entraînés, etc.,</li>
+<li class="dash"><strong>torchaudio</strong> : pour les données audio (utile pour d&#039;autres projets).</li>
+</ul>
+
+</div><div class="slide ">
+<a id="title.1.3.2"></a><h3>2.2. Lister les paquets installés</h3>
+<p>Vous pouvez afficher la liste des bibliothèques installées dans l’environnement virtuel avec :</p>
+<pre><code class="bash hljs">pip freeze</code></pre>
+<p>Cela vous permettra de voir les versions exactes de <code>torch</code>, <code>torchvision</code>, etc.</p>
+</div><div class="slide ">
+<a id="title.1.3.3"></a><h3>2.3 Vérifier l’installation de PyTorch</h3>
+<p>Vous pouvez maintenant tester l’installation de PyTorch avec ce petit script Python :</p>
+<pre><code class="python hljs">import torch
+
+print(&quot;Version de PyTorch :&quot;, torch.__version__)
+print(&quot;CUDA disponible ?  :&quot;, torch.cuda.is_available())</code></pre>
+<ul><li class="dash">Si l&#039;import fonctionne sans erreur, PyTorch est installé correctement.</li>
+<li class="dash">Si <code>torch.cuda.is_available()</code> renvoie <code>False</code>, cela signifie que votre machine n’a pas de GPU compatible CUDA ou qu&#039;elle n&#039;a pas accès au GPU probablement car les pilotes CUDA/cuDNN ne sont pas correctement installés.</li>
+</ul>
+
+<p>Vous pouvez toujours utiliser PyTorch sur CPU, mais le temps d&#039;entraînement sera plus long notamment pour les modèles complexes performances seront moindres pour les tâches lourdes.</p>
+</div><div class="slide ">
+<a id="title.1.3.4"></a><h3>2.4 Installer les pilotes NVIDIA et CUDA</h3>
+<p>Pour utiliser PyTorch avec un GPU, il ne suffit pas d’installer la bibliothèque <code>torch</code>. <br />Votre système doit aussi disposer des pilotes NVIDIA et de CUDA/cuDNN, qui permettent à PyTorch de dialoguer avec la carte graphique.</p>
+<a id="title.1.3.5"></a><h3>2.4.1 Vérifier si les pilotes sont installés</h3>
+<p>Avant d&#039;installer quoi que ce soit, vérifiez si les pilotes NVIDIA sont déjà installés sur votre système. Vous pouvez utiliser la commande suivante dans un terminal :</p>
+<pre><code class="bash hljs">nvidia-smi</code></pre>
+<ul><li class="dash">Si vous voyez un tableau avec des informations sur votre GPU (nom, mémoire, utilisation, version du pilote, version CUDA), cela signifie que les pilotes sont installés et fonctionnent.</li>
+<li class="dash">Si la commande est inconnue ou échoue, vous devez installer les pilotes.</li>
+</ul>
+
+</div><div class="slide ">
+<a id="title.1.3.6"></a><h3>2.4.2 Installer les pilotes NVIDIA </h3>
+<p>Mettez d’abord à jour la liste des paquets, puis installez les pilotes recommandés :</p>
+<pre><code class="bash hljs">sudo apt update
+sudo apt install nvidia-driver-Numero_de_version</code></pre>
+<p>(Le numéro de version peut varier selon votre GPU. Vous pouvez vérifier la version conseillée en tapnt <code>ubuntu-drivers devices</code> dans un terminal. Il y aura marqué &quot;recommended&quot; devant le pilote recommandé.)</p>
+<p><strong>Redémarrez votre ordinateur après l’installation des pilotes.</strong></p>
+</div><div class="slide ">
+<a id="title.1.3.7"></a><h3>2.4.3 Installer CUDA et cuDNN</h3>
+<p>Dans la plupart des cas, PyTorch télécharge automatiquement les bons binaires CUDA/cuDNN avec la commande  <code>pip install torch ...</code>. <br />Il n’est donc <strong>pas obligatoire</strong> d’installer CUDA séparément.</p>
+<p>Cependant, si vous souhaitez installer CUDA manuellement (option avancée qu&#039;il vaut mieux éviter), vous pouvez télécharger l’installateur depuis : <br />https://developer.nvidia.com/cuda-downloads</p>
+</div><div class="slide ">
+<a id="title.1.3.8"></a><h3>2.4.4 Vérifier l’installation après redémarrage</h3>
+<p>Relancez la commande :</p>
+<pre><code class="bash hljs">nvidia-smi</code></pre>
+<p>Vous devez voir apparaître les informations sur votre GPU et la version du pilote installé. <br />À ce stade, PyTorch pourra utiliser le GPU si installé avec la bonne version CUDA. Pour vous en assurer, vous pouvez relancer le script Python de vérification :</p>
+<pre><code class="python hljs">import torch
+
+print(&quot;Version de PyTorch :&quot;, torch.__version__)
+print(&quot;CUDA disponible ?  :&quot;, torch.cuda.is_available())</code></pre>
+<p>Si <code>torch.cuda.is_available()</code> renvoie <code>True</code>, PyTorch est prêt à utiliser le GPU.</p>
+<p>Sinon, supprimez PyTorch et réinstallez-le en vous assurant de choisir la bonne version CUDA. </p>
+</div><div class="slide ">
+<a id="title.1.3.9"></a><h3>2.4.5 Supprimer et réinstaller PyTorch avec la bonne version CUDA</h3>
+<p>Pour cela, vous pouvez taper dans un terminal :</p>
+<pre><code class="bash hljs">pip uninstall torch torchvision torchaudio</code></pre>
+<p>Avant de réinstaller, il est important de vérifier la version de CUDA supportée par votre GPU. <br />Pour cela, utilisez la commande suivante :</p>
+<pre><code class="bash hljs">nvidia-smi</code></pre>
+<ul><li class="dash">Dans le tableau affiché, repérez la colonne <strong>CUDA Version</strong>.</li>
+<li class="dash">Par exemple, si elle indique par exemple <code>11.8</code>, vous devrez installer PyTorch avec <code>cu118</code> :</li>
+</ul>
+
+<pre><code class="bash hljs">pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118</code></pre>
+<p>Une fois l’installation terminée, relancez Python et vérifiez :</p>
+<pre><code class="python hljs">import torch
+
+print(&quot;Version de PyTorch :&quot;, torch.__version__)
+print(&quot;CUDA disponible ?  :&quot;, torch.cuda.is_available())</code></pre>
+<p>Si <code>torch.cuda.is_available()</code> renvoie <code>True</code>, PyTorch est prêt à utiliser le GPU.</p>
+</div><div class="slide ">
+<a id="title.1.4"></a><h2>📖 3. Installer Jupyter Notebook (optionnel mais recommandé)</h2>
+<p>Pour coder les TPs, vous pouvez utiliser VSCode ou Jupyter Notebook.  Jupyter Notebook est un environnement interactif très utilisé en Python, idéal pour le deep learning. Il permet d’exécuter du code par blocs, de visualiser les résultats immédiatement et de documenter le travail dans le même fichier.</p>
+<p>Pour installer Jupyter, vous devrez d&#039;abord vous assurer que l&#039;environnement virtuel est activé, puis exécuter la commande suivante :</p>
+<pre><code class="bash hljs">pip install notebook</code></pre>
+<p>L’installation inclut <code>notebook</code> ainsi que tous les outils nécessaires pour exécuter des blocs Python.</p>
+</div><div class="slide ">
+<a id="title.1.4.1"></a><h3>3.1 Lancer Jupyter</h3>
+<p>Créer un dossier pour les notebooks, par exemple <code>cours_dl/notebooks/</code>.
+Ensuite, placez-vous dans ce dossier avec la commande `cd` :</p>
+<pre><code class="bash hljs">cd cours_dl/notebooks/</code></pre>
+<p>Pour démarrer Jupyter Notebook dans le dossier courant, utilisez :</p>
+<pre><code class="bash hljs">jupyter notebook</code></pre>
+<ul><li class="dash">Un navigateur web s’ouvrira automatiquement avec l’interface de Jupyter illustrée par la figure ci-dessus.</li>
+<li class="dash">Si le navigateur ne s’ouvre pas, copiez-collez l’URL affichée dans le terminal dans votre navigateur préféré.</li>
+</ul>
+
+<div class="center"><img src="images/jupyter_workspace.png"  alt="Espace de travail Jupyter" />
+</div>
+</div><div class="slide ">
+<a id="title.1.4.2"></a><h3>3.2 Créer un notebook</h3>
+<ul><li class="dash">Cliquez sur <strong>New → Python 3</strong> pour créer un nouveau notebook comme illustrée par la figure ci-dessus.</li>
+</ul>
+
+<div class="center"><img src="images/jupyter_new_file.png"  alt="Créer un nouveau notebook Jupyter" />
+</div>
+<ul><li class="dash">Chaque cellule de la figure ci-dessous peut contenir du code Python que vous pouvez exécuter avec `Shift + Enter`.</li>
+</ul>
+
+<div class="center"><img src="images/jupyter_home_page.png"  alt="Un Jupyter Notebook vide" />
+</div>
+<ul><li class="dash">Vous pouvez aussi ajouter des cellules Markdown pour documenter vos explications.</li>
+</ul>
+
+</div><div class="slide ">
+<a id="title.1.4.3"></a><h3>3.3 Vérification</h3>
+<p>Pour vérifier que Jupyter utilise bien votre virtualenv avec PyTorch installé, créez une cellule et tapez :</p>
+<pre><code class="python hljs">import torch
+print(&quot;Version de PyTorch :&quot;, torch.__version__)
+print(&quot;CUDA disponible ? :&quot;, torch.cuda.is_available())</code></pre>
+<p>Si tout est correct, vous devriez voir la version de PyTorch et l&#039;état de CUDA s&#039;afficher sans erreur.</p>
+<div class="center"><img src="images/jupyter_test_ve.png"  alt="Vérification de l&#039;installation de PyTorch dans Jupyter" />
+</div>
+</div><div class="slide ">
+<a id="title.1.4.4"></a><h3>3.4 Renommer le notebook</h3>
+<p>Pour renommer le notebook, cliquez sur le nom par défaut (généralement <code>Untitled</code>) en haut à gauche, puis entrez un nouveau nom, par exemple <code>test_installation.ipynb</code>.
+Cela vous permettra de garder une trace de vos notebooks et de les organiser facilement.</p>
+<div class="center"><img src="images/jupyter_rename.png"  alt="Renommer le notebook Jupyter" />
+</div>
+<div class="center"><img src="images/jupyter_after_rename.png"  alt="Après renommage du notebook Jupyter" />
+</div>
+</div><div class="slide ">
+<a id="title.1.5"></a><h2>📖 4. Documentation utile</h2>
+<p>Pour approfondir vos connaissances et trouver des réponses rapides, voici quelques ressources fiables et pertinentes pour ce cours :</p>
+<a id="title.1.5.1"></a><h3>4.1 PyTorch</h3>
+<ul><li class="dash">Documentation officielle : <a href="https://pytorch.org/docs/stable/index.html">https://pytorch.org/docs/stable/index.html</a></li>
+<li class="dash">Tutoriels PyTorch : <a href="https://pytorch.org/tutorials/">https://pytorch.org/tutorials/</a></li>
+<li class="dash">Guide “Get Started” avec CUDA : <a href="https://pytorch.org/get-started/locally/">https://pytorch.org/get-started/locally/</a></li>
+</ul>
+
+<a id="title.1.5.2"></a><h3>4.2 Python</h3>
+<ul><li class="dash">AOP Python : <a href="https://cgaspard3333.github.io/intro-python/">https://cgaspard3333.github.io/intro-python/</a></li>
+<li class="dash">Documentation Python : <a href="https://docs.python.org/3/">https://docs.python.org/3/</a></li>
+</ul>
+
+<a id="title.1.5.3"></a><h3>4.3 Jupyter Notebook</h3>
+<ul><li class="dash">Documentation Jupyter : <a href="https://jupyter.org/documentation">https://jupyter.org/documentation</a></li>
+<li class="dash">Tutoriel Jupyter Notebook :</li>
+</ul>
+
+<p><a href="https://jupyter-notebook.readthedocs.io/en/stable/examples/Notebook/Notebook%20Basics.html">https://jupyter-notebook.readthedocs.io/en/stable/examples/Notebook/Notebook%20Basics.html</a></p>
+<ul><li class="dash">Commandes utiles et raccourcis :</li>
+</ul>
+
+<p><a href="https://jupyter-notebook.readthedocs.io/en/stable/examples/Notebook/Notebook%20Basics.html#keyboard-shortcuts">https://jupyter-notebook.readthedocs.io/en/stable/examples/Notebook/Notebook%20Basics.html#keyboard-shortcuts</a></p>
+<a id="title.1.5.4"></a><h3>4.4 CUDA / NVIDIA</h3>
+<ul><li class="dash">Vérification des pilotes et CUDA : <a href="https://developer.nvidia.com/cuda-toolkit">https://developer.nvidia.com/cuda-toolkit</a></li>
+<li class="dash">Informations sur les GPU NVIDIA : <a href="https://developer.nvidia.com/cuda-gpus">https://developer.nvidia.com/cuda-gpus</a></li>
+<li class="dash">Guide d&#039;installation de CUDA : <a href="https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html">https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html</a></li>
+</ul>
+
+<a id="title.1.5.5"></a><h3>4.5 Communauté et forums</h3>
+<ul><li class="dash">Stack Overflow (tag <code>python</code>) : <a href="https://stackoverflow.com/questions/tagged/python">https://stackoverflow.com/questions/tagged/python</a></li>
+<li class="dash">PyTorch Forums : <a href="https://discuss.pytorch.org/">https://discuss.pytorch.org/</a></li>
+</ul>
+
+<p>Ces liens vous permettront de consulter des exemples, de comprendre les erreurs et de rester à jour sur les dernières fonctionnalités.</p>
+</div>
+<nav><ul class="pagination justify-content-center"><li class="page-item"><a class="page-link" href="index.html"><i class="bi bi-folder2"></i> Introduction aux fondamentaux de l&#039;apprentissage supervisé et du Deep Learning</a></li><li class="page-item"><a class="page-link" href="chap1.html">Chapitre 1 - Introduction à PyTorch et Optimisation de Modèles &rarr;</a></li></ul></nav>
+
+</div> <!-- /contents -->
+</div> <!-- /core -->
+
+</body>
+</html>

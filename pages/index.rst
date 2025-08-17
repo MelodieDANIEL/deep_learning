@@ -23,6 +23,7 @@ Sommaire
 
 .. toctree::
 
+    chap0
     chap1
     
     
