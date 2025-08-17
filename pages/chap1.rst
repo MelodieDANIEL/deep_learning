@@ -26,13 +26,13 @@ PyTorch est une bibliothèque Python de machine learning open-source développé
 
 Elle repose principalement sur deux éléments :
 
-A) Les *tenseurs*, des structures de données similaires aux tableaux NumPy (`ndarray`), mais avec des fonctionnalités supplémentaires pour :
+A) Les *tenseurs*, des structures de données similaires aux tableaux NumPy (``ndarray``), mais avec des fonctionnalités supplémentaires pour :
     
     - le calcul différentiel automatique,
     - l'accélération GPU,
     - l’entraînement de réseaux de neurones.
 
-B) Le module ``autograd``, qui permet de calculer automatiquement les gradients nécessaires à l'entraînement des modèles, en suivant toutes les opérations effectuées sur les tenseurs.
+B) Le module ``autograd`` permet de calculer automatiquement les gradients nécessaires à l'entraînement des modèles, en suivant toutes les opérations effectuées sur les tenseurs.
 
 .. slide::
 
@@ -46,10 +46,10 @@ D'autres bibliothèques Python similaires existent, comme :
 
 Dans le cadre de ce cours, nous utiliserons PyTorch car :
 
-- il est largement adopté par la communauté de la recherche en deep learning,
-- il est plus lisible et plus facile à déboguer que TensorFlow et JAX,
-- il offre plus de possibilités que Keras,
-- il est bien documenté et est l'une des bibliothèques les plus utilisées en science des données (Data Science en anglais) et en apprentissage machine (Machine Learning en anglais).
+- elle est largement adoptée par la communauté de la recherche en deep learning,
+- elle est plus lisible et plus facile à déboguer que TensorFlow et JAX,
+- elle offre plus de possibilités que Keras,
+- elle est bien documentée et est l'une des bibliothèques les plus utilisées en science des données (Data Science en anglais) et en apprentissage machine (Machine Learning en anglais).
 
 .. slide::
 
@@ -118,7 +118,7 @@ Cela crée un sous-dossier nommé ``nom_de_l_environnement`` contenant une versi
 2.4 Activer l’environnement virtuel
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Vous devez ensuite activer l’environnement pour l’utiliser en tapant dand votre terminal :
+Vous devez ensuite activer l’environnement pour l’utiliser en tapant dans votre terminal :
 
 .. code-block:: bash
     
@@ -149,9 +149,9 @@ Une fois l’environnement virtuel activé, vous pouvez installer PyTorch et les
 3.1 Choisir la version de PyTorch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-PyTorch propose différentes versions adaptées à divers systèmes d'exploitation et configurations matérielles (CPU, GPU). Dans ce cours, nous utiliserons la version de PyTorch qui est compatible par défaut avec GPU. Cependant, cette version fonctionnera sur toutes les machines (avec ou sans GPU).
+PyTorch propose différentes versions adaptées à divers systèmes d'exploitation et configurations matérielles (CPU, GPU). Dans ce cours, nous utiliserons la version de PyTorch compatible par défaut avec GPU. Cependant, cette version fonctionnera sur toutes les machines (avec ou sans GPU).
 
-Dans le terminal (dans lequel l'environnement virtuel est activé), entrez :
+Dans le terminal (dans lequel l'environnement virtuel est activé), tapez :
 
 .. code-block:: bash
 
@@ -172,7 +172,7 @@ Vous pouvez afficher la liste des bibliothèques installées dans l’environnem
 
    pip freeze
 
-Cela vous permettra de voir les versions exactes de `torch`, `torchvision`, etc.
+Cela vous permettra de voir les versions exactes de ``torch``, ``torchvision``, etc.
 
 3.3 Vérifier l’installation de PyTorch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -187,7 +187,7 @@ Vous pouvez maintenant tester l’installation de PyTorch avec ce petit script P
    print("CUDA disponible ?  :", torch.cuda.is_available())
 
 - Si l'import fonctionne sans erreur, PyTorch est installé correctement.
-- Si `torch.cuda.is_available()` renvoie `False`, cela signifie que votre machine n’a pas de GPU compatible CUDA ou qu'elle n'a pas accès au .
+- Si ``torch.cuda.is_available()`` renvoie ``False``, cela signifie que votre machine n’a pas de GPU compatible CUDA ou qu'elle n'a pas accès au .
 
 #####################################
 A FAIRE : fin de la phrase + partie nvidia-sim

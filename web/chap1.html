@@ -120,13 +120,13 @@
 <a id="title.1.2"></a><h2>📖 1. Qu&#039;est-ce que PyTorch ? </h2>
 <p>PyTorch est une bibliothèque Python de machine learning open-source développée par Facebook (FAIR). Elle est conçue pour faciliter la création et l&#039;entraînement de modèles, en particulier dans le domaine du deep learning. </p>
 <p>Elle repose principalement sur deux éléments :</p>
-<p>A) Les <em>tenseurs</em>, des structures de données similaires aux tableaux NumPy (`ndarray`), mais avec des fonctionnalités supplémentaires pour :</p>
+<p>A) Les <em>tenseurs</em>, des structures de données similaires aux tableaux NumPy (<code>ndarray</code>), mais avec des fonctionnalités supplémentaires pour :</p>
 <ul><li class="dash">le calcul différentiel automatique,</li>
 <li class="dash">l&#039;accélération GPU,</li>
 <li class="dash">l’entraînement de réseaux de neurones.</li>
 </ul>
 
-<p>B) Le module <code>autograd</code>, qui permet de calculer automatiquement les gradients nécessaires à l&#039;entraînement des modèles, en suivant toutes les opérations effectuées sur les tenseurs.</p>
+<p>B) Le module <code>autograd</code> permet de calculer automatiquement les gradients nécessaires à l&#039;entraînement des modèles, en suivant toutes les opérations effectuées sur les tenseurs.</p>
 </div><div class="slide ">
 <p>D&#039;autres bibliothèques Python similaires existent, comme :</p>
 <ul><li class="dash">TensorFlow : développé par Google, très utilisé pour des déploiements à grande échelle.</li>
@@ -136,10 +136,10 @@
 
 </div><div class="slide ">
 <p>Dans le cadre de ce cours, nous utiliserons PyTorch car :</p>
-<ul><li class="dash">il est largement adopté par la communauté de la recherche en deep learning,</li>
-<li class="dash">il est plus lisible et plus facile à déboguer que TensorFlow et JAX,</li>
-<li class="dash">il offre plus de possibilités que Keras,</li>
-<li class="dash">il est bien documenté et est l&#039;une des bibliothèques les plus utilisées en science des données (Data Science en anglais) et en apprentissage machine (Machine Learning en anglais).</li>
+<ul><li class="dash">elle est largement adoptée par la communauté de la recherche en deep learning,</li>
+<li class="dash">elle est plus lisible et plus facile à déboguer que TensorFlow et JAX,</li>
+<li class="dash">elle offre plus de possibilités que Keras,</li>
+<li class="dash">elle est bien documentée et est l&#039;une des bibliothèques les plus utilisées en science des données (Data Science en anglais) et en apprentissage machine (Machine Learning en anglais).</li>
 </ul>
 
 </div><div class="slide ">
@@ -177,7 +177,7 @@
 <p>Cela crée un sous-dossier nommé <code>nom_de_l_environnement</code> contenant une version isolée de Python. Par exemple, si vous nommez votre environnement <code>env_dl</code>, vous aurez un dossier <code>env_dl</code> dans votre répertoire de travail.</p>
 </div><div class="slide ">
 <a id="title.1.3.4"></a><h3>2.4 Activer l’environnement virtuel</h3>
-<p>Vous devez ensuite activer l’environnement pour l’utiliser en tapant dand votre terminal :</p>
+<p>Vous devez ensuite activer l’environnement pour l’utiliser en tapant dans votre terminal :</p>
 <pre><code class="bash hljs">source nom_de_l_environnement/bin/activate</code></pre>
 <p>Vous saurez que l&#039;environnement est activé lorsque le nom de l&#039;environnement apparaîtra entre parenthèses au début de votre invite de commande dans le terminal.</p>
 </div><div class="slide ">
@@ -188,8 +188,8 @@
 <a id="title.1.4"></a><h2>📖 3. Installation de PyTorch</h2>
 <p>Une fois l’environnement virtuel activé, vous pouvez installer PyTorch et les bibliothèques associées. </p>
 <a id="title.1.4.1"></a><h3>3.1 Choisir la version de PyTorch</h3>
-<p>PyTorch propose différentes versions adaptées à divers systèmes d&#039;exploitation et configurations matérielles (CPU, GPU). Dans ce cours, nous utiliserons la version de PyTorch qui est compatible par défaut avec GPU. Cependant, cette version fonctionnera sur toutes les machines (avec ou sans GPU).</p>
-<p>Dans le terminal (dans lequel l&#039;environnement virtuel est activé), entrez :</p>
+<p>PyTorch propose différentes versions adaptées à divers systèmes d&#039;exploitation et configurations matérielles (CPU, GPU). Dans ce cours, nous utiliserons la version de PyTorch compatible par défaut avec GPU. Cependant, cette version fonctionnera sur toutes les machines (avec ou sans GPU).</p>
+<p>Dans le terminal (dans lequel l&#039;environnement virtuel est activé), tapez :</p>
 <pre><code class="bash hljs">pip install torch torchvision torchaudio</code></pre>
 <p>Cela installera :</p>
 <ul><li class="dash"><strong>torch</strong> : la bibliothèque principale de PyTorch,</li>
@@ -200,7 +200,7 @@
 <a id="title.1.4.2"></a><h3>3.2. Lister les paquets installés</h3>
 <p>Vous pouvez afficher la liste des bibliothèques installées dans l’environnement virtuel avec :</p>
 <pre><code class="bash hljs">pip freeze</code></pre>
-<p>Cela vous permettra de voir les versions exactes de `torch`, `torchvision`, etc.</p>
+<p>Cela vous permettra de voir les versions exactes de <code>torch</code>, <code>torchvision</code>, etc.</p>
 <a id="title.1.4.3"></a><h3>3.3 Vérifier l’installation de PyTorch</h3>
 <p>Vous pouvez maintenant tester l’installation de PyTorch avec ce petit script Python :</p>
 <pre><code class="python hljs">import torch
@@ -208,7 +208,7 @@
 print(&quot;Version de PyTorch :&quot;, torch.__version__)
 print(&quot;CUDA disponible ?  :&quot;, torch.cuda.is_available())</code></pre>
 <ul><li class="dash">Si l&#039;import fonctionne sans erreur, PyTorch est installé correctement.</li>
-<li class="dash">Si `torch.cuda.is_available()` renvoie `False`, cela signifie que votre machine n’a pas de GPU compatible CUDA ou qu&#039;elle n&#039;a pas accès au .</li>
+<li class="dash">Si <code>torch.cuda.is_available()</code> renvoie <code>False</code>, cela signifie que votre machine n’a pas de GPU compatible CUDA ou qu&#039;elle n&#039;a pas accès au .</li>
 </ul>
 
 <p>#####################################
