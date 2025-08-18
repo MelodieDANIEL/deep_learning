@@ -186,6 +186,7 @@ Mettez d’abord à jour la liste des paquets, puis installez les pilotes recomm
 
    sudo apt update
    sudo apt install nvidia-driver-Numero_de_version
+   sudo apt install nvidia-cuda-toolkit
 
 (Le numéro de version peut varier selon votre GPU. Vous pouvez vérifier la version conseillée en tapnt ``ubuntu-drivers devices`` dans un terminal. Il y aura marqué "recommended" devant le pilote recommandé.)
 

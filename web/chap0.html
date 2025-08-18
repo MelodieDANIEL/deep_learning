@@ -200,7 +200,8 @@ print(&quot;CUDA disponible ?  :&quot;, torch.cuda.is_available())</code></pre>
 <a id="title.1.3.6"></a><h3>2.4.2 Installer les pilotes NVIDIA </h3>
 <p>Mettez d’abord à jour la liste des paquets, puis installez les pilotes recommandés :</p>
 <pre><code class="bash hljs">sudo apt update
-sudo apt install nvidia-driver-Numero_de_version</code></pre>
+sudo apt install nvidia-driver-Numero_de_version
+sudo apt install nvidia-cuda-toolkit</code></pre>
 <p>(Le numéro de version peut varier selon votre GPU. Vous pouvez vérifier la version conseillée en tapnt <code>ubuntu-drivers devices</code> dans un terminal. Il y aura marqué &quot;recommended&quot; devant le pilote recommandé.)</p>
 <p><strong>Redémarrez votre ordinateur après l’installation des pilotes.</strong></p>
 </div><div class="slide ">

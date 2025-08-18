@@ -257,7 +257,7 @@
     'tocs' => 
     array (
     ),
-    'ctime' => 1755443730,
+    'ctime' => 1755536002,
     'depends' => 
     array (
     ),
@@ -289,13 +289,118 @@
             array (
             ),
           ),
+          2 => 
+          array (
+            0 => '📖 2. Qu&#039;est-ce qu&#039;un tenseur ?',
+            1 => 
+            array (
+            ),
+          ),
+          3 => 
+          array (
+            0 => '📖 3. Création de tenseurs',
+            1 => 
+            array (
+              0 => 
+              array (
+                0 => '3.1 À partir de données Python (listes ou tuples)',
+                1 => 
+                array (
+                ),
+              ),
+              1 => 
+              array (
+                0 => '3.2 Avec des fonctions de construction',
+                1 => 
+                array (
+                ),
+              ),
+              2 => 
+              array (
+                0 => '3.3 Avec des suites régulières',
+                1 => 
+                array (
+                ),
+              ),
+              3 => 
+              array (
+                0 => '3.4 Avec des nombres aléatoires',
+                1 => 
+                array (
+                ),
+              ),
+            ),
+          ),
+          4 => 
+          array (
+            0 => '📖 4. Connaître la forme d&#039;un tenseur',
+            1 => 
+            array (
+            ),
+          ),
+          5 => 
+          array (
+            0 => '📖 5. Types de tenseurs et conversion',
+            1 => 
+            array (
+            ),
+          ),
+          6 => 
+          array (
+            0 => '📖 6. Opérations de base',
+            1 => 
+            array (
+            ),
+          ),
+          7 => 
+          array (
+            0 => '📖 7. Tenseurs sur GPU',
+            1 => 
+            array (
+            ),
+          ),
+          8 => 
+          array (
+            0 => '📖 8.  Manipulation avancée des tenseurs',
+            1 => 
+            array (
+              0 => 
+              array (
+                0 => '8.1 Changer la forme avec <code>view</code> et <code>reshape</code>',
+                1 => 
+                array (
+                ),
+              ),
+              1 => 
+              array (
+                0 => '8.2 Changer l’ordre des dimensions : <code>permute</code>',
+                1 => 
+                array (
+                ),
+              ),
+              2 => 
+              array (
+                0 => '8.3 Ajouter ou supprimer des dimensions : <code>unsqueeze</code> et <code>squeeze</code>',
+                1 => 
+                array (
+                ),
+              ),
+              3 => 
+              array (
+                0 => '8.4 Concaténer ou empiler des tenseurs',
+                1 => 
+                array (
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     ),
     'tocs' => 
     array (
     ),
-    'ctime' => 1755440891,
+    'ctime' => 1755535675,
     'depends' => 
     array (
     ),
