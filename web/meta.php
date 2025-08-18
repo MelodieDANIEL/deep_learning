@@ -394,13 +394,69 @@
               ),
             ),
           ),
+          9 => 
+          array (
+            0 => '📖 9. Autograd avec PyTorch',
+            1 => 
+            array (
+              0 => 
+              array (
+                0 => '9.1 Création d&#039;un tenseur suivi',
+                1 => 
+                array (
+                ),
+              ),
+              1 => 
+              array (
+                0 => '9.2 Opérations sur les tenseurs',
+                1 => 
+                array (
+                ),
+              ),
+            ),
+          ),
+          10 => 
+          array (
+            0 => '📖 10. Graphique computationnel',
+            1 => 
+            array (
+            ),
+          ),
+          11 => 
+          array (
+            0 => '📖 11. Calcul des gradients et rétropropagation ',
+            1 => 
+            array (
+              0 => 
+              array (
+                0 => '📖 12. Désactivation du suivi des gradients',
+                1 => 
+                array (
+                ),
+              ),
+            ),
+          ),
+          12 => 
+          array (
+            0 => 'Exemple concret : petite boucle d&#039;entraînement',
+            1 => 
+            array (
+            ),
+          ),
+          13 => 
+          array (
+            0 => 'Conclusion',
+            1 => 
+            array (
+            ),
+          ),
         ),
       ),
     ),
     'tocs' => 
     array (
     ),
-    'ctime' => 1755535675,
+    'ctime' => 1755551261,
     'depends' => 
     array (
     ),

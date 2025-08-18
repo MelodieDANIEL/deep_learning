@@ -391,6 +391,133 @@ stack = torch.stack((a, b), dim=0)
 print(&quot;torch.stack :&quot;, stack)
 print(&quot;Forme de stack :&quot;, stack.shape)</code></pre>
 </div><div class="slide ">
+<a id="title.1.10"></a><h2>📖 9. Autograd avec PyTorch</h2>
+<p>En Deep Learning, nous travaillons souvent avec des fonctions compliquées dépendant de plusieurs variables. Pour entraîner un modèle, nous avons besoin de calculer automatiquement les dérivées de ces fonctions. C&#039;est là qu&#039;intervient Autograd qui est le moteur de différentiation automatique de PyTorch. </p>
+<a id="title.1.10.1"></a><h3>9.1 Création d&#039;un tenseur suivi</h3>
+<p>Pour qu&#039;un tenseur suive les opérations et calcule les gradients automatiquement, il faut définir <code>requires_grad=True</code> :</p>
+<pre><code class="python hljs">import torch
+
+x = torch.tensor([2.0, 3.0], requires_grad=True)
+print(x)</code></pre>
+<p>Ici, <code>x</code> est maintenant un tenseur avec suivi des gradients. Toutes les opérations futures sur ce tenseur seront enregistrées pour pouvoir calculer les dérivées automatiquement.</p>
+</div><div class="slide ">
+<a id="title.1.10.2"></a><h3>9.2 Opérations sur les tenseurs</h3>
+<p>Toutes les opérations effectuées sur ce tenseur sont automatiquement enregistrées dans un graphe computationnel dynamique.</p>
+<pre><code class="python hljs">y = x ** 2 + 3 * x # y = [y1, y2]
+print(y)</code></pre>
+<p>Dans ce cas :</p>
+<ul><li class="dash"><code>x</code> est la variable d&#039;entrée.</li>
+<li class="dash"><code>y</code> est calculé à partir de <code>x</code> avec les opérations <code>x**2</code> et <code>3*x</code>.</li>
+</ul>
+
+<p>Chaque opération devient un nœud du graphe et PyTorch garde la trace des dépendances pour pouvoir calculer les gradients.</p>
+<p>############################## Stop ICI ##############################
+############################## Stop ICI ##############################
+############################## Stop ICI ##############################
+############################## Stop ICI ##############################</p>
+</div><div class="slide ">
+<a id="title.1.11"></a><h2>📖 10. Graphique computationnel</h2>
+<p>Un graphe computationnel est une structure qui représente toutes les opérations effectuées sur les tenseurs.  </p>
+<ul><li class="dash">Chaque nœud correspond à un tenseur ou à une opération mathématique.</li>
+<li class="dash">Chaque flèche indique une dépendance : le résultat d&#039;une opération dépend d&#039;un ou plusieurs tenseurs d&#039;entrée.</li>
+</ul>
+
+<p><em>Illustration ASCII pour l&#039;exemple précédent</em> :</p>
+<pre><code class="no-highlight hljs">x
+ \
+   3*x
+   /
+y</code></pre>
+<p>Ici :</p>
+<ul><li class="dash">Les nœuds <code>x^2</code> et <code>3*x</code> représentent les opérations effectuées sur <code>x</code>.</li>
+<li class="dash">Le nœud <code>y</code> combine ces deux résultats.</li>
+<li class="dash">Le graphe permet à PyTorch desavoir quelles dérivées calculer et dans quel ordre.</li>
+</ul>
+
+</div><div class="slide ">
+<a id="title.1.12"></a><h2>📖 11. Calcul des gradients et rétropropagation </h2>
+<p>Autograd utilise ce graphe pour calculer automatiquement les dérivées par rapport à <code>x</code>, en utilisant la méthode <code>backward()</code> :</p>
+<pre><code class="python hljs">z = y.sum()  # z = y1 + y2
+z.backward()
+print(x.grad)</code></pre>
+<ul><li class="dash"><code>backward()</code> calcule les dérivées de <code>y.sum()</code> par rapport à chaque élément de <code>x</code>.</li>
+<li class="dash"><code>x.grad</code> contient maintenant les gradients.</li>
+</ul>
+
+<p>PyTorch parcourt le graphe <strong>en sens inverse</strong> :</p>
+<ol><li class="">Commence par la sortie <code>z</code>.</li>
+<li class="">Recule vers les nœuds précédents (<code>y</code> puis <code>x</code>) en appliquant la règle de dérivation.</li>
+<li class="">Stocke le gradient dans <code>x.grad</code>.</li>
+</ol>
+
+<p>Calcul des gradients dans notre exemple :</p>
+<ul><li class="dash"><code>dz/dy = 1</code> car z = y.sum()</li>
+<li class="dash"><code>dy/dx = dérivée de (x^2 + 3*x) = 2*x + 3</code></li>
+<li class="dash"><code>dx = dz/dy * dy/dx = 2*x + 3</code></li>
+</ul>
+
+<p>On obtient donc :</p>
+<pre><code class="python hljs">print(x.grad)  # tensor([7., 9.])</code></pre>
+</div><div class="slide ">
+<a id="title.1.12.1"></a><h3>📖 12. Désactivation du suivi des gradients</h3>
+<p>Pour certaines opérations, par exemple lors de l&#039;évaluation d&#039;un modèle, il est inutile
+de calculer les gradients. On peut alors désactiver le suivi avec <code>torch.no_grad()</code> :</p>
+<pre><code class="python hljs">with torch.no_grad():
+    z = x * 2
+print(z)</code></pre>
+<p>Cela permet d&#039;économiser de la mémoire et d&#039;accélérer les calculs.</p>
+<p>################################ Partie LOSS ################################</p>
+<p>Voici un exemple concret :</p>
+<pre><code class="python hljs">import torch
+
+# On crée un tenseur avec require_grad=True pour suivre les gradients
+x = torch.tensor([2.0, 3.0], requires_grad=True)
+
+# On effectue des opérations
+y = x ** 2 + 3 * x
+z = y.sum()</code></pre>
+<p>Dans ce cas :</p>
+<ul><li class="dash"><code>x</code> est la variable d&#039;entrée.</li>
+<li class="dash"><code>y</code> est calculé à partir de <code>x</code> avec les opérations <code>x**2</code> et <code>3*x</code>.</li>
+<li class="dash"><code>z</code> est la somme des éléments de <code>y</code> et correspond à la <strong>fonction de perte</strong>.</li>
+</ul>
+
+<p>################################ Partie LOSS ################################</p>
+<a id="title.1.13"></a><h2>Exemple concret : petite boucle d&#039;entraînement</h2>
+<p>On peut illustrer l&#039;utilisation d&#039;Autograd pour entraîner un réseau très simple
+(une seule couche linéaire) :</p>
+<pre><code class="python hljs"># Création de données factices
+X = torch.randn(5, 1, requires_grad=False)
+y_true = 2 * X + 1
+
+# Paramètres à apprendre
+w = torch.randn(1, requires_grad=True)
+b = torch.randn(1, requires_grad=True)
+
+# Boucle d&#039;entraînement simple
+learning_rate = 0.1
+for epoch in range(10):
+    y_pred = X * w + b
+    loss = ((y_pred - y_true) ** 2).mean()
+
+    loss.backward()  # calcul des gradients
+
+    # Mise à jour des paramètres
+    with torch.no_grad():
+        w -= learning_rate * w.grad
+        b -= learning_rate * b.grad
+
+        # réinitialisation des gradients
+        w.grad.zero_()
+        b.grad.zero_()
+
+    print(f&quot;Epoch {epoch+1}, loss: {loss.item()}&quot;)</code></pre>
+<a id="title.1.14"></a><h2>Conclusion</h2>
+<p>Autograd permet de calculer automatiquement les dérivées et de mettre à jour les
+paramètres lors de l&#039;entraînement d&#039;un réseau de neurones. La combinaison de
+<code>requires_grad=True</code>, <code>backward()</code> et <code>no_grad()</code> constitue le coeur de la
+programmation avec PyTorch.</p>
+<p>################################# POUR LE TP #####################</p>
 </div>
 <nav><ul class="pagination justify-content-center"><li class="page-item"><a class="page-link" href="chap0.html">&larr; Chapitre 0 - Installation des paquets et bibliothques nécessaires pour le cours</a></li><li class="page-item"><a class="page-link" href="index.html"><i class="bi bi-folder2"></i> Introduction aux fondamentaux de l&#039;apprentissage supervisé et du Deep Learning</a></li></ul></nav>
 

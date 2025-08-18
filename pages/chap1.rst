@@ -383,3 +383,205 @@ Autre exemple pour illustrer la différence entre ``view`` et ``reshape`` :
    print("Forme de stack :", stack.shape)
 
 .. slide::
+📖 9. Autograd avec PyTorch
+-----------------------
+
+En Deep Learning, nous travaillons souvent avec des fonctions compliquées dépendant de plusieurs variables. Pour entraîner un modèle, nous avons besoin de calculer automatiquement les dérivées de ces fonctions. C'est là qu'intervient Autograd qui est le moteur de différentiation automatique de PyTorch. 
+
+9.1 Création d'un tenseur suivi
+~~~~~~~~~~~~~~~~~~~
+
+Pour qu'un tenseur suive les opérations et calcule les gradients automatiquement, il faut définir ``requires_grad=True`` :
+
+.. code-block:: python
+
+    import torch
+
+    x = torch.tensor([2.0, 3.0], requires_grad=True)
+    print(x)
+
+Ici, ``x`` est maintenant un tenseur avec suivi des gradients. Toutes les opérations futures sur ce tenseur seront enregistrées pour pouvoir calculer les dérivées automatiquement.
+
+
+.. slide::
+9.2 Opérations sur les tenseurs
+~~~~~~~~~~~~~~~~~~~
+
+Toutes les opérations effectuées sur ce tenseur sont automatiquement enregistrées dans un graphe computationnel dynamique.
+
+.. code-block:: python
+
+    y = x ** 2 + 3 * x # y = [y1, y2]
+    print(y)
+
+Dans ce cas :
+
+- ``x`` est la variable d'entrée.
+- ``y`` est calculé à partir de ``x`` avec les opérations ``x**2`` et ``3*x``.
+
+Chaque opération devient un nœud du graphe et PyTorch garde la trace des dépendances pour pouvoir calculer les gradients.
+
+
+############################## Stop ICI ##############################
+############################## Stop ICI ##############################
+############################## Stop ICI ##############################
+############################## Stop ICI ##############################
+
+.. slide::
+📖 10. Graphique computationnel
+-----------------------
+
+Un graphe computationnel est une structure qui représente toutes les opérations effectuées sur les tenseurs.  
+
+- Chaque nœud correspond à un tenseur ou à une opération mathématique.
+- Chaque flèche indique une dépendance : le résultat d'une opération dépend d'un ou plusieurs tenseurs d'entrée.
+
+*Illustration ASCII pour l'exemple précédent* :
+
+.. code-block:: text
+
+       x
+      / \
+   x**2   3*x
+      \   /
+       y
+
+Ici :
+
+- Les nœuds ``x^2`` et ``3*x`` représentent les opérations effectuées sur ``x``.
+- Le nœud ``y`` combine ces deux résultats.
+- Le graphe permet à PyTorch desavoir quelles dérivées calculer et dans quel ordre.
+
+
+
+
+
+.. slide::
+📖 11. Calcul des gradients et rétropropagation 
+-----------------------
+
+Autograd utilise ce graphe pour calculer automatiquement les dérivées par rapport à ``x``, en utilisant la méthode ``backward()`` :
+
+.. code-block:: python
+    z = y.sum()  # z = y1 + y2
+    z.backward()
+    print(x.grad)
+
+- ``backward()`` calcule les dérivées de ``y.sum()`` par rapport à chaque élément de ``x``.
+- ``x.grad`` contient maintenant les gradients.
+
+PyTorch parcourt le graphe **en sens inverse** :
+
+1. Commence par la sortie ``z``.
+2. Recule vers les nœuds précédents (``y`` puis ``x``) en appliquant la règle de dérivation.
+3. Stocke le gradient dans ``x.grad``.
+
+Calcul des gradients dans notre exemple :
+
+- ``dz/dy = 1`` car z = y.sum() 
+- ``dy/dx = dérivée de (x^2 + 3*x) = 2*x + 3``
+- ``dx = dz/dy * dy/dx = 2*x + 3``
+
+On obtient donc :
+
+.. code-block:: python
+
+    print(x.grad)  # tensor([7., 9.])
+
+.. slide::
+📖 12. Désactivation du suivi des gradients
+~~~~~~~~~~~~~~~~~~~
+
+Pour certaines opérations, par exemple lors de l'évaluation d'un modèle, il est inutile
+de calculer les gradients. On peut alors désactiver le suivi avec ``torch.no_grad()`` :
+
+.. code-block:: python
+
+    with torch.no_grad():
+        z = x * 2
+    print(z)
+
+Cela permet d'économiser de la mémoire et d'accélérer les calculs.
+
+
+
+
+
+
+
+
+################################ Partie LOSS ################################
+
+Voici un exemple concret :
+
+.. code-block:: python
+
+    import torch
+
+    # On crée un tenseur avec require_grad=True pour suivre les gradients
+    x = torch.tensor([2.0, 3.0], requires_grad=True)
+    
+    # On effectue des opérations
+    y = x ** 2 + 3 * x
+    z = y.sum()
+
+Dans ce cas :
+
+- ``x`` est la variable d'entrée.
+- ``y`` est calculé à partir de ``x`` avec les opérations ``x**2`` et ``3*x``.
+- ``z`` est la somme des éléments de ``y`` et correspond à la **fonction de perte**.
+
+################################ Partie LOSS ################################
+
+
+
+
+
+
+################################# POUR LE TP #####################
+Exemple concret : petite boucle d'entraînement
+----------------------------------------------
+
+On peut illustrer l'utilisation d'Autograd pour entraîner un réseau très simple
+(une seule couche linéaire) :
+
+.. code-block:: python
+
+    # Création de données factices
+    X = torch.randn(5, 1, requires_grad=False)
+    y_true = 2 * X + 1
+
+    # Paramètres à apprendre
+    w = torch.randn(1, requires_grad=True)
+    b = torch.randn(1, requires_grad=True)
+
+    # Boucle d'entraînement simple
+    learning_rate = 0.1
+    for epoch in range(10):
+        y_pred = X * w + b
+        loss = ((y_pred - y_true) ** 2).mean()
+
+        loss.backward()  # calcul des gradients
+
+        # Mise à jour des paramètres
+        with torch.no_grad():
+            w -= learning_rate * w.grad
+            b -= learning_rate * b.grad
+
+            # réinitialisation des gradients
+            w.grad.zero_()
+            b.grad.zero_()
+
+        print(f"Epoch {epoch+1}, loss: {loss.item()}")
+
+
+
+Conclusion
+----------
+
+Autograd permet de calculer automatiquement les dérivées et de mettre à jour les
+paramètres lors de l'entraînement d'un réseau de neurones. La combinaison de
+``requires_grad=True``, ``backward()`` et ``no_grad()`` constitue le coeur de la
+programmation avec PyTorch.
+
+################################# POUR LE TP #####################
