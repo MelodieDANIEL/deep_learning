@@ -24,7 +24,7 @@ Chapitre 0 - Installation des paquets et bibliothques nécessaires pour le cours
 Pour installer proprement PyTorch et les bibliothèques nécessaires, nous allons d’abord créer un environnement virtuel. 
 
 
-1.1 Qu'est-ce qu'un environnement virtuel ?
+1.1. Qu'est-ce qu'un environnement virtuel ?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Un environnement virtuel (ou Virtual Environment en anglais) est un dossier isolé dans lequel on peut installer des bibliothèques Python sans interférer avec le reste du système.
@@ -42,7 +42,7 @@ C’est une pratique essentielle pour tous les projets en Machine Learning.
 
 .. slide::
 
-1.2 Tester si ``venv`` est disponible
+1.2. Tester si ``venv`` est disponible
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Le module ``venv``, inclus normalement avec Python 3, permet de créer un environnement virtuel. Avant de l’utiliser, vous pouvez vérifier s’il est installé en tapant la commande suivante dans votre terminal : 
@@ -60,7 +60,7 @@ Le module ``venv``, inclus normalement avec Python 3, permet de créer un enviro
 
 .. slide::
 
-1.3 Créer l’environnement
+1.3. Créer l’environnement
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Pour créer un environnement virtuel, vous pouvez utiliser la commande suivante dans votre terminal :
@@ -80,7 +80,7 @@ Cela crée un sous-dossier nommé ``nom_de_l_environnement`` contenant une versi
 
 .. slide::
 
-1.4 Activer l’environnement virtuel
+1.4. Activer l’environnement virtuel
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Vous devez ensuite activer l’environnement pour l’utiliser en tapant dans votre terminal :
@@ -93,7 +93,7 @@ Vous saurez que l'environnement est activé lorsque le nom de l'environnement ap
 
 .. slide::
 
-1.5 Désactiver l’environnement virtuel
+1.5. Désactiver l’environnement virtuel
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Pour désactiver l'environnement virtuel, vous pouvez utiliser la commande :
@@ -111,7 +111,7 @@ Pour désactiver l'environnement virtuel, vous pouvez utiliser la commande :
 Une fois l’environnement virtuel activé, vous pouvez installer PyTorch et les bibliothèques associées. 
 
 
-2.1 Choisir la version de PyTorch
+2.1. Choisir la version de PyTorch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 PyTorch propose différentes versions adaptées à divers systèmes d'exploitation et configurations matérielles (CPU, GPU). Dans ce cours, nous utiliserons la version de PyTorch compatible par défaut avec GPU. Cependant, cette version fonctionnera sur toutes les machines (avec ou sans GPU).
@@ -141,7 +141,7 @@ Vous pouvez afficher la liste des bibliothèques installées dans l’environnem
 Cela vous permettra de voir les versions exactes de ``torch``, ``torchvision``, etc.
 
 .. slide::
-2.3 Vérifier l’installation de PyTorch
+2.3. Vérifier l’installation de PyTorch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Vous pouvez maintenant tester l’installation de PyTorch avec ce petit script Python :
@@ -159,13 +159,13 @@ Vous pouvez maintenant tester l’installation de PyTorch avec ce petit script P
 Vous pouvez toujours utiliser PyTorch sur CPU, mais le temps d'entraînement sera plus long notamment pour les modèles complexes performances seront moindres pour les tâches lourdes.
 
 .. slide::
-2.4 Installer les pilotes NVIDIA et CUDA
+2.4. Installer les pilotes NVIDIA et CUDA
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Pour utiliser PyTorch avec un GPU, il ne suffit pas d’installer la bibliothèque ``torch``.  
 Votre système doit aussi disposer des pilotes NVIDIA et de CUDA/cuDNN, qui permettent à PyTorch de dialoguer avec la carte graphique.
 
-2.4.1 Vérifier si les pilotes sont installés
+2.4.1. Vérifier si les pilotes sont installés
 ~~~~~~~~~~~~~~~~~~~~~~~
 Avant d'installer quoi que ce soit, vérifiez si les pilotes NVIDIA sont déjà installés sur votre système. Vous pouvez utiliser la commande suivante dans un terminal :
 
@@ -177,7 +177,7 @@ Avant d'installer quoi que ce soit, vérifiez si les pilotes NVIDIA sont déjà 
 - Si la commande est inconnue ou échoue, vous devez installer les pilotes.
 
 .. slide::
-2.4.2 Installer les pilotes NVIDIA 
+2.4.2. Installer les pilotes NVIDIA 
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 Mettez d’abord à jour la liste des paquets, puis installez les pilotes recommandés :
@@ -193,17 +193,16 @@ Mettez d’abord à jour la liste des paquets, puis installez les pilotes recomm
 **Redémarrez votre ordinateur après l’installation des pilotes.**
 
 .. slide::
-2.4.3 Installer CUDA et cuDNN
+2.4.3. Installer CUDA et cuDNN
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 Dans la plupart des cas, PyTorch télécharge automatiquement les bons binaires CUDA/cuDNN avec la commande  ``pip install torch ...``.  
 Il n’est donc **pas obligatoire** d’installer CUDA séparément.
 
-Cependant, si vous souhaitez installer CUDA manuellement (option avancée qu'il vaut mieux éviter), vous pouvez télécharger l’installateur depuis :  
-https://developer.nvidia.com/cuda-downloads
+Cependant, si vous souhaitez installer CUDA manuellement (option avancée qu'il vaut mieux éviter), vous pouvez télécharger l’installateur depuis : `https://developer.nvidia.com/cuda-downloads <https://developer.nvidia.com/cuda-downloads>`_
 
 .. slide::
-2.4.4 Vérifier l’installation après redémarrage
+2.4.4. Vérifier l’installation après redémarrage
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Relancez la commande :
@@ -227,7 +226,7 @@ Sinon, supprimez PyTorch et réinstallez-le en vous assurant de choisir la bonne
 
 
 .. slide::
-2.4.5 Supprimer et réinstaller PyTorch avec la bonne version CUDA
+2.4.5. Supprimer et réinstaller PyTorch avec la bonne version CUDA
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Pour cela, vous pouvez taper dans un terminal :
@@ -259,6 +258,15 @@ Une fois l’installation terminée, relancez Python et vérifiez :
    print("CUDA disponible ?  :", torch.cuda.is_available())
 Si ``torch.cuda.is_available()`` renvoie ``True``, PyTorch est prêt à utiliser le GPU.
 
+2.4.6. Erreur ``CUDA_VISIBLE_DEVICES``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Si vous obtenez l'erreur suivante "CUDA initialization: CUDA unknown error - this may be due to an incorrectly set up environment, e.g. changing env variable CUDA_VISIBLE_DEVICES after program start. Setting the available devices to be zero., etc."" après une mise en veille, il faut taper dans un terminal les commandes suivantes pour résoudre le problème : 
+
+.. code-block:: bash
+   sudo rmmod nvidia_uvm
+   sudo modprobe nvidia_uvm
+
 
 .. slide::
 📖 3. Installer Jupyter Notebook (optionnel mais recommandé)
@@ -275,7 +283,7 @@ Pour installer Jupyter, vous devrez d'abord vous assurer que l'environnement vir
 L’installation inclut ``notebook`` ainsi que tous les outils nécessaires pour exécuter des blocs Python.
 
 .. slide::
-3.1 Lancer Jupyter
+3.1. Lancer Jupyter
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Créer un dossier pour les notebooks, par exemple ``cours_dl/notebooks/``.

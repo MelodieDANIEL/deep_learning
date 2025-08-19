@@ -36,7 +36,7 @@
         1 => 'chap1',
       ),
     ),
-    'ctime' => 1755440259,
+    'ctime' => 1755611707,
     'depends' => 
     array (
       0 => 'chap0',
@@ -69,35 +69,35 @@
             array (
               0 => 
               array (
-                0 => '1.1 Qu&#039;est-ce qu&#039;un environnement virtuel ?',
+                0 => '1.1. Qu&#039;est-ce qu&#039;un environnement virtuel ?',
                 1 => 
                 array (
                 ),
               ),
               1 => 
               array (
-                0 => '1.2 Tester si <code>venv</code> est disponible',
+                0 => '1.2. Tester si <code>venv</code> est disponible',
                 1 => 
                 array (
                 ),
               ),
               2 => 
               array (
-                0 => '1.3 Créer l’environnement',
+                0 => '1.3. Créer l’environnement',
                 1 => 
                 array (
                 ),
               ),
               3 => 
               array (
-                0 => '1.4 Activer l’environnement virtuel',
+                0 => '1.4. Activer l’environnement virtuel',
                 1 => 
                 array (
                 ),
               ),
               4 => 
               array (
-                0 => '1.5 Désactiver l’environnement virtuel',
+                0 => '1.5. Désactiver l’environnement virtuel',
                 1 => 
                 array (
                 ),
@@ -111,7 +111,7 @@
             array (
               0 => 
               array (
-                0 => '2.1 Choisir la version de PyTorch',
+                0 => '2.1. Choisir la version de PyTorch',
                 1 => 
                 array (
                 ),
@@ -125,49 +125,56 @@
               ),
               2 => 
               array (
-                0 => '2.3 Vérifier l’installation de PyTorch',
+                0 => '2.3. Vérifier l’installation de PyTorch',
                 1 => 
                 array (
                 ),
               ),
               3 => 
               array (
-                0 => '2.4 Installer les pilotes NVIDIA et CUDA',
+                0 => '2.4. Installer les pilotes NVIDIA et CUDA',
                 1 => 
                 array (
                 ),
               ),
               4 => 
               array (
-                0 => '2.4.1 Vérifier si les pilotes sont installés',
+                0 => '2.4.1. Vérifier si les pilotes sont installés',
                 1 => 
                 array (
                 ),
               ),
               5 => 
               array (
-                0 => '2.4.2 Installer les pilotes NVIDIA ',
+                0 => '2.4.2. Installer les pilotes NVIDIA ',
                 1 => 
                 array (
                 ),
               ),
               6 => 
               array (
-                0 => '2.4.3 Installer CUDA et cuDNN',
+                0 => '2.4.3. Installer CUDA et cuDNN',
                 1 => 
                 array (
                 ),
               ),
               7 => 
               array (
-                0 => '2.4.4 Vérifier l’installation après redémarrage',
+                0 => '2.4.4. Vérifier l’installation après redémarrage',
                 1 => 
                 array (
                 ),
               ),
               8 => 
               array (
-                0 => '2.4.5 Supprimer et réinstaller PyTorch avec la bonne version CUDA',
+                0 => '2.4.5. Supprimer et réinstaller PyTorch avec la bonne version CUDA',
+                1 => 
+                array (
+                ),
+              ),
+              9 => 
+              array (
+                0 => '2.4.6. Erreur <code>CUDA_VISIBLE_DEVICES</code>',
                 1 => 
                 array (
                 ),
@@ -181,7 +188,7 @@
             array (
               0 => 
               array (
-                0 => '3.1 Lancer Jupyter',
+                0 => '3.1. Lancer Jupyter',
                 1 => 
                 array (
                 ),
@@ -257,7 +264,7 @@
     'tocs' => 
     array (
     ),
-    'ctime' => 1755536002,
+    'ctime' => 1755617167,
     'depends' => 
     array (
     ),
@@ -303,28 +310,28 @@
             array (
               0 => 
               array (
-                0 => '3.1 À partir de données Python (listes ou tuples)',
+                0 => '3.1. À partir de données Python (listes ou tuples)',
                 1 => 
                 array (
                 ),
               ),
               1 => 
               array (
-                0 => '3.2 Avec des fonctions de construction',
+                0 => '3.2. Avec des fonctions de construction',
                 1 => 
                 array (
                 ),
               ),
               2 => 
               array (
-                0 => '3.3 Avec des suites régulières',
+                0 => '3.3. Avec des suites régulières',
                 1 => 
                 array (
                 ),
               ),
               3 => 
               array (
-                0 => '3.4 Avec des nombres aléatoires',
+                0 => '3.4. Avec des nombres aléatoires',
                 1 => 
                 array (
                 ),
@@ -366,28 +373,28 @@
             array (
               0 => 
               array (
-                0 => '8.1 Changer la forme avec <code>view</code> et <code>reshape</code>',
+                0 => '8.1. Changer la forme avec <code>view</code> et <code>reshape</code>',
                 1 => 
                 array (
                 ),
               ),
               1 => 
               array (
-                0 => '8.2 Changer l’ordre des dimensions : <code>permute</code>',
+                0 => '8.2. Changer l’ordre des dimensions : <code>permute</code>',
                 1 => 
                 array (
                 ),
               ),
               2 => 
               array (
-                0 => '8.3 Ajouter ou supprimer des dimensions : <code>unsqueeze</code> et <code>squeeze</code>',
+                0 => '8.3. Ajouter ou supprimer des dimensions : <code>unsqueeze</code> et <code>squeeze</code>',
                 1 => 
                 array (
                 ),
               ),
               3 => 
               array (
-                0 => '8.4 Concaténer ou empiler des tenseurs',
+                0 => '8.4. Concaténer ou empiler des tenseurs',
                 1 => 
                 array (
                 ),
@@ -401,14 +408,14 @@
             array (
               0 => 
               array (
-                0 => '9.1 Création d&#039;un tenseur suivi',
+                0 => '9.1. Création d&#039;un tenseur suivi',
                 1 => 
                 array (
                 ),
               ),
               1 => 
               array (
-                0 => '9.2 Opérations sur les tenseurs',
+                0 => '9.2. Opérations sur les tenseurs',
                 1 => 
                 array (
                 ),
@@ -417,9 +424,23 @@
           ),
           10 => 
           array (
-            0 => '📖 10. Graphique computationnel',
+            0 => '📖 10. Graphe computationnel',
             1 => 
             array (
+              0 => 
+              array (
+                0 => '10.1. <code>torchviz</code>',
+                1 => 
+                array (
+                ),
+              ),
+              1 => 
+              array (
+                0 => '10.2. Note sur le graphe généré par PyTorch',
+                1 => 
+                array (
+                ),
+              ),
             ),
           ),
           11 => 
@@ -429,7 +450,28 @@
             array (
               0 => 
               array (
-                0 => '📖 12. Désactivation du suivi des gradients',
+                0 => '11.1. Principe de la rétropropagation',
+                1 => 
+                array (
+                ),
+              ),
+              1 => 
+              array (
+                0 => '11.2. Calcul des gradients dans notre exemple',
+                1 => 
+                array (
+                ),
+              ),
+              2 => 
+              array (
+                0 => '11.3. Détail du calcul des gradients',
+                1 => 
+                array (
+                ),
+              ),
+              3 => 
+              array (
+                0 => '11.4. Résultat numérique pour notre exemple* ',
                 1 => 
                 array (
                 ),
@@ -438,14 +480,35 @@
           ),
           12 => 
           array (
-            0 => 'Exemple concret : petite boucle d&#039;entraînement',
+            0 => '📖 12. Désactivation du suivi des gradients',
             1 => 
             array (
             ),
           ),
           13 => 
           array (
-            0 => 'Conclusion',
+            0 => '📖 13. Les fonctions de perte (Loss Functions)',
+            1 => 
+            array (
+            ),
+          ),
+          14 => 
+          array (
+            0 => '📖 14. Erreur quadratique moyenne (MSE)',
+            1 => 
+            array (
+            ),
+          ),
+          15 => 
+          array (
+            0 => '13.2 Exemple avec la classification : Cross-Entropy Loss',
+            1 => 
+            array (
+            ),
+          ),
+          16 => 
+          array (
+            0 => '13.3 Pourquoi la fonction de perte est essentielle ?',
             1 => 
             array (
             ),
@@ -456,7 +519,7 @@
     'tocs' => 
     array (
     ),
-    'ctime' => 1755551261,
+    'ctime' => 1755617286,
     'depends' => 
     array (
     ),

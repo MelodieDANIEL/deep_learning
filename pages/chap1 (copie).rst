@@ -14,7 +14,7 @@ Chapitre 1 - Introduction à PyTorch et Optimisation de Modèles
 
    - Créer et manipuler des tenseurs PyTorch sur CPU et GPU.
    - Calculer automatiquement les gradients à l’aide de ``autograd``.
-   - Définir une fonction de perte.
+   - Définir une fonction de coût.
    - Utiliser un optimiseur pour ajuster les paramètres d’un modèle.
    - Implémenter une boucle d'entraînement simple.
 
@@ -75,7 +75,7 @@ Les tenseurs à haute dimensions sont très utilisés en deep learning (par exem
 
 Il existe plusieurs manières de créer un tenseur en PyTorch.
 
-3.1. À partir de données Python (listes ou tuples)
+3.1 À partir de données Python (listes ou tuples)
 ~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
@@ -93,7 +93,7 @@ Il existe plusieurs manières de créer un tenseur en PyTorch.
    print(c, c.dtype)
 
 .. slide::
-3.2. Avec des fonctions de construction
+3.2 Avec des fonctions de construction
 ~~~~~~~~~~~~~~~~~~~
 .. code-block:: python
 
@@ -114,7 +114,7 @@ Il existe plusieurs manières de créer un tenseur en PyTorch.
    print(eye)
 
 .. slide::
-3.3. Avec des suites régulières
+3.3 Avec des suites régulières
 ~~~~~~~~~~~~~~~~~~~
 PyTorch permet de générer facilement des suites de nombres avec des pas réguliers. Deux fonctions sont particulièrement utiles :
 
@@ -166,7 +166,7 @@ Exemple comparatif :
 
 
 .. slide::
-3.4. Avec des nombres aléatoires
+3.4 Avec des nombres aléatoires
 ~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
@@ -284,7 +284,7 @@ Pour profiter de l’accélération GPU, il suffit de déplacer un tenseur sur l
 
 Une fois créés, les tenseurs peuvent être transformés et réarrangés. PyTorch fournit de nombreuses fonctions pour modifier leur forme, leurs dimensions ou leur ordre.
 
-8.1. Changer la forme avec ``view`` et ``reshape``
+8.1 Changer la forme avec ``view`` et ``reshape``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - ``view`` : retourne un nouveau tenseur qui partage la même mémoire que l’original. Cela implique que le tenseur soit contigu. Un tenseur est dit contigu lorsque ses données sont stockées de manière consécutive en mémoire, c’est-à-dire que PyTorch peut lire tous les éléments dans l’ordre sans sauts.  
@@ -330,7 +330,7 @@ Autre exemple pour illustrer la différence entre ``view`` et ``reshape`` :
    print("\nreshape fonctionne :", z2)
 
 .. slide::
-8.2. Changer l’ordre des dimensions : ``permute``
+8.2 Changer l’ordre des dimensions : ``permute``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - ``permute`` réarrange les dimensions dans un nouvel ordre.  
@@ -347,7 +347,7 @@ Autre exemple pour illustrer la différence entre ``view`` et ``reshape`` :
    print("Après permute :", p.shape)
 
 .. slide::
-8.3. Ajouter ou supprimer des dimensions : ``unsqueeze`` et ``squeeze``
+8.3 Ajouter ou supprimer des dimensions : ``unsqueeze`` et ``squeeze``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - ``unsqueeze(dim)`` : ajoute une dimension de taille 1 à la position ``dim``.  
@@ -365,7 +365,7 @@ Autre exemple pour illustrer la différence entre ``view`` et ``reshape`` :
    print("Après squeeze() :", v_sq.shape)
 
 .. slide::
-8.4. Concaténer ou empiler des tenseurs
+8.4 Concaténer ou empiler des tenseurs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - ``torch.cat`` : concatène le long d’une dimension existante.  
@@ -389,7 +389,7 @@ Autre exemple pour illustrer la différence entre ``view`` et ``reshape`` :
 
 En Deep Learning, nous travaillons souvent avec des fonctions compliquées dépendant de plusieurs variables. Pour entraîner un modèle, nous avons besoin de calculer automatiquement les dérivées de ces fonctions. C'est là qu'intervient Autograd qui est le moteur de différentiation automatique de PyTorch. 
 
-9.1. Création d'un tenseur suivi
+9.1 Création d'un tenseur suivi
 ~~~~~~~~~~~~~~~~~~~
 
 Pour qu'un tenseur suive les opérations et calcule les gradients automatiquement, il faut définir ``requires_grad=True`` :
@@ -403,7 +403,7 @@ Ici, ``x`` est maintenant un tenseur avec suivi des gradients. Toutes les opéra
 
 
 .. slide::
-9.2. Opérations sur les tenseurs
+9.2 Opérations sur les tenseurs
 ~~~~~~~~~~~~~~~~~~~
 
 Toutes les opérations effectuées sur ce tenseur sont automatiquement enregistrées dans un graphe computationnel dynamique.
@@ -420,15 +420,27 @@ Dans ce cas :
 
 Chaque opération devient un nœud du graphe et PyTorch garde la trace des dépendances pour pouvoir calculer les gradients.
 
+
+############################## Stop ICI ##############################
+############################## Stop ICI ##############################
+############################## Stop ICI ##############################
+############################## Stop ICI ##############################
+
 .. slide::
+
+Ici :
+
+- Les nœuds ``x^2`` et ``3*x`` représentent les opérations effectuées sur ``x``.
+- Le nœud ``y`` combine ces deux résultats.
+- Le graphe permet à PyTorch desavoir quelles dérivées calculer et dans quel ordre.
+
+
 📖 10. Graphe computationnel
 -----------------------------
 
 Un graphe computationnel est une structure qui représente toutes les opérations effectuées sur les tenseurs. Chaque nœud du graphe correspond à un tenseur ou à une opération mathématique, et les arêtes indiquent les dépendances entre eux.
 
-10.1. ``torchviz``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Pour visualiser le graphe dans PyTorch, on peut utiliser ``torchviz`` (qu'il faudra installer avec ``pip install torchviz``)  :
+Pour visualiser le graphe dans PyTorch, on peut utiliser ``torchviz`` :
 
 .. code-block:: python
 
@@ -437,24 +449,13 @@ Pour visualiser le graphe dans PyTorch, on peut utiliser ``torchviz`` (qu'il fau
     z = y.sum()
     make_dot(z, params={'x': x})
 
-Cela produira une image avec des nœuds pour chaque opération et des flèches indiquant les dépendances :
+.. note::
+
+    Cela produira une image avec des nœuds pour chaque opération et des flèches indiquant les dépendances :
 
 - Les nœuds ``x^2`` et ``3*x`` représentent les opérations effectuées sur ``x``.
 - Le nœud ``y`` combine ces deux résultats.
 - Le graphe permet à PyTorch de savoir quelles dérivées calculer et dans quel ordre.
-
-.. slide::
-10.2. Note sur le graphe généré par PyTorch
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Quand on visualise le graphe interne avec un outil comme ``torchviz`` :
-
-- Le **bloc jaune avec ()** correspond au tenseur final (ici ``z``).
-- Les **blocs intermédiaires** (``PowBackward0``, ``AddBackward0``, etc.) représentent
-  les opérations qui seront différentiées telles que ``PowBackward0`` est l'opération opération inverse associée à ``x**2``, ``MulBackward0`` celle associée à ``3*x``, 
-  ``AddBackward0`` combine les deux résultats et représente ``y`` et enfin ``SumBackward0`` correspond au ``y.sum()`` qui est égal à ``z``.
-- Le **bloc ``AccumulateGrad``** correspond à l’endroit où le gradient est stocké
-  dans la variable d’entrée (ici ``x.grad``).
 
 .. slide::
 📖 11. Calcul des gradients et rétropropagation 
@@ -470,19 +471,13 @@ Autograd utilise ce graphe pour calculer automatiquement les dérivées par rapp
 - ``backward()`` calcule les dérivées de ``z`` par rapport à chaque élément de ``x``.
 - ``x.grad`` contient maintenant les gradients.
 
-11.1. Principe de la rétropropagation
-~~~~~~~~~~~~~~~~~
-
-Le principe de la rétropropagation signifie PyTorch parcourt le graphe **en sens inverse** pour faire le calcul des dérivées.
-
+PyTorch parcourt le graphe **en sens inverse** (principe de la rétropropagation) :
 
 1. Commence par la sortie ``z``.
 2. Recule vers les nœuds précédents (``y`` puis ``x``) en appliquant la règle de dérivation.
 3. Stocke le gradient dans ``x.grad``.
 
-.. slide::
-11.2. Calcul des gradients dans notre exemple
-~~~~~~~~~~~~~~~~~
+Calcul des gradients dans notre exemple :
 
 - ``dz/dy = 1`` car z = y.sum() 
 - ``dy/dx = dérivée de (x^2 + 3*x) = 2*x + 3``
@@ -495,42 +490,53 @@ On obtient donc :
     print(x.grad)  # tensor([7., 9.])
 
 .. slide::
-11.3. Détail du calcul des gradients
-~~~~~~~~~~~~~~~~~
+**Détail du calcul des gradients **
 
 On a :
 
-    y = [y1, y2] = [x1² + 3x1,  x2² + 3x2]
-    z = y1 + y2
+.. math::
+
+    y = [y_1, y_2] = [x_1^2 + 3x_1,\; x_2^2 + 3x_2]
+
+et
+
+.. math::
+
+    z = y_1 + y_2
 
 **Étape 1 : dérivée de z par rapport à y**
 
-Comme z = y1 + y2, on a :
-
-    dz/dy1 = 1 et 
-    dz/dy2 = 1
-
-On peut regrouper sous forme vectorielle :
-
-    dz/dy = [dz/dy1, dz/dy2] = [1, 1]
+\[
+\frac{\partial z}{\partial y_1} = 1, \quad \frac{\partial z}{\partial y_2} = 1
+\]
 
 **Étape 2 : dérivée de y par rapport à x**
 
-    dy1/dx1 = 2*x1 + 3 et 
-    dy2/dx2 = 2*x2 + 3
+- Pour :math:`y_1 = x_1^2 + 3x_1`  
+  \[
+  \frac{\partial y_1}{\partial x_1} = 2x_1 + 3
+  \]
+
+- Pour :math:`y_2 = x_2^2 + 3x_2`  
+  \[
+  \frac{\partial y_2}{\partial x_2} = 2x_2 + 3
+  \]
 
 **Étape 3 : application de la règle de la chaîne**
 
-Pour chaque variable d’entrée :
+\[
+\frac{\partial z}{\partial x_1} = \frac{\partial z}{\partial y_1} \cdot \frac{\partial y_1}{\partial x_1} 
+= 1 \cdot (2x_1 + 3)
+\]
 
-    dz/dx1 = dz/dy1 * dy1/dx1 = 1 * (2*x1 + 3) et 
-    dz/dx2 = dz/dy2 * dy2/dx2 = 1 * (2*x2 + 3)
+\[
+\frac{\partial z}{\partial x_2} = \frac{\partial z}{\partial y_2} \cdot \frac{\partial y_2}{\partial x_2} 
+= 1 \cdot (2x_2 + 3)
+\]
 
+---
 
-.. slide::
-
-11.4. Résultat numérique pour notre exemple* 
-~~~~~~~~~~~~~~~~~
+Résultat numérique pour notre exemple :  
 
 .. code-block:: python
 
@@ -539,15 +545,17 @@ Pour chaque variable d’entrée :
 
 Car :
 
-- Pour x1 = 2 → dz/dx1 = 2*2 + 3 = 7
-- Pour x2 = 3 → dz/dx2 = 2*3 + 3 = 9
+- Pour :math:`x_1 = 2` → :math:`\frac{\partial z}{\partial x_1} = 2*2 + 3 = 7`  
+- Pour :math:`x_2 = 3` → :math:`\frac{\partial z}{\partial x_2} = 2*3 + 3 = 9`
+
+---
 
 Ainsi, Autograd reproduit automatiquement ce calcul grâce au graphe computationnel et à la règle de la chaîne.
 
 
 .. slide::
 📖 12. Désactivation du suivi des gradients
----------------------
+~~~~~~~~~~~~~~~~~~~
 
 Pour certaines opérations, par exemple lors de l'évaluation d'un modèle, il est inutile
 de calculer les gradients. On peut alors désactiver le suivi avec ``torch.no_grad()`` :
@@ -560,92 +568,109 @@ de calculer les gradients. On peut alors désactiver le suivi avec ``torch.no_gr
 
 Cela permet d'économiser de la mémoire et d'accélérer les calculs.
 
-.. slide::
-📖 13. Les fonctions de perte (Loss Functions)
--------------------------------
-
-Lorsqu’on entraîne un réseau de neurones, l’objectif est de minimiser l’erreur entre les prédictions du modèle et les valeurs attendues. Cette erreur est mesurée par une fonction de perte (loss function en anglais).
-
-Une fonction de perte prend en entrée :
-
-    - la sortie du modèle (prédiction),
-    - la valeur cible (label attendu),
-
-et retourne un nombre réel qui indique "à quel point le modèle s'est trompé".
 
 
 
-############################# Stop ICI #################################
-############################# Stop ICI #################################
-############################# Stop ICI #################################
-############################# Stop ICI #################################
 
 
-.. slide::
-📖 14. Erreur quadratique moyenne (MSE)
------------------------------------------------------------
 
-La fonction MSE (*Mean Squared Error*) est très utilisée en régression :
+
+
+
+
+
+**Détail du calcul des gradients **
+
+On a :
 
 .. math::
 
-   L(y, \hat{y}) = \frac{1}{n} \sum_{i=1}^n (y_i - \hat{y}_i)^2
+    y = [y_1, y_2] = [x_1^2 + 3x_1,\; x_2^2 + 3x_2]
 
-- ``yi`` est la valeur réelle (target),
-- ``y^i`` est la prédiction du modèle.
+
+et
+
+.. math::
+
+    z = y_1 + y_2
+
+**Étape 1 : dérivée de z par rapport à y**
+
+.. math::
+    [
+    \frac{\partial z}{\partial y_1} = 1, \quad \frac{\partial z}{\partial y_2} = 1
+    ]
+
+**Étape 2 : dérivée de y par rapport à x**
+
+- Pour 
+
+.. math::
+    
+    y_1 = x_1^2 + 3x_1 
+
+On a 
+.. math::
+  [
+  \frac{\partial y_1}{\partial x_1} = 2x_1 + 3
+  ]
+
+- Pour 
+
+.. math:: 
+    
+    y_2 = x_2^2 + 3x_2
+
+On a 
+.. math::  
+  [
+  \frac{\partial y_2}{\partial x_2} = 2x_2 + 3
+  ]
+
+**Étape 3 : application de la règle de la chaîne**
+
+.. math::
+    [
+    \frac{\partial z}{\partial x_1} = \frac{\partial z}{\partial y_1} \cdot \frac{\partial y_1}{\partial x_1} 
+    = 1 \cdot (2x_1 + 3)
+    ]
+.. math::
+    [
+    \frac{\partial z}{\partial x_2} = \frac{\partial z}{\partial y_2} \cdot \frac{\partial y_2}{\partial x_2} 
+    = 1 \cdot (2x_2 + 3)
+    ]
+
+.. slide::
+**Résultat numérique pour notre exemple** :
 
 .. code-block:: python
 
-    import torch
-    import torch.nn as nn
+    print(x)       # tensor([2., 3.], requires_grad=True)
+    print(x.grad)  # tensor([7., 9.])
 
-    # Valeurs réelles et prédictions
-    y_true = torch.tensor([2.0, 3.0, 4.0])
-    y_pred = torch.tensor([2.5, 2.7, 4.2])
+Car :
 
-    # Définition de la fonction de perte MSE
-    loss_fn = nn.MSELoss()
+- Pour :math:`x_1 = 2` → :math:`\frac{\partial z}{\partial x_1} = 2*2 + 3 = 7`  
+- Pour :math:`x_2 = 3` → :math:`\frac{\partial z}{\partial x_2} = 2*3 + 3 = 9`
 
-    # Calcul de la perte
-    loss = loss_fn(y_pred, y_true)
-    print(loss)  # valeur scalaire
+---
 
-Ici, la perte est un **scalaire** (un seul nombre) qui résume l’erreur moyenne.
+Ainsi, Autograd reproduit automatiquement ce calcul grâce au graphe computationnel et à la règle de la chaîne.
 
 .. slide::
+📖 12. Désactivation du suivi des gradients
+~~~~~~~~~~~~~~~~~~~
 
-13.2 Exemple avec la classification : Cross-Entropy Loss
---------------------------------------------------------
-
-Pour les tâches de **classification**, la perte la plus courante est la
-**Cross-Entropy Loss**.  
-Elle compare la distribution de probabilités prédite (softmax) et la vraie classe.
+Pour certaines opérations, par exemple lors de l'évaluation d'un modèle, il est inutile
+de calculer les gradients. On peut alors désactiver le suivi avec ``torch.no_grad()`` :
 
 .. code-block:: python
 
-    import torch
-    import torch.nn as nn
+    with torch.no_grad():
+        z = x * 2
+    print(z)
 
-    # On suppose 3 classes et une prédiction pour un seul exemple
-    y_pred = torch.tensor([[1.2, 0.8, -0.5]])  # logits
-    y_true = torch.tensor([0])  # la classe correcte est 0
-
-    loss_fn = nn.CrossEntropyLoss()
-    loss = loss_fn(y_pred, y_true)
-    print(loss)
-
-Ici encore, `loss` est un nombre qui représente "combien le modèle s'est trompé".
-
-.. slide::
-
-13.3 Pourquoi la fonction de perte est essentielle ?
-----------------------------------------------------
-
-- Elle **guide l’apprentissage** : c’est en la minimisant que le modèle s’améliore.
-- Sans fonction de perte, le modèle n’aurait **aucun signal** pour savoir dans
-  quelle direction ajuster ses paramètres.
-- La fonction de perte est au cœur de la **rétropropagation** vue précédemment :
-  c’est elle qui fournit le **point de départ** pour calculer les gradients.
+Cela permet d'économiser de la mémoire et d'accélérer les calculs.
 
 
 
@@ -654,18 +679,50 @@ Ici encore, `loss` est un nombre qui représente "combien le modèle s'est tromp
 
 
 
+################################# POUR LE TP #####################
+Exemple concret : petite boucle d'entraînement
+----------------------------------------------
+
+On peut illustrer l'utilisation d'Autograd pour entraîner un réseau très simple
+(une seule couche linéaire) :
+
+.. code-block:: python
+
+    # Création de données factices
+    X = torch.randn(5, 1, requires_grad=False)
+    y_true = 2 * X + 1
+
+    # Paramètres à apprendre
+    w = torch.randn(1, requires_grad=True)
+    b = torch.randn(1, requires_grad=True)
+
+    # Boucle d'entraînement simple
+    learning_rate = 0.1
+    for epoch in range(10):
+        y_pred = X * w + b
+        loss = ((y_pred - y_true) ** 2).mean()
+
+        loss.backward()  # calcul des gradients
+
+        # Mise à jour des paramètres
+        with torch.no_grad():
+            w -= learning_rate * w.grad
+            b -= learning_rate * b.grad
+
+            # réinitialisation des gradients
+            w.grad.zero_()
+            b.grad.zero_()
+
+        print(f"Epoch {epoch+1}, loss: {loss.item()}")
 
 
 
+Conclusion
+----------
 
+Autograd permet de calculer automatiquement les dérivées et de mettre à jour les
+paramètres lors de l'entraînement d'un réseau de neurones. La combinaison de
+``requires_grad=True``, ``backward()`` et ``no_grad()`` constitue le coeur de la
+programmation avec PyTorch.
 
-
-
-
-
-
-
-
-
-
-
+################################# POUR LE TP #####################

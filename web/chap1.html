@@ -110,7 +110,7 @@
 <div class="alert alert-light p-2 fs-5 text-center"><p>À la fin de ce chapitre, vous saurez : </p>
 <ul><li class="dash">Créer et manipuler des tenseurs PyTorch sur CPU et GPU.</li>
 <li class="dash">Calculer automatiquement les gradients à l’aide de <code>autograd</code>.</li>
-<li class="dash">Définir une fonction de coût.</li>
+<li class="dash">Définir une fonction de perte.</li>
 <li class="dash">Utiliser un optimiseur pour ajuster les paramètres d’un modèle.</li>
 <li class="dash">Implémenter une boucle d&#039;entraînement simple.</li>
 </ul>
@@ -156,7 +156,7 @@
 </div><div class="slide ">
 <a id="title.1.4"></a><h2>📖 3. Création de tenseurs</h2>
 <p>Il existe plusieurs manières de créer un tenseur en PyTorch.</p>
-<a id="title.1.4.1"></a><h3>3.1 À partir de données Python (listes ou tuples)</h3>
+<a id="title.1.4.1"></a><h3>3.1. À partir de données Python (listes ou tuples)</h3>
 <pre><code class="python hljs"># Depuis une liste
 a = torch.tensor([1, 2, 3])
 print(a)
@@ -169,7 +169,7 @@ print(b)
 c = torch.tensor([1.0, 2.0, 3.0], dtype=torch.float32)
 print(c, c.dtype)</code></pre>
 </div><div class="slide ">
-<a id="title.1.4.2"></a><h3>3.2 Avec des fonctions de construction</h3>
+<a id="title.1.4.2"></a><h3>3.2. Avec des fonctions de construction</h3>
 <pre><code class="python hljs"># Tenseur rempli de zéros
 z = torch.zeros(2, 3)
 print(z)
@@ -186,7 +186,7 @@ print(e)
 eye = torch.eye(3)
 print(eye)</code></pre>
 </div><div class="slide ">
-<a id="title.1.4.3"></a><h3>3.3 Avec des suites régulières</h3>
+<a id="title.1.4.3"></a><h3>3.3. Avec des suites régulières</h3>
 <p>PyTorch permet de générer facilement des suites de nombres avec des pas réguliers. Deux fonctions sont particulièrement utiles :</p>
 <ol><li class=""><strong>torch.arange(debut, fin, pas)</strong></li>
 <ul><li class="dash">Crée une suite en commençant à <code>debut</code></li>
@@ -227,7 +227,7 @@ print(&quot;torch.linspace(-1, 1, steps=4) :&quot;, l2)</code></pre>
 <pre><code class="python hljs">print(torch.arange(0, 1, 0.25))   # [0.00, 0.25, 0.50, 0.75]
 print(torch.linspace(0, 1, 5))    # [0.00, 0.25, 0.50, 0.75, 1.00]</code></pre>
 </div><div class="slide ">
-<a id="title.1.4.4"></a><h3>3.4 Avec des nombres aléatoires</h3>
+<a id="title.1.4.4"></a><h3>3.4. Avec des nombres aléatoires</h3>
 <pre><code class="python hljs"># Attention dans les exemples suivants, les crochets [] veulent dire que la valeur de la borne est incluse, contrairement à aux parenthèses () qui signifient que la borne est exclue.
 # Uniforme entre [0, 1)
 u = torch.rand(2, 2)
@@ -312,7 +312,7 @@ else:
 </div><div class="slide ">
 <a id="title.1.9"></a><h2>📖 8.  Manipulation avancée des tenseurs</h2>
 <p>Une fois créés, les tenseurs peuvent être transformés et réarrangés. PyTorch fournit de nombreuses fonctions pour modifier leur forme, leurs dimensions ou leur ordre.</p>
-<a id="title.1.9.1"></a><h3>8.1 Changer la forme avec <code>view</code> et <code>reshape</code></h3>
+<a id="title.1.9.1"></a><h3>8.1. Changer la forme avec <code>view</code> et <code>reshape</code></h3>
 <ul><li class="dash"><code>view</code> : retourne un nouveau tenseur qui partage la même mémoire que l’original. Cela implique que le tenseur soit contigu. Un tenseur est dit contigu lorsque ses données sont stockées de manière consécutive en mémoire, c’est-à-dire que PyTorch peut lire tous les éléments dans l’ordre sans sauts.
 Certaines opérations, comme la transposition (`t()`), rendent le tenseur non contigu, et dans ce cas <code>view</code> échoue.</li>
 <li class="dash"><code>reshape</code> : similaire à <code>view</code>, mais plus flexible car il tente d’utiliser la mémoire existante, mais crée une copie si nécessaire. <code>reshape</code> fonctionne dans tous les cas de figures.</li>
@@ -328,6 +328,7 @@ print(&quot;view en 3x4 :\n&quot;, x_view)
 # Transformer en matrice 2x6
 x_reshape = x.reshape(2, 6)
 print(&quot;reshape en 2x6 :\n&quot;, x_reshape)</code></pre>
+</div><div class="slide ">
 <p>Autre exemple pour illustrer la différence entre <code>view</code> et <code>reshape</code> :</p>
 <pre><code class="python hljs"># Création d&#039;un tenseur 2x3
 x = torch.arange(6).view(2, 3)
@@ -349,7 +350,7 @@ except Exception as e:
 z2 = y.reshape(6)
 print(&quot;\nreshape fonctionne :&quot;, z2)</code></pre>
 </div><div class="slide ">
-<a id="title.1.9.2"></a><h3>8.2 Changer l’ordre des dimensions : <code>permute</code></h3>
+<a id="title.1.9.2"></a><h3>8.2. Changer l’ordre des dimensions : <code>permute</code></h3>
 <ul><li class="dash"><code>permute</code> réarrange les dimensions dans un nouvel ordre.</li>
 <li class="dash">Très utile pour manipuler les données d’images ou de séquences.</li>
 </ul>
@@ -362,7 +363,7 @@ print(&quot;Tenseur original :&quot;, t.shape)
 p = t.permute(2, 1, 0)
 print(&quot;Après permute :&quot;, p.shape)</code></pre>
 </div><div class="slide ">
-<a id="title.1.9.3"></a><h3>8.3 Ajouter ou supprimer des dimensions : <code>unsqueeze</code> et <code>squeeze</code></h3>
+<a id="title.1.9.3"></a><h3>8.3. Ajouter ou supprimer des dimensions : <code>unsqueeze</code> et <code>squeeze</code></h3>
 <ul><li class="dash"><code>unsqueeze(dim)</code> : ajoute une dimension de taille 1 à la position <code>dim</code>.</li>
 <li class="dash"><code>squeeze()</code> : supprime toutes les dimensions de taille 1.</li>
 </ul>
@@ -376,7 +377,7 @@ print(&quot;Après unsqueeze(0) :&quot;, v_unsq.shape)
 v_sq = v_unsq.squeeze()  # supprime les dimensions de taille 1
 print(&quot;Après squeeze() :&quot;, v_sq.shape)</code></pre>
 </div><div class="slide ">
-<a id="title.1.9.4"></a><h3>8.4 Concaténer ou empiler des tenseurs</h3>
+<a id="title.1.9.4"></a><h3>8.4. Concaténer ou empiler des tenseurs</h3>
 <ul><li class="dash"><code>torch.cat</code> : concatène le long d’une dimension existante.</li>
 <li class="dash"><code>torch.stack</code> : empile en ajoutant une nouvelle dimension.</li>
 </ul>
@@ -393,15 +394,13 @@ print(&quot;Forme de stack :&quot;, stack.shape)</code></pre>
 </div><div class="slide ">
 <a id="title.1.10"></a><h2>📖 9. Autograd avec PyTorch</h2>
 <p>En Deep Learning, nous travaillons souvent avec des fonctions compliquées dépendant de plusieurs variables. Pour entraîner un modèle, nous avons besoin de calculer automatiquement les dérivées de ces fonctions. C&#039;est là qu&#039;intervient Autograd qui est le moteur de différentiation automatique de PyTorch. </p>
-<a id="title.1.10.1"></a><h3>9.1 Création d&#039;un tenseur suivi</h3>
+<a id="title.1.10.1"></a><h3>9.1. Création d&#039;un tenseur suivi</h3>
 <p>Pour qu&#039;un tenseur suive les opérations et calcule les gradients automatiquement, il faut définir <code>requires_grad=True</code> :</p>
-<pre><code class="python hljs">import torch
-
-x = torch.tensor([2.0, 3.0], requires_grad=True)
+<pre><code class="python hljs">x = torch.tensor([2.0, 3.0], requires_grad=True)
 print(x)</code></pre>
 <p>Ici, <code>x</code> est maintenant un tenseur avec suivi des gradients. Toutes les opérations futures sur ce tenseur seront enregistrées pour pouvoir calculer les dérivées automatiquement.</p>
 </div><div class="slide ">
-<a id="title.1.10.2"></a><h3>9.2 Opérations sur les tenseurs</h3>
+<a id="title.1.10.2"></a><h3>9.2. Opérations sur les tenseurs</h3>
 <p>Toutes les opérations effectuées sur ce tenseur sont automatiquement enregistrées dans un graphe computationnel dynamique.</p>
 <pre><code class="python hljs">y = x ** 2 + 3 * x # y = [y1, y2]
 print(y)</code></pre>
@@ -411,27 +410,29 @@ print(y)</code></pre>
 </ul>
 
 <p>Chaque opération devient un nœud du graphe et PyTorch garde la trace des dépendances pour pouvoir calculer les gradients.</p>
-<p>############################## Stop ICI ##############################
-############################## Stop ICI ##############################
-############################## Stop ICI ##############################
-############################## Stop ICI ##############################</p>
 </div><div class="slide ">
-<a id="title.1.11"></a><h2>📖 10. Graphique computationnel</h2>
-<p>Un graphe computationnel est une structure qui représente toutes les opérations effectuées sur les tenseurs.  </p>
-<ul><li class="dash">Chaque nœud correspond à un tenseur ou à une opération mathématique.</li>
-<li class="dash">Chaque flèche indique une dépendance : le résultat d&#039;une opération dépend d&#039;un ou plusieurs tenseurs d&#039;entrée.</li>
-</ul>
+<a id="title.1.11"></a><h2>📖 10. Graphe computationnel</h2>
+<p>Un graphe computationnel est une structure qui représente toutes les opérations effectuées sur les tenseurs. Chaque nœud du graphe correspond à un tenseur ou à une opération mathématique, et les arêtes indiquent les dépendances entre eux.</p>
+<a id="title.1.11.1"></a><h3>10.1. <code>torchviz</code></h3>
+<p>Pour visualiser le graphe dans PyTorch, on peut utiliser <code>torchviz</code> (qu&#039;il faudra installer avec <code>pip install torchviz</code>)  :</p>
+<pre><code class="python hljs">from torchviz import make_dot
 
-<p><em>Illustration ASCII pour l&#039;exemple précédent</em> :</p>
-<pre><code class="no-highlight hljs">x
- \
-   3*x
-   /
-y</code></pre>
-<p>Ici :</p>
+z = y.sum()
+make_dot(z, params={&#039;x&#039;: x})</code></pre>
+<p>Cela produira une image avec des nœuds pour chaque opération et des flèches indiquant les dépendances :</p>
 <ul><li class="dash">Les nœuds <code>x^2</code> et <code>3*x</code> représentent les opérations effectuées sur <code>x</code>.</li>
 <li class="dash">Le nœud <code>y</code> combine ces deux résultats.</li>
-<li class="dash">Le graphe permet à PyTorch desavoir quelles dérivées calculer et dans quel ordre.</li>
+<li class="dash">Le graphe permet à PyTorch de savoir quelles dérivées calculer et dans quel ordre.</li>
+</ul>
+
+</div><div class="slide ">
+<a id="title.1.11.2"></a><h3>10.2. Note sur le graphe généré par PyTorch</h3>
+<p>Quand on visualise le graphe interne avec un outil comme <code>torchviz</code> :</p>
+<ul><li class="dash">Le <strong>bloc jaune avec ()</strong> correspond au tenseur final (ici <code>z</code>).</li>
+<li class="dash">Les <strong>blocs intermédiaires</strong> (<code>PowBackward0</code>, <code>AddBackward0</code>, etc.) représentent
+  les opérations qui seront différentiées telles que <code>PowBackward0</code> est l&#039;opération opération inverse associée à <code>x**2</code>, <code>MulBackward0</code> celle associée à <code>3*x</code>,<br />  <code>AddBackward0</code> combine les deux résultats et représente <code>y</code> et enfin <code>SumBackward0</code> correspond au <code>y.sum()</code> qui est égal à <code>z</code>.</li>
+<li class="dash">Le <strong>bloc <code>AccumulateGrad</code></strong> correspond à l’endroit où le gradient est stocké
+  dans la variable d’entrée (ici <code>x.grad</code>).</li>
 </ul>
 
 </div><div class="slide ">
@@ -440,17 +441,19 @@ y</code></pre>
 <pre><code class="python hljs">z = y.sum()  # z = y1 + y2
 z.backward()
 print(x.grad)</code></pre>
-<ul><li class="dash"><code>backward()</code> calcule les dérivées de <code>y.sum()</code> par rapport à chaque élément de <code>x</code>.</li>
+<ul><li class="dash"><code>backward()</code> calcule les dérivées de <code>z</code> par rapport à chaque élément de <code>x</code>.</li>
 <li class="dash"><code>x.grad</code> contient maintenant les gradients.</li>
 </ul>
 
-<p>PyTorch parcourt le graphe <strong>en sens inverse</strong> :</p>
+<a id="title.1.12.1"></a><h3>11.1. Principe de la rétropropagation</h3>
+<p>Le principe de la rétropropagation signifie PyTorch parcourt le graphe <strong>en sens inverse</strong> pour faire le calcul des dérivées.</p>
 <ol><li class="">Commence par la sortie <code>z</code>.</li>
 <li class="">Recule vers les nœuds précédents (<code>y</code> puis <code>x</code>) en appliquant la règle de dérivation.</li>
 <li class="">Stocke le gradient dans <code>x.grad</code>.</li>
 </ol>
 
-<p>Calcul des gradients dans notre exemple :</p>
+</div><div class="slide ">
+<a id="title.1.12.2"></a><h3>11.2. Calcul des gradients dans notre exemple</h3>
 <ul><li class="dash"><code>dz/dy = 1</code> car z = y.sum()</li>
 <li class="dash"><code>dy/dx = dérivée de (x^2 + 3*x) = 2*x + 3</code></li>
 <li class="dash"><code>dx = dz/dy * dy/dx = 2*x + 3</code></li>
@@ -459,65 +462,102 @@ print(x.grad)</code></pre>
 <p>On obtient donc :</p>
 <pre><code class="python hljs">print(x.grad)  # tensor([7., 9.])</code></pre>
 </div><div class="slide ">
-<a id="title.1.12.1"></a><h3>📖 12. Désactivation du suivi des gradients</h3>
+<a id="title.1.12.3"></a><h3>11.3. Détail du calcul des gradients</h3>
+<p>On a :</p>
+<blockquote><p>y = [y1, y2] = [x1² + 3x1,  x2² + 3x2]
+z = y1 + y2</p>
+</blockquote>
+<p><strong>Étape 1 : dérivée de z par rapport à y</strong></p>
+<p>Comme z = y1 + y2, on a :</p>
+<blockquote><p>dz/dy1 = 1 et<br />dz/dy2 = 1</p>
+</blockquote>
+<p>On peut regrouper sous forme vectorielle :</p>
+<blockquote><p>dz/dy = [dz/dy1, dz/dy2] = [1, 1]</p>
+</blockquote>
+<p><strong>Étape 2 : dérivée de y par rapport à x</strong></p>
+<blockquote><p>dy1/dx1 = 2<em>x1 + 3 et<br />dy2/dx2 = 2</em>x2 + 3</p>
+</blockquote>
+<p><strong>Étape 3 : application de la règle de la chaîne</strong></p>
+<p>Pour chaque variable d’entrée :</p>
+<blockquote><p>dz/dx1 = dz/dy1 <em> dy1/dx1 = 1 </em> (2<em>x1 + 3) et<br />dz/dx2 = dz/dy2 </em> dy2/dx2 = 1 <em> (2</em>x2 + 3)</p>
+</blockquote>
+</div><div class="slide ">
+<a id="title.1.12.4"></a><h3>11.4. Résultat numérique pour notre exemple* </h3>
+<pre><code class="python hljs">print(x)       # tensor([2., 3.], requires_grad=True)
+print(x.grad)  # tensor([7., 9.])</code></pre>
+<p>Car :</p>
+<ul><li class="dash">Pour x1 = 2 → dz/dx1 = 2*2 + 3 = 7</li>
+<li class="dash">Pour x2 = 3 → dz/dx2 = 2*3 + 3 = 9</li>
+</ul>
+
+<p>Ainsi, Autograd reproduit automatiquement ce calcul grâce au graphe computationnel et à la règle de la chaîne.</p>
+</div><div class="slide ">
+<a id="title.1.13"></a><h2>📖 12. Désactivation du suivi des gradients</h2>
 <p>Pour certaines opérations, par exemple lors de l&#039;évaluation d&#039;un modèle, il est inutile
 de calculer les gradients. On peut alors désactiver le suivi avec <code>torch.no_grad()</code> :</p>
 <pre><code class="python hljs">with torch.no_grad():
     z = x * 2
 print(z)</code></pre>
 <p>Cela permet d&#039;économiser de la mémoire et d&#039;accélérer les calculs.</p>
-<p>################################ Partie LOSS ################################</p>
-<p>Voici un exemple concret :</p>
-<pre><code class="python hljs">import torch
-
-# On crée un tenseur avec require_grad=True pour suivre les gradients
-x = torch.tensor([2.0, 3.0], requires_grad=True)
-
-# On effectue des opérations
-y = x ** 2 + 3 * x
-z = y.sum()</code></pre>
-<p>Dans ce cas :</p>
-<ul><li class="dash"><code>x</code> est la variable d&#039;entrée.</li>
-<li class="dash"><code>y</code> est calculé à partir de <code>x</code> avec les opérations <code>x**2</code> et <code>3*x</code>.</li>
-<li class="dash"><code>z</code> est la somme des éléments de <code>y</code> et correspond à la <strong>fonction de perte</strong>.</li>
+</div><div class="slide ">
+<a id="title.1.14"></a><h2>📖 13. Les fonctions de perte (Loss Functions)</h2>
+<p>Lorsqu’on entraîne un réseau de neurones, l’objectif est de minimiser l’erreur entre les prédictions du modèle et les valeurs attendues. Cette erreur est mesurée par une fonction de perte (loss function en anglais).</p>
+<p>Une fonction de perte prend en entrée :</p>
+<ul><li class="dash">la sortie du modèle (prédiction),</li>
+<li class="dash">la valeur cible (label attendu),</li>
 </ul>
 
-<p>################################ Partie LOSS ################################</p>
-<a id="title.1.13"></a><h2>Exemple concret : petite boucle d&#039;entraînement</h2>
-<p>On peut illustrer l&#039;utilisation d&#039;Autograd pour entraîner un réseau très simple
-(une seule couche linéaire) :</p>
-<pre><code class="python hljs"># Création de données factices
-X = torch.randn(5, 1, requires_grad=False)
-y_true = 2 * X + 1
+<p>et retourne un nombre réel qui indique &quot;à quel point le modèle s&#039;est trompé&quot;.</p>
+<p>############################# Stop ICI #################################
+############################# Stop ICI #################################
+############################# Stop ICI #################################
+############################# Stop ICI #################################</p>
+</div><div class="slide ">
+<a id="title.1.15"></a><h2>📖 14. Erreur quadratique moyenne (MSE)</h2>
+<p>La fonction MSE (<em>Mean Squared Error</em>) est très utilisée en régression :</p>
+$$L(y, \hat{y}) = \frac{1}{n} \sum_{i=1}^n (y_i - \hat{y}_i)^2$$
+<ul><li class="dash"><code>yi</code> est la valeur réelle (target),</li>
+<li class="dash"><code>y^i</code> est la prédiction du modèle.</li>
+</ul>
 
-# Paramètres à apprendre
-w = torch.randn(1, requires_grad=True)
-b = torch.randn(1, requires_grad=True)
+<pre><code class="python hljs">import torch
+import torch.nn as nn
 
-# Boucle d&#039;entraînement simple
-learning_rate = 0.1
-for epoch in range(10):
-    y_pred = X * w + b
-    loss = ((y_pred - y_true) ** 2).mean()
+# Valeurs réelles et prédictions
+y_true = torch.tensor([2.0, 3.0, 4.0])
+y_pred = torch.tensor([2.5, 2.7, 4.2])
 
-    loss.backward()  # calcul des gradients
+# Définition de la fonction de perte MSE
+loss_fn = nn.MSELoss()
 
-    # Mise à jour des paramètres
-    with torch.no_grad():
-        w -= learning_rate * w.grad
-        b -= learning_rate * b.grad
+# Calcul de la perte
+loss = loss_fn(y_pred, y_true)
+print(loss)  # valeur scalaire</code></pre>
+<p>Ici, la perte est un <strong>scalaire</strong> (un seul nombre) qui résume l’erreur moyenne.</p>
+</div><div class="slide ">
+<a id="title.1.16"></a><h2>13.2 Exemple avec la classification : Cross-Entropy Loss</h2>
+<p>Pour les tâches de <strong>classification</strong>, la perte la plus courante est la
+<strong>Cross-Entropy Loss</strong>. <br />Elle compare la distribution de probabilités prédite (softmax) et la vraie classe.</p>
+<pre><code class="python hljs">import torch
+import torch.nn as nn
 
-        # réinitialisation des gradients
-        w.grad.zero_()
-        b.grad.zero_()
+# On suppose 3 classes et une prédiction pour un seul exemple
+y_pred = torch.tensor([[1.2, 0.8, -0.5]])  # logits
+y_true = torch.tensor([0])  # la classe correcte est 0
 
-    print(f&quot;Epoch {epoch+1}, loss: {loss.item()}&quot;)</code></pre>
-<a id="title.1.14"></a><h2>Conclusion</h2>
-<p>Autograd permet de calculer automatiquement les dérivées et de mettre à jour les
-paramètres lors de l&#039;entraînement d&#039;un réseau de neurones. La combinaison de
-<code>requires_grad=True</code>, <code>backward()</code> et <code>no_grad()</code> constitue le coeur de la
-programmation avec PyTorch.</p>
-<p>################################# POUR LE TP #####################</p>
+loss_fn = nn.CrossEntropyLoss()
+loss = loss_fn(y_pred, y_true)
+print(loss)</code></pre>
+<p>Ici encore, `loss` est un nombre qui représente &quot;combien le modèle s&#039;est trompé&quot;.</p>
+</div><div class="slide ">
+<a id="title.1.17"></a><h2>13.3 Pourquoi la fonction de perte est essentielle ?</h2>
+<ul><li class="dash">Elle <strong>guide l’apprentissage</strong> : c’est en la minimisant que le modèle s’améliore.</li>
+<li class="dash">Sans fonction de perte, le modèle n’aurait <strong>aucun signal</strong> pour savoir dans
+  quelle direction ajuster ses paramètres.</li>
+<li class="dash">La fonction de perte est au cœur de la <strong>rétropropagation</strong> vue précédemment :
+  c’est elle qui fournit le <strong>point de départ</strong> pour calculer les gradients.</li>
+</ul>
+
 </div>
 <nav><ul class="pagination justify-content-center"><li class="page-item"><a class="page-link" href="chap0.html">&larr; Chapitre 0 - Installation des paquets et bibliothques nécessaires pour le cours</a></li><li class="page-item"><a class="page-link" href="index.html"><i class="bi bi-folder2"></i> Introduction aux fondamentaux de l&#039;apprentissage supervisé et du Deep Learning</a></li></ul></nav>
 
