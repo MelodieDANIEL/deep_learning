@@ -439,8 +439,8 @@ Pour visualiser le graphe dans PyTorch, on peut utiliser ``torchviz`` (qu'il fau
 
 Cela produira une image avec des nœuds pour chaque opération et des flèches indiquant les dépendances :
 
-- Les nœuds ``x^2`` et ``3*x`` représentent les opérations effectuées sur ``x``.
-- Le nœud ``y`` combine ces deux résultats.
+- Les nœuds $$x^2$$ et $$3x$$ représentent les opérations effectuées sur $$x$$.
+- Le nœud $$y$$ combine ces deux résultats.
 - Le graphe permet à PyTorch de savoir quelles dérivées calculer et dans quel ordre.
 
 .. slide::
@@ -484,9 +484,9 @@ Le principe de la rétropropagation signifie PyTorch parcourt le graphe **en sen
 11.2. Calcul des gradients dans notre exemple
 ~~~~~~~~~~~~~~~~~
 
-- ``dz/dy = 1`` car z = y.sum() 
-- ``dy/dx = dérivée de (x^2 + 3*x) = 2*x + 3``
-- ``dx = dz/dy * dy/dx = 2*x + 3``
+- $$\frac{dz}{dy} = 1$$ car $$z = y.sum()$$ 
+- $$\frac{dy}{dx} =$$ dérivée de $$(x^2 + 3*x) = 2*x + 3$$
+- $$\frac{dz}{dx} = \frac{dz}{dy} * \frac{dy}{dx} = 2*x + 3$$
 
 On obtient donc :
 
@@ -498,38 +498,30 @@ On obtient donc :
 11.3. Détail du calcul des gradients
 ~~~~~~~~~~~~~~~~~
 
-On a :
+On a $$y = [y_1, y_2] = [x_1² + 3x_1,  x_2² + 3x_2]$$ et $$z = y_1 + y_2$$.
 
-    y = [y1, y2] = [x1² + 3x1,  x2² + 3x2]
-    z = y1 + y2
 
 **Étape 1 : dérivée de z par rapport à y**
 
-Comme z = y1 + y2, on a :
+Comme $$z = y_1 + y_2$$, on a $$\frac{dz}{dy_1} = 1$$ et $$\frac{dz}{dy_2} = 1$$.
 
-    dz/dy1 = 1 et 
-    dz/dy2 = 1
-
-On peut regrouper sous forme vectorielle :
-
-    dz/dy = [dz/dy1, dz/dy2] = [1, 1]
+On peut regrouper sous forme vectorielle, telle que $$\frac{dz}{dy} = [\frac{dz}{dy_1}, \frac{dz}{dy_2}] = [1, 1]$$.
 
 **Étape 2 : dérivée de y par rapport à x**
 
-    dy1/dx1 = 2*x1 + 3 et 
-    dy2/dx2 = 2*x2 + 3
+On a $$\frac{dy_1}{dx_1} = 2x_1 + 3$$ et $$\frac{dy_2}{dx_2} = 2x_2 + 3$$.
+On peut aussi regrouper sous forme vectorielle, telle que $$\frac{dy}{dx} = [\frac{dy_1}{dx_1}, \frac{dy_2}{dx_2}] = [2x_1 + 3, 2x_2 + 3]$$.
 
 **Étape 3 : application de la règle de la chaîne**
 
-Pour chaque variable d’entrée :
+Pour obtenir les dérivées de z par rapport à x, on applique la règle de la chaîne :
 
-    dz/dx1 = dz/dy1 * dy1/dx1 = 1 * (2*x1 + 3) et 
-    dz/dx2 = dz/dy2 * dy2/dx2 = 1 * (2*x2 + 3)
+$$\frac{dz}{dx} = [\frac{dz}{dx_1}, \frac{dz}{dx_2}] = \frac{dz}{dy} * \frac{dy}{dx}$$ et $$\frac{dz}{dx} = [\frac{dz}{dy_1}*\frac{dy_1}{dx_1}, \frac{dz}{dy_2}*\frac{dy_2}{dx_2}] = [1 * (2x_1 + 3), 1 * (2x_2 + 3)]$$ 
 
+et donc $$\frac{dz}{dx} = [2x_1 + 3, 2x_2 + 3]$$. 
 
 .. slide::
-
-11.4. Résultat numérique pour notre exemple* 
+11.4. Résultat numérique pour notre exemple 
 ~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
@@ -539,8 +531,8 @@ Pour chaque variable d’entrée :
 
 Car :
 
-- Pour x1 = 2 → dz/dx1 = 2*2 + 3 = 7
-- Pour x2 = 3 → dz/dx2 = 2*3 + 3 = 9
+- Pour $$x_1 = 2 → \frac{dz}{dx_1} = 2*2 + 3 = 7$$
+- Pour $$x_2 = 3 → \frac{dz}{dx_2} = 2*3 + 3 = 9$$
 
 Ainsi, Autograd reproduit automatiquement ce calcul grâce au graphe computationnel et à la règle de la chaîne.
 
@@ -568,36 +560,59 @@ Lorsqu’on entraîne un réseau de neurones, l’objectif est de minimiser l’
 
 Une fonction de perte prend en entrée :
 
-    - la sortie du modèle (prédiction),
-    - la valeur cible (label attendu),
+    - la sortie du modèle (la prédiction),
+    - la valeur cible (la réponse attendue, donnée par les données d’apprentissage),
 
 et retourne un nombre réel qui indique "à quel point le modèle s'est trompé".
 
-
-
-############################# Stop ICI #################################
-############################# Stop ICI #################################
-############################# Stop ICI #################################
-############################# Stop ICI #################################
-
+Par conséquent, plus la perte est grande → plus le modèle se trompe et plus la perte est petite → plus le modèle est proche de la bonne réponse.
 
 .. slide::
-📖 14. Erreur quadratique moyenne (MSE)
------------------------------------------------------------
+📖 14. Pourquoi la fonction de perte est essentielle ?
+----------------------------------------------------
+La fonction de perte est essentielle pour plusieurs raisons :
 
-La fonction MSE (*Mean Squared Error*) est très utilisée en régression :
+    - Elle quantifie l'erreur du modèle : elle donne une mesure numérique de la performance du modèle.
+    - Elle permet de guider l'apprentissage : le modèle apprend en essayant de réduire cette valeur.
+    - Elle est le point de départ de la rétropropagation : les gradients sont calculés à partir de la fonction de perte.
+    - Elle est utilisée par les algorithmes d'optimisation pour ajuster les paramètres du modèle.
+    - Elle permet de comparer différents modèles : en utilisant la même fonction de perte, on peut évaluer quel modèle est le meilleur.
+    - Elle est essentielle pour le processus d'entraînement : sans fonction de perte, le modèle n'aurait aucun signal pour savoir comment s’améliorer.
+
+.. slide::
+📖 15. Régression & Erreur quadratique moyenne (MSE)
+----------------------------------------------------
+
+15.1 Définitions
+~~~~~~~~~~~~~~~~~
+On appelle régression le cas où le modèle doit prédire une valeur numérique par exemple : la température demain, la taille d’une personne, etc.
+
+Dans ce cas, la fonction de perte la plus utilisée est l’erreur quadratique moyenne (MSE de l'anglais Mean Squared Error) :
 
 .. math::
 
-   L(y, \hat{y}) = \frac{1}{n} \sum_{i=1}^n (y_i - \hat{y}_i)^2
+   L(y, \hat{y}) = \frac{1}{n} \sum_{i=1}^n (y_i - \hat{y}_i)^2,
 
-- ``yi`` est la valeur réelle (target),
-- ``y^i`` est la prédiction du modèle.
+où :
 
+    - $$L$$ est la fonction de perte,
+    - $$n$$ est le nombre de données,
+    - $$y_i$$ est la valeur attendue (target) et
+    - $$\hat{y}_i$$ est la prédiction du modèle.
+
+La fonction MSE calcule la moyenne des erreurs au carrées de toutes les données.
+
+.. slide::
+15.2 Exemple d'une régression avec MSE dans PyTorch
+~~~~~~~~~~~~~~~~~~~~~
+Pour utiliser la fonction MSE dans PyTorch, on peut utiliser la classe ``nn.MSELoss()``. Pour cela, il faut d'abord importer le module ``torch.nn`` qui contient les fonctions de perte :
 .. code-block:: python
 
-    import torch
     import torch.nn as nn
+
+**Exemple** : 
+
+.. code-block:: python
 
     # Valeurs réelles et prédictions
     y_true = torch.tensor([2.0, 3.0, 4.0])
@@ -608,61 +623,214 @@ La fonction MSE (*Mean Squared Error*) est très utilisée en régression :
 
     # Calcul de la perte
     loss = loss_fn(y_pred, y_true)
-    print(loss)  # valeur scalaire
-
-Ici, la perte est un **scalaire** (un seul nombre) qui résume l’erreur moyenne.
+    print(loss)
 
 .. slide::
+📖 16. Classification & Entropie croisée
+------------------------------------------------------------
 
-13.2 Exemple avec la classification : Cross-Entropy Loss
---------------------------------------------------------
+16.1 Définitions
+~~~~~~~~~~~~~~~~~~~
 
-Pour les tâches de **classification**, la perte la plus courante est la
-**Cross-Entropy Loss**.  
-Elle compare la distribution de probabilités prédite (softmax) et la vraie classe.
+On appelle classification le cas où le modèle doit prédire à quelle catégorie appartient la donnée parmi plusieurs possibles par exemple : "chat" ou "chien", ou bien "spam" ou "non spam", etc.
+
+Dans ce cas, la fonction de perte la plus courante est l'entropie croisée (Cross-Entropy Loss en anglais). Elle compare la probabilité prédite par le modèle et la vraie catégorie (donnée par les données d’apprentissage) :
+
+.. math::
+   L(y, \hat{y}) = -\sum_{i=1}^n y_i \log(\hat{y}_i),
+où :
+
+    - $$L$$ est la fonction de perte,
+    - $$n$$ est le nombre de classes,
+    - $$y_i$$ est la valeur attendue (target) pour la classe $$i$$ ((souvent codée en *one-hot encoding*, c'est-à-dire un vecteur avec un 1 pour la bonne classe et 0 pour les autres),
+    - $$\hat{y}_i$$ est la probabilité prédite par le modèle pour la classe $$i$$.
+
+La fonction enropie croisée mesure la distance entre la distribution de probabilité prédite par le modèle et la distribution de probabilité réelle (la vraie classe).
+La présence de la somme permet de prendre en compte toutes les classes.   Mais, dans le cas du *one-hot encoding*, seul le terme correspondant à la vraie classe reste (puisque tous les autres $$y_i$$ valent 0).
+
+.. slide::
+16.2 Pourquoi l'entropie croisée ?
+~~~~~~~~~~~~~~~~~~~
+L'entropie croisée est utilisée car :
+
+    - Elle est adaptée aux problèmes de classification multi-classes.
+    - Elle pénalise fortement les erreurs de classification, surtout lorsque la probabilité prédite pour la classe correcte est faible.
+    - Elle est différentiable, ce qui permet de l'utiliser avec les algorithmes d'optimisation basés sur la rétropropagation.
+
+.. slide::
+16.3 Exemple d'une classification avec Cross-Entropy Loss 
+~~~~~~~~~~~~~~~~~~~~
+Prenons un exemple où on a 3 classes possibles : "Chat", "Chien", "Oiseau". Nous avons : 
+
+- La sortie du modèle suivante : $$\hat{y} = [0.7, 0.2, 0.1]$$ et
+- imaginons que la vraie classe est "Chat", donc $$y = [1, 0, 0]$$.
+
+Alors :
+
+.. math::
+
+    L = - \big( 1 \cdot \log(0.7) + 0 \cdot \log(0.2) + 0 \cdot \log(0.1) \big)
+
+Les termes multipliés par 0 disparaissent :
+
+.. math::
+
+    L = -\log(0.7)
+
+👉 La perte est faible car le modèle a donné une forte probabilité à la bonne classe.
+
+Si au contraire le modèle avait prédit : $$\hat{y} = [0.2, 0.7, 0.1]$$ :
+
+.. math::
+
+    L = -\log(0.2)
+
+👉 La perte serait plus grande, car la probabilité attribuée à la bonne classe ("Chat") est faible.
+
+
+.. slide::
+16.3 Le même exemple dans PyTorch 
+~~~~~~~~~~~~~~~~~~~~
+
+Pour utiliser la fonction Cross-Entropy Loss dans PyTorch, on peut utiliser la classe ``nn.CrossEntropyLoss()`` du module ``torch.nn``.
+
+.. code-block:: python
+
+    # Définition de la fonction de perte
+    loss_fn = nn.CrossEntropyLoss()
+
+    # Cas 1 : le modèle prédit correctement (forte valeur pour "Chat")
+    logits1 = torch.tensor([[2.0, 1.0, 0.1]])  # sortie brute du modèle qui sera convertie à l'aide d'une fonction de PyTorch en probabilités
+    y_true = torch.tensor([0])  # la vraie classe est "Chat" (indice 0)
+
+    loss1 = loss_fn(logits1, y_true)
+    print("Perte (bonne prédiction) :", loss1.item())
+
+    # Cas 2 : le modèle se trompe (forte valeur pour "Chien")
+    logits2 = torch.tensor([[0.2, 2.0, 0.1]])  # sortie brute du modèle qui sera convertie à l'aide d'une fonction de PyTorch en probabilités
+    loss2 = loss_fn(logits2, y_true)
+    print("Perte (mauvaise prédiction) :", loss2.item())
+
+.. slide::
+📖 17. Optimisation
+-----------------------
+
+L’optimisation est l’étape qui permet d’ajuster les paramètres du modèle pour qu’il réalise mieux la tâche demandée.  
+
+L’idée est simple :  
+
+1. On calcule la perte (loss) qui indique l’erreur du modèle.  
+2. On calcule le gradient de la perte par rapport aux paramètres (grâce à Autograd).  
+3. On met à jour les paramètres dans la bonne direction (celle qui diminue la perte).  
+
+C’est un processus itératif qui se répète jusqu’à ce que le modèle apprenne correctement.
+
+
+
+################# Stop ICI #############################
+
+################# Stop ICI #############################
+
+################# Stop ICI #############################
+
+################# Stop ICI #############################
+
+
+.. slide::
+📖 18. Descente de gradient
+-----------------------
+
+L’algorithme le plus courant est la descente de gradient (ou Gradient Descent en anglais).  
+
+Imaginons une montagne :  
+- La hauteur correspond à la valeur de la fonction de perte.  
+- Le but est de descendre la montagne pour atteindre la vallée (la perte minimale).  
+- Le gradient indique la pente : on suit la pente descendante pour réduire la perte.
+
+Formule de mise à jour d’un paramètre :
+
+.. math::
+
+   \theta_{new} = \theta_{old} - \eta \cdot \frac{\partial L}{\partial \theta}
+
+où :  
+- $$\theta$$ est un paramètre du modèle,  
+- $$L$$ est la fonction de perte,  
+- $$\eta$$ est le taux d’apprentissage (ou learning rate en anglais) : il contrôle la taille des pas.  
+
+---
+
+.. slide::
+📖 19. Exemple simple
+-----------------------
+
+Supposons que l’on veuille minimiser la fonction :  
+
+.. math::
+
+   f(x) = x^2
+
+Son minimum est en $$x = 0$$.  
+
+Gradient :  
+
+.. math::
+
+   \frac{df}{dx} = 2x
+
+Mise à jour avec descente de gradient :  
+
+.. math::
+
+   x_{new} = x_{old} - \eta \cdot 2x_{old}
+
+---
+
+.. slide::
+📖 20. Optimisation dans PyTorch
+-----------------------
+
+PyTorch fournit le module ``torch.optim`` qui implémente plusieurs algorithmes d’optimisation (SGD, Adam, etc.).  
+
+Exemple avec la descente de gradient stochastique (SGD) :
 
 .. code-block:: python
 
     import torch
     import torch.nn as nn
+    import torch.optim as optim
 
-    # On suppose 3 classes et une prédiction pour un seul exemple
-    y_pred = torch.tensor([[1.2, 0.8, -0.5]])  # logits
-    y_true = torch.tensor([0])  # la classe correcte est 0
+    # Exemple : un modèle très simple (une seule couche linéaire)
+    model = nn.Linear(1, 1)
 
-    loss_fn = nn.CrossEntropyLoss()
-    loss = loss_fn(y_pred, y_true)
-    print(loss)
+    # Fonction de perte
+    loss_fn = nn.MSELoss()
 
-Ici encore, `loss` est un nombre qui représente "combien le modèle s'est trompé".
+    # Optimiseur : SGD avec un learning rate de 0.01
+    optimizer = optim.SGD(model.parameters(), lr=0.01)
+
+    # Exemple de données
+    x = torch.tensor([[1.0], [2.0], [3.0]])
+    y = torch.tensor([[2.0], [4.0], [6.0]])  # y = 2x
+
+    # Étape d’entraînement
+    y_pred = model(x)            # 1. prédiction
+    loss = loss_fn(y_pred, y)    # 2. calcul de la perte
+
+    optimizer.zero_grad()        # 3. réinitialise les gradients
+    loss.backward()              # 4. rétropropagation
+    optimizer.step()             # 5. mise à jour des poids
+
+---
 
 .. slide::
+📖 21. Résumé
+-----------------------
 
-13.3 Pourquoi la fonction de perte est essentielle ?
-----------------------------------------------------
-
-- Elle **guide l’apprentissage** : c’est en la minimisant que le modèle s’améliore.
-- Sans fonction de perte, le modèle n’aurait **aucun signal** pour savoir dans
-  quelle direction ajuster ses paramètres.
-- La fonction de perte est au cœur de la **rétropropagation** vue précédemment :
-  c’est elle qui fournit le **point de départ** pour calculer les gradients.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+- L’**optimisation** ajuste les paramètres du modèle pour réduire la perte.  
+- La **descente de gradient** est l’algorithme le plus courant.  
+- Le **learning rate** est un paramètre crucial : trop grand, on “saute” le minimum ; trop petit, l’apprentissage est trop lent.  
+- PyTorch fournit des optimisateurs prêts à l’emploi (``SGD``, ``Adam``…) via ``torch.optim``.
 
 
 

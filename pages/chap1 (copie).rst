@@ -726,3 +726,59 @@ paramètres lors de l'entraînement d'un réseau de neurones. La combinaison de
 programmation avec PyTorch.
 
 ################################# POUR LE TP #####################
+
+
+
+
+.. math::
+
+   L(y, \hat{y}) = \frac{1}{n} \sum_{i=1}^n (y_i - \hat{y}_i)^2
+
+- :math:`y_i` est la valeur réelle (target),
+- :math:`\hat{y}_i` est la prédiction du modèle,
+- on fait la moyenne sur tous les exemples.
+
+.. code-block:: python
+
+    import torch
+    import torch.nn as nn
+
+    # Valeurs réelles et prédictions
+    y_true = torch.tensor([2.0, 3.0, 4.0])
+    y_pred = torch.tensor([2.5, 2.7, 4.2])
+
+    # Définition de la fonction de perte MSE
+    loss_fn = nn.MSELoss()
+
+    # Calcul de la perte
+    loss = loss_fn(y_pred, y_true)
+    print(loss)
+
+La perte est un **nombre unique** qui résume l’erreur moyenne
+
+La fonction MSE (de Mean Squared Error en anglais) est très utilisée en régression :
+
+.. math::
+
+   L(y, \hat{y}) = \frac{1}{n} \sum_{i=1}^n (y_i - \hat{y}_i)^2
+
+- ``yi`` est la valeur réelle (target),
+- ``y^i`` est la prédiction du modèle.
+
+.. code-block:: python
+
+    import torch
+    import torch.nn as nn
+
+    # Valeurs réelles et prédictions
+    y_true = torch.tensor([2.0, 3.0, 4.0])
+    y_pred = torch.tensor([2.5, 2.7, 4.2])
+
+    # Définition de la fonction de perte MSE
+    loss_fn = nn.MSELoss()
+
+    # Calcul de la perte
+    loss = loss_fn(y_pred, y_true)
+    print(loss)  # valeur scalaire
+
+Ici, la perte est un **scalaire** (un seul nombre) qui résume l’erreur moyenne.

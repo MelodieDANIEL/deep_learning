@@ -471,7 +471,7 @@
               ),
               3 => 
               array (
-                0 => '11.4. Résultat numérique pour notre exemple* ',
+                0 => '11.4. Résultat numérique pour notre exemple ',
                 1 => 
                 array (
                 ),
@@ -494,21 +494,98 @@
           ),
           14 => 
           array (
-            0 => '📖 14. Erreur quadratique moyenne (MSE)',
+            0 => '📖 14. Pourquoi la fonction de perte est essentielle ?',
             1 => 
             array (
             ),
           ),
           15 => 
           array (
-            0 => '13.2 Exemple avec la classification : Cross-Entropy Loss',
+            0 => '📖 15. Régression &amp; Erreur quadratique moyenne (MSE)',
             1 => 
             array (
+              0 => 
+              array (
+                0 => '15.1 Définitions',
+                1 => 
+                array (
+                ),
+              ),
+              1 => 
+              array (
+                0 => '15.2 Exemple d&#039;une régression avec MSE dans PyTorch',
+                1 => 
+                array (
+                ),
+              ),
             ),
           ),
           16 => 
           array (
-            0 => '13.3 Pourquoi la fonction de perte est essentielle ?',
+            0 => '📖 16. Classification &amp; Entropie croisée',
+            1 => 
+            array (
+              0 => 
+              array (
+                0 => '16.1 Définitions',
+                1 => 
+                array (
+                ),
+              ),
+              1 => 
+              array (
+                0 => '16.2 Pourquoi l&#039;entropie croisée ?',
+                1 => 
+                array (
+                ),
+              ),
+              2 => 
+              array (
+                0 => '16.3 Exemple d&#039;une classification avec Cross-Entropy Loss ',
+                1 => 
+                array (
+                ),
+              ),
+              3 => 
+              array (
+                0 => '16.3 Le même exemple dans PyTorch ',
+                1 => 
+                array (
+                ),
+              ),
+            ),
+          ),
+          17 => 
+          array (
+            0 => '📖 17. Optimisation',
+            1 => 
+            array (
+            ),
+          ),
+          18 => 
+          array (
+            0 => '📖 18. Descente de gradient',
+            1 => 
+            array (
+            ),
+          ),
+          19 => 
+          array (
+            0 => '📖 19. Exemple simple',
+            1 => 
+            array (
+            ),
+          ),
+          20 => 
+          array (
+            0 => '📖 20. Optimisation dans PyTorch',
+            1 => 
+            array (
+            ),
+          ),
+          21 => 
+          array (
+            0 => '📖 21. Résumé',
             1 => 
             array (
             ),
@@ -519,7 +596,7 @@
     'tocs' => 
     array (
     ),
-    'ctime' => 1755617286,
+    'ctime' => 1755707880,
     'depends' => 
     array (
     ),
