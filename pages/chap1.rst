@@ -756,7 +756,7 @@ où :
 
 .. slide::
 📖 18.2. Exemple simple de la descente de gradient
---------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~
 Prenons un exemple très simple : nous voulons ajuster un seul paramètre $$a$$ pour approximer une fonction.
 
 Supposons que le modèle soit une droite passant par l’origine :
@@ -954,13 +954,6 @@ Dans PyTorch, Adam est implémenté via ``torch.optim.Adam`` :
 
    - Pour des problèmes **simples** comme $$f(x)=ax$$, SGD converge très vite et Adam peut sembler plus lent sur peu d’itérations.  
    - Pour des **modèles complexes** avec beaucoup de paramètres et des gradients bruités, Adam est souvent plus efficace grâce à ses ajustements adaptatifs.
-
-################# Stop ICI #############################
-################# Stop ICI #############################
-################# Stop ICI #############################
-################# Stop ICI #############################
-
-################## DANS LE TP penser à leur faire faire la boucle jusqu'à ce que la loss soit inférieure à un seuil (par exemple 0.01) et à afficher le nombre d'itérations nécessaires pour converger.
 
 .. slide::
 🏋️ Travaux Pratiques 1

@@ -1,7 +1,7 @@
 
 .. slide::
 
-Chapitre 1 - Introduction à PyTorch et Optimisation de Modèles
+Chapitre 2 - Introduction 
 ================
 
 🎯 Objectifs du Chapitre

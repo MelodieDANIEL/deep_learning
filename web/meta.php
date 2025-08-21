@@ -37,7 +37,7 @@
         2 => 'chap2',
       ),
     ),
-    'ctime' => 1755791853,
+    'ctime' => 1755798448,
     'depends' => 
     array (
       0 => 'chap0',
@@ -576,23 +576,23 @@
                 array (
                 ),
               ),
+              1 => 
+              array (
+                0 => '📖 18.2. Exemple simple de la descente de gradient',
+                1 => 
+                array (
+                ),
+              ),
             ),
           ),
           19 => 
-          array (
-            0 => '📖 18.2. Exemple simple de la descente de gradient',
-            1 => 
-            array (
-            ),
-          ),
-          20 => 
           array (
             0 => '📖 19. Descente de gradient avec PyTorch',
             1 => 
             array (
             ),
           ),
-          21 => 
+          20 => 
           array (
             0 => '📖 20. Optimiseur Adam',
             1 => 
@@ -620,7 +620,7 @@
               ),
             ),
           ),
-          22 => 
+          21 => 
           array (
             0 => '🏋️ Travaux Pratiques 1',
             1 => 
@@ -637,7 +637,7 @@
         0 => 'TP_chap1',
       ),
     ),
-    'ctime' => 1755798354,
+    'ctime' => 1755807490,
     'depends' => 
     array (
       0 => 'TP_chap1',
@@ -648,12 +648,12 @@
   array (
     'file' => 'chap2',
     'url' => 'chap2.html',
-    'title' => 'Chapitre 1 - Introduction à PyTorch et Optimisation de Modèles',
+    'title' => 'Chapitre 2 - Introduction ',
     'titles' => 
     array (
       0 => 
       array (
-        0 => 'Chapitre 1 - Introduction à PyTorch et Optimisation de Modèles',
+        0 => 'Chapitre 2 - Introduction ',
         1 => 
         array (
           0 => 
@@ -683,7 +683,7 @@
     'tocs' => 
     array (
     ),
-    'ctime' => 1755797785,
+    'ctime' => 1755802120,
     'depends' => 
     array (
     ),
@@ -693,45 +693,24 @@
   array (
     'file' => 'TP_chap1',
     'url' => 'TP_chap1.html',
-    'title' => '🏋️ Exercices supplémentaires',
+    'title' => '🏋️ Travaux Pratiques 1',
     'titles' => 
     array (
       0 => 
       array (
-        0 => '🏋️ Exercices supplémentaires',
+        0 => '🏋️ Travaux Pratiques 1',
         1 => 
         array (
           0 => 
           array (
-            0 => '🍀 Exercice Sup. 1 : Déterminer si une année est bissextile',
+            0 => '🍀 Exercice 1 : Calculer le gradient d’une fonction simple avec PyTorch',
             1 => 
             array (
             ),
           ),
           1 => 
           array (
-            0 => '🍀 Exercice Sup. 2 : Calculs mathématiques de base',
-            1 => 
-            array (
-            ),
-          ),
-          2 => 
-          array (
-            0 => '🍀 Exercice Sup. 3 : Résolution d’un polynome',
-            1 => 
-            array (
-            ),
-          ),
-          3 => 
-          array (
-            0 => '⚖️ Exercice Sup. 4 : Facturation de télécommunication',
-            1 => 
-            array (
-            ),
-          ),
-          4 => 
-          array (
-            0 => '⚖️ Exercice Sup. 5 : Triangle de Pascal',
+            0 => '⚖️ Exercice 2 : Trouver la droite qui passe au mieux par les données',
             1 => 
             array (
             ),
@@ -742,7 +721,7 @@
     'tocs' => 
     array (
     ),
-    'ctime' => 1755797779,
+    'ctime' => 1755808513,
     'depends' => 
     array (
     ),
