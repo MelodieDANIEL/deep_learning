@@ -288,7 +288,7 @@ Une fois créés, les tenseurs peuvent être transformés et réarrangés. PyTor
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - ``view`` : retourne un nouveau tenseur qui partage la même mémoire que l’original. Cela implique que le tenseur soit contigu. Un tenseur est dit contigu lorsque ses données sont stockées de manière consécutive en mémoire, c’est-à-dire que PyTorch peut lire tous les éléments dans l’ordre sans sauts.  
-Certaines opérations, comme la transposition (`t()`), rendent le tenseur non contigu, et dans ce cas ``view`` échoue.
+Certaines opérations, comme la transposition (``t()``), rendent le tenseur non contigu, et dans ce cas ``view`` échoue.
 - ``reshape`` : similaire à ``view``, mais plus flexible car il tente d’utiliser la mémoire existante, mais crée une copie si nécessaire. ``reshape`` fonctionne dans tous les cas de figures.
 
 .. code-block:: python
@@ -583,7 +583,7 @@ La fonction de perte est essentielle pour plusieurs raisons :
 📖 15. Régression & Erreur quadratique moyenne (MSE)
 ----------------------------------------------------
 
-15.1 Définitions
+15.1. Définitions
 ~~~~~~~~~~~~~~~~~
 On appelle régression le cas où le modèle doit prédire une valeur numérique par exemple : la température demain, la taille d’une personne, etc.
 
@@ -603,7 +603,7 @@ où :
 La fonction MSE calcule la moyenne des erreurs au carrées de toutes les données.
 
 .. slide::
-15.2 Exemple d'une régression avec MSE dans PyTorch
+15.2. Exemple d'une régression avec MSE dans PyTorch
 ~~~~~~~~~~~~~~~~~~~~~
 Pour utiliser la fonction MSE dans PyTorch, on peut utiliser la classe ``nn.MSELoss()``. Pour cela, il faut d'abord importer le module ``torch.nn`` qui contient les fonctions de perte :
 .. code-block:: python
@@ -629,7 +629,7 @@ Pour utiliser la fonction MSE dans PyTorch, on peut utiliser la classe ``nn.MSEL
 📖 16. Classification & Entropie croisée
 ------------------------------------------------------------
 
-16.1 Définitions
+16.1. Définitions
 ~~~~~~~~~~~~~~~~~~~
 
 On appelle classification le cas où le modèle doit prédire à quelle catégorie appartient la donnée parmi plusieurs possibles par exemple : "chat" ou "chien", ou bien "spam" ou "non spam", etc.
@@ -649,7 +649,7 @@ La fonction enropie croisée mesure la distance entre la distribution de probabi
 La présence de la somme permet de prendre en compte toutes les classes.   Mais, dans le cas du *one-hot encoding*, seul le terme correspondant à la vraie classe reste (puisque tous les autres $$y_i$$ valent 0).
 
 .. slide::
-16.2 Pourquoi l'entropie croisée ?
+16.2. Pourquoi l'entropie croisée ?
 ~~~~~~~~~~~~~~~~~~~
 L'entropie croisée est utilisée car :
 
@@ -658,7 +658,7 @@ L'entropie croisée est utilisée car :
     - Elle est différentiable, ce qui permet de l'utiliser avec les algorithmes d'optimisation basés sur la rétropropagation.
 
 .. slide::
-16.3 Exemple d'une classification avec Cross-Entropy Loss 
+16.3. Exemple d'une classification avec Cross-Entropy Loss 
 ~~~~~~~~~~~~~~~~~~~~
 Prenons un exemple où on a 3 classes possibles : "Chat", "Chien", "Oiseau". Nous avons : 
 
@@ -689,7 +689,7 @@ Si au contraire le modèle avait prédit : $$\hat{y} = [0.2, 0.7, 0.1]$$ :
 
 
 .. slide::
-16.3 Le même exemple dans PyTorch 
+16.4. Le même exemple dans PyTorch 
 ~~~~~~~~~~~~~~~~~~~~
 
 Pour utiliser la fonction Cross-Entropy Loss dans PyTorch, on peut utiliser la classe ``nn.CrossEntropyLoss()`` du module ``torch.nn``.
@@ -719,121 +719,253 @@ L’optimisation est l’étape qui permet d’ajuster les paramètres du modèl
 
 L’idée est simple :  
 
-1. On calcule la perte (loss) qui indique l’erreur du modèle.  
+1. On calcule la perte (loss en anglais) qui indique l’erreur du modèle.  
 2. On calcule le gradient de la perte par rapport aux paramètres (grâce à Autograd).  
 3. On met à jour les paramètres dans la bonne direction (celle qui diminue la perte).  
 
 C’est un processus itératif qui se répète jusqu’à ce que le modèle apprenne correctement.
 
 
-
-################# Stop ICI #############################
-
-################# Stop ICI #############################
-
-################# Stop ICI #############################
-
-################# Stop ICI #############################
-
-
 .. slide::
 📖 18. Descente de gradient
 -----------------------
 
-L’algorithme le plus courant est la descente de gradient (ou Gradient Descent en anglais).  
+L’algorithme d’optimisation le plus courant est la descente de gradient (ou Gradient Descent en anglais). 
+
+18.1. Principe et formule de la descente de gradient
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Imaginons une montagne :  
 - La hauteur correspond à la valeur de la fonction de perte.  
 - Le but est de descendre la montagne pour atteindre la vallée (la perte minimale).  
 - Le gradient indique la pente : on suit la pente descendante pour réduire la perte.
 
-Formule de mise à jour d’un paramètre :
+Formule de mise à jour des paramètres :
 
 .. math::
 
-   \theta_{new} = \theta_{old} - \eta \cdot \frac{\partial L}{\partial \theta}
+   \theta_{new} = \theta_{old} - \eta \cdot \nabla_\theta L(\theta)
 
 où :  
-- $$\theta$$ est un paramètre du modèle,  
+
+- $$\theta$$ représente l’ensemble des paramètres du modèle,  
 - $$L$$ est la fonction de perte,  
-- $$\eta$$ est le taux d’apprentissage (ou learning rate en anglais) : il contrôle la taille des pas.  
+- $$\eta$$ est le taux d’apprentissage (*learning rate* en anglais) : il contrôle la taille des pas et  
+- $$\nabla_\theta L(\theta)$$ désigne le vecteur des dérivées partielles de $$L$$ par rapport à chacun des paramètres.  
 
----
-
-.. slide::
-📖 19. Exemple simple
------------------------
-
-Supposons que l’on veuille minimiser la fonction :  
-
-.. math::
-
-   f(x) = x^2
-
-Son minimum est en $$x = 0$$.  
-
-Gradient :  
-
-.. math::
-
-   \frac{df}{dx} = 2x
-
-Mise à jour avec descente de gradient :  
-
-.. math::
-
-   x_{new} = x_{old} - \eta \cdot 2x_{old}
-
----
 
 .. slide::
-📖 20. Optimisation dans PyTorch
------------------------
+📖 18.2. Exemple simple de la descente de gradient
+--------------------------------------------
+Prenons un exemple très simple : nous voulons ajuster un seul paramètre $$a$$ pour approximer une fonction.
 
-PyTorch fournit le module ``torch.optim`` qui implémente plusieurs algorithmes d’optimisation (SGD, Adam, etc.).  
+Supposons que le modèle soit une droite passant par l’origine :
 
-Exemple avec la descente de gradient stochastique (SGD) :
+.. math::
+
+   f(x) = a x
+
+Nous avons une donnée d’apprentissage :  
+
+- Entrée : $$x = 2$$  
+- Sortie attendue : $$y = 4$$  
+
+On part du paramètre initial : $$a = 0$$.
+
+.. slide::
+**1. Fonction de perte**
+
+On utilise l’erreur quadratique (MSE) pour mesurer l’écart entre la prédiction et la vraie valeur :
+
+.. math::
+
+   L(a) = (f(x) - y)^2 = (a * 2 - 4)^2
+
+
+**2. Calcul du gradient**
+
+On dérive la perte par rapport à $$a$$ :
+
+.. math::
+
+   \frac{\partial L}{\partial a} = 2 * (a * 2 - 4) * 2 = 8a - 16
+
+.. slide::
+
+**3. Mise à jour avec descente de gradient**
+
+On choisit un taux d’apprentissage $$\eta = 0.1$$ et on applique la formule :
+
+.. math::
+
+   a_{new} = a_{old} - \eta \cdot \frac{\partial L}{\partial a}
+
+
+**4. Exemple numérique**
+
+- Point de départ : $$a = 0$$  
+- Gradient : $$\frac{\partial L}{\partial a} = 8 * 0 - 16 = -16$$  
+- Mise à jour :  
+
+.. math::
+
+   a_{new} = 0 - 0.1 * (-16) = 1.6
+
+👉 Après une étape, $$a$$ se rapproche déjà de la bonne valeur (qui devrait être $$a = 2$$ pour que $$f(x) = 2 * 2 = 4$$).  
+
+En répétant plusieurs mises à jour, $$a$$ converge vers 2, et la perte devient de plus en plus faible.
+
+
+.. slide::
+📖 19. Descente de gradient avec PyTorch
+----------------------------------------
+
+PyTorch fournit le module ``torch.optim`` qui implémente plusieurs algorithmes d’optimisation. Dans PyTorch, l’algorithme de descente de gradient est appelé SGD (Stochastic Gradient Descent) et peut-être importé via ``torch.optim.SGD`` :
 
 .. code-block:: python
+   import torch.optim as optim
 
-    import torch
-    import torch.nn as nn
-    import torch.optim as optim
+On reprend le modèle simple :
 
-    # Exemple : un modèle très simple (une seule couche linéaire)
-    model = nn.Linear(1, 1)
-
-    # Fonction de perte
-    loss_fn = nn.MSELoss()
-
-    # Optimiseur : SGD avec un learning rate de 0.01
-    optimizer = optim.SGD(model.parameters(), lr=0.01)
-
-    # Exemple de données
-    x = torch.tensor([[1.0], [2.0], [3.0]])
-    y = torch.tensor([[2.0], [4.0], [6.0]])  # y = 2x
-
-    # Étape d’entraînement
-    y_pred = model(x)            # 1. prédiction
-    loss = loss_fn(y_pred, y)    # 2. calcul de la perte
-
-    optimizer.zero_grad()        # 3. réinitialise les gradients
-    loss.backward()              # 4. rétropropagation
-    optimizer.step()             # 5. mise à jour des poids
-
----
+- Modèle : f(x) = a * x
+- Objectif : trouver a tel que f(x) ≈ y
+- Jeu de données : x = [1, 2, 3, 4], y = [2, 4, 6, 8]
+- Paramètre initial : a = 0
+- Taux d'apprentissage : lr = 0.1
 
 .. slide::
-📖 21. Résumé
------------------------
+.. code-block:: python
+    # Données
+    x = torch.tensor([1.0, 2.0, 3.0, 4.0])
+    y = torch.tensor([2.0, 4.0, 6.0, 8.0])
+    a = torch.tensor([0.0], requires_grad=True)
 
-- L’**optimisation** ajuste les paramètres du modèle pour réduire la perte.  
-- La **descente de gradient** est l’algorithme le plus courant.  
-- Le **learning rate** est un paramètre crucial : trop grand, on “saute” le minimum ; trop petit, l’apprentissage est trop lent.  
-- PyTorch fournit des optimisateurs prêts à l’emploi (``SGD``, ``Adam``…) via ``torch.optim``.
+    # Optimiseur : descente de gradient
+    optimizer = optim.SGD([a], lr=0.1)
 
+    # Fonction de perte : MSE
+    loss_fn = nn.MSELoss()
 
+    for i in range(10):
+        # 1. Remettre les gradients à zéro avant de recalculer
+        optimizer.zero_grad()
+        
+        # 2. Calcul de la prédiction
+        y_pred = a * x
+        
+        # 3. Calcul de la perte avec MSE
+        loss = loss_fn(y_pred, y)
+        
+        # 4. Calcul automatique des gradients
+        loss.backward()
+        
+        # 5. Mise à jour du paramètre a
+        optimizer.step()
+        
+        print(f"Iter {i+1}: a = {a.item()}, loss = {loss.item()}")
 
+.. note::
 
+      Explications des nouvelles lignes de code :
 
+         - ``optimizer.zero_grad()`` : remet à zéro les gradients calculés lors de la dernière itération.  
+         Sinon, PyTorch additionne les gradients à chaque ``backward()``, ce qui fausserait les calculs.
+         
+         - ``optimizer.step()`` : applique la mise à jour des paramètres selon la règle de la descente de gradient :  
+         $$\theta_new = \theta_old - lr * gradient$$.
+         
 
+Dans cet exemple, SGD converge très vite car le problème est simple.
+ 
+.. slide::
+📖 20. Optimiseur Adam
+--------------------------------------
+
+20.1. Définition
+~~~~~~~~~~~~~~~~~~
+Adam est un autre algorithme d'optimisation qui adapte le pas pour chaque paramètre grâce à une moyenne mobile des gradients ($$m_t$$ ) et une moyenne mobile des carrés des gradients ($$v_t$$).  
+
+On définit :
+
+- $$g_t = \nabla_\theta L(\theta)$$ : le gradient à l'itération t  
+- $$m_t = \beta_1 m_{t-1} + (1-\beta_1) g_t$$ : moyenne mobile des gradients (1er moment)  
+- $$v_t = \beta_2 v_{t-1} + (1-\beta_2) g_t^2$$ : moyenne mobile des carrés des gradients (2e moment)  
+- $$\hat{m}_t = \frac{m_t}{1-\beta_1^t}$$ : correction de biais pour le 1er moment  
+- $$\hat{v}_t = \frac{v_t}{1-\beta_2^t}$$ : correction de biais pour le 2e moment  
+- $$\epsilon$$ : petite constante pour éviter la division par zéro  
+
+La mise à jour des paramètres est alors :
+
+.. math::
+  \theta_{\text{new}} = \theta_{\text{old}} - \eta \cdot \frac{\hat{m}_t}{\sqrt{\hat{v}_t} + \epsilon}
+
+💡 Interprétation :
+
+- $$m_t$$ capture la direction moyenne des gradients (évite les oscillations),  
+- $$v_t$$ ajuste le pas selon la variance des gradients (pas plus grand si le gradient est bruité),  
+- $$\epsilon$$ empêche la division par zéro et
+- La correction de biais $$\hat{m}_t, \hat{v}_t$$ est importante surtout au début pour ne pas sous-estimer les moments.
+
+.. slide::
+20.2. Adam vs. SGD
+~~~~~~~~~~~~~~~~~~~~~
+ Différences entre Adam et la descente de gradient classique (SGD) :
+
+    1. **SGD** applique la même règle de mise à jour pour tous les paramètres à chaque itération :  
+       \theta_new = \theta_old - lr * gradient
+       
+    2. **Adam** adapte le taux d'apprentissage pour chaque paramètre individuellement,  
+       en utilisant des moyennes mobiles des gradients et des carrés des gradients.  
+       Cela permet souvent une convergence plus rapide et plus stable.
+    
+    3. La syntaxe PyTorch reste très similaire : on utilise toujours ``optimizer.zero_grad()``, ``loss.backward()`` et ``optimizer.step()``. On peut reprendre le même modèle simple que précédemment à titre d'exemple.
+
+.. note::
+   ⚠️ Remarque : Dans le cadre de ce cours, nous utiliserons principalement Adam pour sa robustesse et sa facilité d'utilisation. Nous allons surtout utiliser l'implémentation de ADAM dans Pytorch sans avoir à recoder les équations. Elles sont énoncées à titre informatif.
+
+.. slide::
+20.3. Implémentation d'Adam avec PyTorch
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Dans PyTorch, Adam est implémenté via ``torch.optim.Adam`` :
+
+.. code-block:: python
+    # Données
+    x = torch.tensor([1.0, 2.0, 3.0, 4.0])
+    y = torch.tensor([2.0, 4.0, 6.0, 8.0])
+    a = torch.tensor([0.0], requires_grad=True)
+
+    # Optimiseur : Adam
+    optimizer = torch.optim.Adam([a], lr=0.1)
+
+    # Fonction de perte : MSE
+    loss_fn = nn.MSELoss()
+
+    for i in range(50):
+        optimizer.zero_grad()  # remise à zéro des gradients
+        y_pred = a * x
+        loss = loss_fn(y_pred, y)  # perte MSE
+        loss.backward()  # calcul automatique des gradients
+        optimizer.step()  # mise à jour du paramètre
+        
+        print(f"Iter {i+1}: a = {a.item()}, loss = {loss.item()}")
+
+💡 Remarques :
+
+   - Pour des problèmes **simples** comme $$f(x)=ax$$, SGD converge très vite et Adam peut sembler plus lent sur peu d’itérations.  
+   - Pour des **modèles complexes** avec beaucoup de paramètres et des gradients bruités, Adam est souvent plus efficace grâce à ses ajustements adaptatifs.
+
+################# Stop ICI #############################
+################# Stop ICI #############################
+################# Stop ICI #############################
+################# Stop ICI #############################
+
+################## DANS LE TP penser à leur faire faire la boucle jusqu'à ce que la loss soit inférieure à un seuil (par exemple 0.01) et à afficher le nombre d'itérations nécessaires pour converger.
+
+.. slide::
+🏋️ Travaux Pratiques 1
+--------------------
+
+.. toctree::
+
+    TP_chap1

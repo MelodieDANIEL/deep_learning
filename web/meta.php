@@ -34,13 +34,15 @@
       array (
         0 => 'chap0',
         1 => 'chap1',
+        2 => 'chap2',
       ),
     ),
-    'ctime' => 1755611707,
+    'ctime' => 1755791853,
     'depends' => 
     array (
       0 => 'chap0',
       1 => 'chap1',
+      2 => 'chap2',
     ),
   ),
   'chap0' => 
@@ -506,14 +508,14 @@
             array (
               0 => 
               array (
-                0 => '15.1 Définitions',
+                0 => '15.1. Définitions',
                 1 => 
                 array (
                 ),
               ),
               1 => 
               array (
-                0 => '15.2 Exemple d&#039;une régression avec MSE dans PyTorch',
+                0 => '15.2. Exemple d&#039;une régression avec MSE dans PyTorch',
                 1 => 
                 array (
                 ),
@@ -527,28 +529,28 @@
             array (
               0 => 
               array (
-                0 => '16.1 Définitions',
+                0 => '16.1. Définitions',
                 1 => 
                 array (
                 ),
               ),
               1 => 
               array (
-                0 => '16.2 Pourquoi l&#039;entropie croisée ?',
+                0 => '16.2. Pourquoi l&#039;entropie croisée ?',
                 1 => 
                 array (
                 ),
               ),
               2 => 
               array (
-                0 => '16.3 Exemple d&#039;une classification avec Cross-Entropy Loss ',
+                0 => '16.3. Exemple d&#039;une classification avec Cross-Entropy Loss ',
                 1 => 
                 array (
                 ),
               ),
               3 => 
               array (
-                0 => '16.3 Le même exemple dans PyTorch ',
+                0 => '16.4. Le même exemple dans PyTorch ',
                 1 => 
                 array (
                 ),
@@ -567,25 +569,110 @@
             0 => '📖 18. Descente de gradient',
             1 => 
             array (
+              0 => 
+              array (
+                0 => '18.1. Principe et formule de la descente de gradient',
+                1 => 
+                array (
+                ),
+              ),
             ),
           ),
           19 => 
           array (
-            0 => '📖 19. Exemple simple',
+            0 => '📖 18.2. Exemple simple de la descente de gradient',
             1 => 
             array (
             ),
           ),
           20 => 
           array (
-            0 => '📖 20. Optimisation dans PyTorch',
+            0 => '📖 19. Descente de gradient avec PyTorch',
             1 => 
             array (
             ),
           ),
           21 => 
           array (
-            0 => '📖 21. Résumé',
+            0 => '📖 20. Optimiseur Adam',
+            1 => 
+            array (
+              0 => 
+              array (
+                0 => '20.1. Définition',
+                1 => 
+                array (
+                ),
+              ),
+              1 => 
+              array (
+                0 => '20.2. Adam vs. SGD',
+                1 => 
+                array (
+                ),
+              ),
+              2 => 
+              array (
+                0 => '20.3. Implémentation d&#039;Adam avec PyTorch',
+                1 => 
+                array (
+                ),
+              ),
+            ),
+          ),
+          22 => 
+          array (
+            0 => '🏋️ Travaux Pratiques 1',
+            1 => 
+            array (
+            ),
+          ),
+        ),
+      ),
+    ),
+    'tocs' => 
+    array (
+      0 => 
+      array (
+        0 => 'TP_chap1',
+      ),
+    ),
+    'ctime' => 1755798354,
+    'depends' => 
+    array (
+      0 => 'TP_chap1',
+    ),
+    'parent' => 'index',
+  ),
+  'chap2' => 
+  array (
+    'file' => 'chap2',
+    'url' => 'chap2.html',
+    'title' => 'Chapitre 1 - Introduction à PyTorch et Optimisation de Modèles',
+    'titles' => 
+    array (
+      0 => 
+      array (
+        0 => 'Chapitre 1 - Introduction à PyTorch et Optimisation de Modèles',
+        1 => 
+        array (
+          0 => 
+          array (
+            0 => '🎯 Objectifs du Chapitre',
+            1 => 
+            array (
+            ),
+          ),
+          1 => 
+          array (
+            0 => '📖 1. Qu&#039;est-ce que PyTorch ? ',
+            1 => 
+            array (
+            ),
+          ),
+          2 => 
+          array (
+            0 => '📖 20. Optimisation dans PyTorch',
             1 => 
             array (
             ),
@@ -596,10 +683,69 @@
     'tocs' => 
     array (
     ),
-    'ctime' => 1755707880,
+    'ctime' => 1755797785,
     'depends' => 
     array (
     ),
     'parent' => 'index',
+  ),
+  'TP_chap1' => 
+  array (
+    'file' => 'TP_chap1',
+    'url' => 'TP_chap1.html',
+    'title' => '🏋️ Exercices supplémentaires',
+    'titles' => 
+    array (
+      0 => 
+      array (
+        0 => '🏋️ Exercices supplémentaires',
+        1 => 
+        array (
+          0 => 
+          array (
+            0 => '🍀 Exercice Sup. 1 : Déterminer si une année est bissextile',
+            1 => 
+            array (
+            ),
+          ),
+          1 => 
+          array (
+            0 => '🍀 Exercice Sup. 2 : Calculs mathématiques de base',
+            1 => 
+            array (
+            ),
+          ),
+          2 => 
+          array (
+            0 => '🍀 Exercice Sup. 3 : Résolution d’un polynome',
+            1 => 
+            array (
+            ),
+          ),
+          3 => 
+          array (
+            0 => '⚖️ Exercice Sup. 4 : Facturation de télécommunication',
+            1 => 
+            array (
+            ),
+          ),
+          4 => 
+          array (
+            0 => '⚖️ Exercice Sup. 5 : Triangle de Pascal',
+            1 => 
+            array (
+            ),
+          ),
+        ),
+      ),
+    ),
+    'tocs' => 
+    array (
+    ),
+    'ctime' => 1755797779,
+    'depends' => 
+    array (
+    ),
+    'parent' => 'chap1',
   ),
 );
