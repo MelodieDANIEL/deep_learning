@@ -263,20 +263,6 @@ et un graphique similaire à celui ci-dessous :
     :align: center
 
 
-
-
-
-################# Stop ICI #############################
-
-################# Stop ICI #############################
-
-################# Stop ICI #############################
-
-################# Stop ICI #############################
-
-
-
-
 .. slide::
 🌶️ Exercice supplémentaire 4 : Visualiser une surface de perte en 3D & descente de gradient
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
