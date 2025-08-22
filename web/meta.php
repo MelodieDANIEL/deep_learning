@@ -710,7 +710,49 @@
           ),
           1 => 
           array (
-            0 => '⚖️ Exercice 2 : Trouver la droite qui passe au mieux par les données',
+            0 => '⚖️ Exercice 2 : Trouver la droite qui passe au mieux par les données avec MSE',
+            1 => 
+            array (
+            ),
+          ),
+          2 => 
+          array (
+            0 => '⚖️ Exercice 3 : Trouver la droite qui passe au mieux par les données avec une fonction de perte de type valeur absolue',
+            1 => 
+            array (
+            ),
+          ),
+        ),
+      ),
+      1 => 
+      array (
+        0 => '🏋️ Exercices supplémentaires 1',
+        1 => 
+        array (
+          0 => 
+          array (
+            0 => '🍀 Exercice supplémentaire 1 : Gradient d’une fonction polynomiale',
+            1 => 
+            array (
+            ),
+          ),
+          1 => 
+          array (
+            0 => '🍀 Exercice supplémentaire 2 : Gradient de deux variables',
+            1 => 
+            array (
+            ),
+          ),
+          2 => 
+          array (
+            0 => '⚖️ Exercice supplémentaire 3 : Comparaison de des fonctions de perte MSE et MAE',
+            1 => 
+            array (
+            ),
+          ),
+          3 => 
+          array (
+            0 => '🌶️ Exercice supplémentaire 4 : Visualiser une surface de perte en 3D &amp; descente de gradient',
             1 => 
             array (
             ),
@@ -721,7 +763,7 @@
     'tocs' => 
     array (
     ),
-    'ctime' => 1755808513,
+    'ctime' => 1755873000,
     'depends' => 
     array (
     ),
