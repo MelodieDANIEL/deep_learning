@@ -266,7 +266,7 @@
     'tocs' => 
     array (
     ),
-    'ctime' => 1755617167,
+    'ctime' => 1756227050,
     'depends' => 
     array (
     ),
@@ -637,7 +637,7 @@
         0 => 'TP_chap1',
       ),
     ),
-    'ctime' => 1755807490,
+    'ctime' => 1756227239,
     'depends' => 
     array (
       0 => 'TP_chap1',
@@ -745,7 +745,7 @@
           ),
           2 => 
           array (
-            0 => '⚖️ Exercice supplémentaire 3 : Comparaison de des fonctions de perte MSE et MAE',
+            0 => '⚖️ Exercice supplémentaire 3 : Comparaison des fonctions de perte MSE et MAE',
             1 => 
             array (
             ),
@@ -763,7 +763,7 @@
     'tocs' => 
     array (
     ),
-    'ctime' => 1755873000,
+    'ctime' => 1756227553,
     'depends' => 
     array (
     ),

@@ -63,7 +63,7 @@ Les **tenseurs** sont la structure de base de PyTorch. Ce sont des tableaux mult
 - Une matrice est un tenseur 2D.  
 - On peut avoir des tenseurs 3D, 4D, etc.   
 
-Les tenseurs à haute dimensions sont très utilisés en deep learning (par exemple pour les images ou les vidéos). Nous allons voir comment créer et manipuler des tenseurs dans PyTorch. Vous pouvez copier-coller les exemples de code ci-dessous dans un notebook Jupyter pour les tester et voir les affichages. Pour utiliserles fonctions de PyTorch, il faut d'abord l'importer :
+Les tenseurs à haute dimension sont très utilisés en deep learning (par exemple pour les images ou les vidéos). Nous allons voir comment créer et manipuler des tenseurs dans PyTorch. Vous pouvez copier-coller les exemples de code ci-dessous dans un notebook Jupyter pour les tester et voir les affichages. Pour utiliserles fonctions de PyTorch, il faut d'abord l'importer :
 .. code-block:: python
 
    import torch
@@ -121,7 +121,7 @@ PyTorch permet de générer facilement des suites de nombres avec des pas régul
 1. **torch.arange(debut, fin, pas)**  
 
    - Crée une suite en commençant à ``debut``  
-   - S’arrête *avant* ``fin`` (attention, la borne supérieure est exclue !)  
+   - S’arrête avant ``fin`` (attention, la borne supérieure est exclue !)  
    - Utilise le ``pas`` indiqué  
 
 .. code-block:: python
@@ -473,7 +473,7 @@ Autograd utilise ce graphe pour calculer automatiquement les dérivées par rapp
 11.1. Principe de la rétropropagation
 ~~~~~~~~~~~~~~~~~
 
-Le principe de la rétropropagation signifie PyTorch parcourt le graphe **en sens inverse** pour faire le calcul des dérivées.
+Le principe de la rétropropagation signifie que PyTorch parcourt le graphe **en sens inverse** pour faire le calcul des dérivées.
 
 
 1. Commence par la sortie ``z``.
@@ -600,7 +600,7 @@ où :
     - $$y_i$$ est la valeur attendue (target) et
     - $$\hat{y}_i$$ est la prédiction du modèle.
 
-La fonction MSE calcule la moyenne des erreurs au carrées de toutes les données.
+La fonction MSE calcule la moyenne des erreurs au carré de toutes les données.
 
 .. slide::
 15.2. Exemple d'une régression avec MSE dans PyTorch
@@ -820,7 +820,7 @@ En répétant plusieurs mises à jour, $$a$$ converge vers 2, et la perte devien
 📖 19. Descente de gradient avec PyTorch
 ----------------------------------------
 
-PyTorch fournit le module ``torch.optim`` qui implémente plusieurs algorithmes d’optimisation. Dans PyTorch, l’algorithme de descente de gradient est appelé SGD (Stochastic Gradient Descent) et peut-être importé via ``torch.optim.SGD`` :
+PyTorch fournit le module ``torch.optim`` qui implémente plusieurs algorithmes d’optimisation. Dans PyTorch, l’algorithme de descente de gradient est appelé SGD (Stochastic Gradient Descent) et peut être importé via ``torch.optim.SGD`` :
 
 .. code-block:: python
    import torch.optim as optim

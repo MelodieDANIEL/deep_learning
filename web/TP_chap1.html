@@ -126,7 +126,7 @@
 <p><strong>Résultat attendu :</strong> Le gradient est égal à 3 dans les deux cas.</p>
 </div><div class="slide ">
 <a id="title.1.2"></a><h2>⚖️ Exercice 2 : Trouver la droite qui passe au mieux par les données avec MSE</h2>
-<p>Dans cet exercice, vous allez implémenter une <strong>boucle d&#039;entraînement simple</strong> pour ajuster les paramètres d&#039;une droite<br />aux données fournies.</p>
+<p>Dans cet exercice, vous allez implémenter une <strong>boucle d&#039;entraînement simple</strong> pour ajuster les paramètres d&#039;une droite aux données fournies.</p>
 <p>On vous donne les données suivantes :</p>
 <pre><code class="python hljs"># Données bruitées suivantes
 import numpy as np
@@ -137,12 +137,12 @@ $$y = f(x) =a x + b$$
 <p>où : \(a\) et \(b\) sont des paramètres appris automatiquement en minimisant l&#039;erreur entre les prédictions du modèle et les données réelles.</p>
 <p><strong>Consigne :</strong> Écrire un programme qui ajuste les paramètres \(a\) et \(b\) de la droite aux données fournies en utilisant  PyTorch.</p>
 <blockquote><p>1) Dans un premier temps, vous pouvez faire une boucle de 10000 itérations et coder vous-même la fonction de perte.</p>
-<p>2) Afficher les paramètres appris \(a\) et \(b\).</p>
-<p>3) Ensuite, trouver un moyen plus intelligent d&#039;arrêter l&#039;entraînement de tel sorte à ce que le modèle converge avec le minimum d&#039;itérations.</p>
-<p>4) Afficher le nombre d&#039;itérations nécessaires pour converger.</p>
-<p>5) Tracer les données réelles et les données prédites pour comparer visuellement le résultat.</p>
-<p>6) Utiliser la fonction de perte MSE fournie par PyTorch et afficher les paramètres appris \(a\) et \(b\).</p>
-<p>7) Vérifier que le résultat des paramètres et le tracé sont similaires à ceux obtenus avec la boucle d&#039;entraînement manuelle.</p>
+<p>2) Affichez les paramètres appris \(a\) et \(b\).</p>
+<p>3) Ensuite, trouvez un moyen plus intelligent d&#039;arrêter l&#039;entraînement de telle sorte que le modèle converge avec le minimum d&#039;itérations.</p>
+<p>4) Affichez le nombre d&#039;itérations nécessaires pour converger.</p>
+<p>5) Tracez les données réelles et les données prédites pour comparer visuellement le résultat.</p>
+<p>6) Utilisez la fonction de perte MSE fournie par PyTorch et affichez les paramètres appris \(a\) et \(b\).</p>
+<p>7) Vérifiez que le résultat des paramètres et le tracé sont similaires à ceux obtenus avec la boucle d&#039;entraînement manuelle.</p>
 </blockquote>
 <p><strong>Remarque :</strong> Pour utiliser <code>matplotlib</code>, vous devez l&#039;installer avec la commande suivante :</p>
 <pre><code class="bash hljs">pip install matplotlib</code></pre>
@@ -170,7 +170,7 @@ $$y = f(x) =a x + b$$
 <a id="title.1.3"></a><h2>⚖️ Exercice 3 : Trouver la droite qui passe au mieux par les données avec une fonction de perte de type valeur absolue</h2>
 <p><strong>Objectif</strong> : <br />L&#039;objectif est le même que celui de l&#039;exercice précédent (faire de la régression linéaire), mais cette fois-ci,  vous allez utiliser une fonction de perte de type valeur absolue (MAE de l&#039;anglais Mean Absolute Error)  au lieu de la MSE. L’idée de cet exercice est de comparer deux optimisateurs SGD et Adam.</p>
 <p><strong>Consignes :</strong>  Implémenter une boucle d&#039;entraînement pour ajuster les paramètres d&#039;une droite aux données fournies dans l&#039;exercice précédent en utilisant une fonction de perte de type valeur absolue et en réutilisant l&#039;implémentation de l&#039;exercice précédent.</p>
-<p>1) Réutilisez la boucle d&#039;entraînement de l’exercice précédent qui s&#039;arrête au bout de 2500 itérations et qui utilise un learning rate de 0.01. <br />2) Remplacez la fonction de perte MSE par une fonction de perte de type MAE. Il faudra chercher dans la documentation comment l&#039;implémenter dans PyTorch. <br />3) Testez avec l’optimiseur SGD puis avec l’optimiseur Adam. <br />4) Pour chaque optimiseur, affichez les paramètres appris appris \(a\) et \(b\).
+<p>1) Réutilisez la boucle d&#039;entraînement de l’exercice précédent qui s&#039;arrête au bout de 2500 itérations et qui utilise un learning rate de 0.01. <br />2) Remplacez la fonction de perte MSE par une fonction de perte de type MAE. Il faudra chercher dans la documentation comment l&#039;implémenter dans PyTorch. <br />3) Testez avec l’optimiseur SGD puis avec l’optimiseur Adam. <br />4) Pour chaque optimiseur, affichez les paramètres appris \(a\) et \(b\).
 5) Tracez les données réelles et les données prédites pour comparer visuellement les résultats. <br />6) Comparez les deux méthodes : que constatez-vous en termes de stabilité et de vitesse de convergence ? <br />7) Expliquez quel optimiseur est meilleur et pourquoi?   </p>
 <p><strong>Astuce :</strong></p>
 <div class="spoiler"><ul><li class="dash discover">La valeur absolue dans PyTorch s&#039;obtient avec la fonction <code>nn.L1Loss()</code>.</li>
@@ -179,7 +179,7 @@ $$y = f(x) =a x + b$$
 
 </div>
 <p><strong>Résultat attendu :</strong>
-Vous devez obtenir des valeurs pour les paramètres proche de :</p>
+Vous devez obtenir des valeurs pour les paramètres proches de :</p>
 <ul><li class="dash">Adam -&gt; a = 1.5451, b = 12.5996</li>
 <li class="dash">SGD  -&gt; a = 2.3039, b = 12.1880</li>
 </ul>
@@ -214,7 +214,7 @@ Vous devez obtenir des valeurs pour les paramètres proche de :</p>
 
 </div>
 <p><strong>Résultat attendu :</strong> <br />Les dérivées partielles sont, dans les deux cas, égales à : \(∂f/∂a = 7\) et \(∂f/∂b = 2\).</p>
-<a id="title.2.3"></a><h2>⚖️ Exercice supplémentaire 3 : Comparaison de des fonctions de perte MSE et MAE</h2>
+<a id="title.2.3"></a><h2>⚖️ Exercice supplémentaire 3 : Comparaison des fonctions de perte MSE et MAE</h2>
 <p>On vous donne les données suivantes :</p>
 <pre><code class="python hljs"># Données bruitées suivantes
 torch.manual_seed(0)
@@ -226,9 +226,9 @@ $$y = f(x) =a x^2 + b x + c$$
 <p>où : \(a\), \(b\) et \(c\) sont des paramètres appris automatiquement en minimisant l&#039;erreur entre les prédictions du modèle et les données réelles.</p>
 <p><strong>Consignes</strong> : Implémenter une boucle d&#039;entraînement pour ajuster les paramètres d&#039;une courbe d&#039;ordre 2 aux données fournies en utilisant une fonction de perte MAE et MSE.</p>
 <p>1) Réutilisez la boucle d&#039;entraînement de l’exercice 3 qui s&#039;arrête au bout de 1000 itérations et qui utilise un learning rate de 0.01.  </p>
-<p>2) Tester la fonction de perte MSE et MAE.</p>
-<p>3) Pour chaque fonction de perte, afficher les paramètres appris \(a\), \(b\) et \(c\).</p>
-<p>4) Pour chaque fonction de perte, tracer les données réelles et les données prédites et comparer visuellement les résultats. </p>
+<p>2) Testez la fonction de perte MSE et MAE.</p>
+<p>3) Pour chaque fonction de perte, affichez les paramètres appris \(a\), \(b\) et \(c\).</p>
+<p>4) Pour chaque fonction de perte, tracez les données réelles et les données prédites et comparez visuellement les résultats.</p>
 <p>6) Quelle différence observez-vous dans la convergence et les paramètres appris ?</p>
 <p>7) Pourquoi la MSE et la MAE ne donnent-elles pas exactement le même résultat ?</p>
 <p>8) Dans quel cas préfèreriez-vous utiliser MSE ? Dans quel cas préfèreriez-vous utiliser MAE ?</p>
@@ -246,22 +246,18 @@ Vous devez obtenir des valeurs pour les paramètres proche de :</p>
 
 <p>et un graphique similaire à celui ci-dessous :</p>
 <img src="images/chap1_exo_sup_3_resultat.png"  alt="droite ajustée aux points" align="center" />
-<p>################# Stop ICI #############################</p>
-<p>################# Stop ICI #############################</p>
-<p>################# Stop ICI #############################</p>
-<p>################# Stop ICI #############################</p>
 </div><div class="slide ">
 <a id="title.2.4"></a><h2>🌶️ Exercice supplémentaire 4 : Visualiser une surface de perte en 3D &amp; descente de gradient</h2>
 <p>On considère la fonction suivante :  </p>
 $$f(a, b) = a^2 + b^2$$
 <p><strong>Objectif :</strong> Comprendre la descente de gradient en visualisant la surface de la fonction et la trajectoire de convergence.  </p>
 <p><strong>Consignes :</strong></p>
-<p>1) Calculer à la main le gradient de \(f(a,b)\) et ses dérivées partielles .</p>
-<p>2) Implémenter une boucle de descente de gradient avec un point de départ choisi (par exemple \(a=2.5\), \(b=-2.0\)) et un learning rate de 0.1.</p>
-<p>3) Stocker les points de la trajectoire au cours des itérations.  </p>
-<p>4) Tracer la surface 3D de \(f(a, b)\) avec Matplotlib.  </p>
-<p>5) Ajouter sur la surface des flèches représentant les étapes de la descente de gradient.  </p>
-<p>6) Expliquer ce que représente la trajectoire observée et pourquoi elle converge vers \((a, b) = (0,0)\).</p>
+<p>1) Calculez à la main le gradient de \(f(a,b)\) et ses dérivées partielles .</p>
+<p>2) Implémentez une boucle de descente de gradient avec un point de départ choisi (par exemple \(a=2.5\), \(b=-2.0\)) et un learning rate de 0.1.</p>
+<p>3) Stockez les points de la trajectoire au cours des itérations.  </p>
+<p>4) Tracez la surface 3D de \(f(a, b)\) avec Matplotlib.  </p>
+<p>5) Ajoutez sur la surface des flèches représentant les étapes de la descente de gradient.  </p>
+<p>6) Expliquez ce que représente la trajectoire observée et pourquoi elle converge vers \((a, b) = (0,0)\).</p>
 <p>7) Testez plusieurs learning rate (ex: 0.02, 0.1, 0.5, 2.0) pour observer convergence lente, rapide, ou divergence.</p>
 <p><strong>Astuce :</strong></p>
 <div class="spoiler"><ul><li class="dash discover">Utilisez <code>ax.plot_surface</code> pour la surface 3D.</li>

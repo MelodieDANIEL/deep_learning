@@ -151,7 +151,7 @@
 <li class="dash">On peut avoir des tenseurs 3D, 4D, etc.</li>
 </ul>
 
-<p>Les tenseurs à haute dimensions sont très utilisés en deep learning (par exemple pour les images ou les vidéos). Nous allons voir comment créer et manipuler des tenseurs dans PyTorch. Vous pouvez copier-coller les exemples de code ci-dessous dans un notebook Jupyter pour les tester et voir les affichages. Pour utiliserles fonctions de PyTorch, il faut d&#039;abord l&#039;importer :</p>
+<p>Les tenseurs à haute dimension sont très utilisés en deep learning (par exemple pour les images ou les vidéos). Nous allons voir comment créer et manipuler des tenseurs dans PyTorch. Vous pouvez copier-coller les exemples de code ci-dessous dans un notebook Jupyter pour les tester et voir les affichages. Pour utiliserles fonctions de PyTorch, il faut d&#039;abord l&#039;importer :</p>
 <pre><code class="python hljs">import torch</code></pre>
 </div><div class="slide ">
 <a id="title.1.4"></a><h2>📖 3. Création de tenseurs</h2>
@@ -190,7 +190,7 @@ print(eye)</code></pre>
 <p>PyTorch permet de générer facilement des suites de nombres avec des pas réguliers. Deux fonctions sont particulièrement utiles :</p>
 <ol><li class=""><strong>torch.arange(debut, fin, pas)</strong></li>
 <ul><li class="dash">Crée une suite en commençant à <code>debut</code></li>
-<li class="dash">S’arrête <em>avant</em> <code>fin</code> (attention, la borne supérieure est exclue !)</li>
+<li class="dash">S’arrête avant <code>fin</code> (attention, la borne supérieure est exclue !)</li>
 <li class="dash">Utilise le <code>pas</code> indiqué</li>
 </ul>
 </ol>
@@ -446,7 +446,7 @@ print(x.grad)</code></pre>
 </ul>
 
 <a id="title.1.12.1"></a><h3>11.1. Principe de la rétropropagation</h3>
-<p>Le principe de la rétropropagation signifie PyTorch parcourt le graphe <strong>en sens inverse</strong> pour faire le calcul des dérivées.</p>
+<p>Le principe de la rétropropagation signifie que PyTorch parcourt le graphe <strong>en sens inverse</strong> pour faire le calcul des dérivées.</p>
 <ol><li class="">Commence par la sortie <code>z</code>.</li>
 <li class="">Recule vers les nœuds précédents (<code>y</code> puis <code>x</code>) en appliquant la règle de dérivation.</li>
 <li class="">Stocke le gradient dans <code>x.grad</code>.</li>
@@ -526,7 +526,7 @@ $$L(y, \hat{y}) = \frac{1}{n} \sum_{i=1}^n (y_i - \hat{y}_i)^2,$$
 <li class="dash">\(\hat{y}_i\) est la prédiction du modèle.</li>
 </ul>
 
-<p>La fonction MSE calcule la moyenne des erreurs au carrées de toutes les données.</p>
+<p>La fonction MSE calcule la moyenne des erreurs au carré de toutes les données.</p>
 </div><div class="slide ">
 <a id="title.1.16.2"></a><h3>15.2. Exemple d&#039;une régression avec MSE dans PyTorch</h3>
 <p>Pour utiliser la fonction MSE dans PyTorch, on peut utiliser la classe <code>nn.MSELoss()</code>. Pour cela, il faut d&#039;abord importer le module <code>torch.nn</code> qui contient les fonctions de perte :</p>
@@ -654,7 +654,7 @@ $$a_{new} = 0 - 0.1 * (-16) = 1.6$$
 <p>En répétant plusieurs mises à jour, \(a\) converge vers 2, et la perte devient de plus en plus faible.</p>
 </div><div class="slide ">
 <a id="title.1.20"></a><h2>📖 19. Descente de gradient avec PyTorch</h2>
-<p>PyTorch fournit le module <code>torch.optim</code> qui implémente plusieurs algorithmes d’optimisation. Dans PyTorch, l’algorithme de descente de gradient est appelé SGD (Stochastic Gradient Descent) et peut-être importé via <code>torch.optim.SGD</code> :</p>
+<p>PyTorch fournit le module <code>torch.optim</code> qui implémente plusieurs algorithmes d’optimisation. Dans PyTorch, l’algorithme de descente de gradient est appelé SGD (Stochastic Gradient Descent) et peut être importé via <code>torch.optim.SGD</code> :</p>
 <pre><code class="python hljs">import torch.optim as optim</code></pre>
 <p>On reprend le modèle simple :</p>
 <ul><li class="dash">Modèle : f(x) = a * x</li>
@@ -766,7 +766,7 @@ for i in range(50):
 
 </div><div class="slide ">
 <a id="title.1.22"></a><h2>🏋️ Travaux Pratiques 1</h2>
-<div class="toc"><ul><li><a href="TP_chap1.html#title.1">🏋️ Travaux Pratiques 1</a></li><ul><li><a href="TP_chap1.html#title.1.1">🍀 Exercice 1 : Calculer le gradient d’une fonction simple avec PyTorch</a></li><li><a href="TP_chap1.html#title.1.2">⚖️ Exercice 2 : Trouver la droite qui passe au mieux par les données avec MSE</a></li><li><a href="TP_chap1.html#title.1.3">⚖️ Exercice 3 : Trouver la droite qui passe au mieux par les données avec une fonction de perte de type valeur absolue</a></li></ul><li><a href="TP_chap1.html#title.2">🏋️ Exercices supplémentaires 1</a></li><ul><li><a href="TP_chap1.html#title.2.1">🍀 Exercice supplémentaire 1 : Gradient d’une fonction polynomiale</a></li><li><a href="TP_chap1.html#title.2.2">🍀 Exercice supplémentaire 2 : Gradient de deux variables</a></li><li><a href="TP_chap1.html#title.2.3">⚖️ Exercice supplémentaire 3 : Comparaison de des fonctions de perte MSE et MAE</a></li><li><a href="TP_chap1.html#title.2.4">🌶️ Exercice supplémentaire 4 : Visualiser une surface de perte en 3D &amp; descente de gradient</a></li></ul></ul></div>
+<div class="toc"><ul><li><a href="TP_chap1.html#title.1">🏋️ Travaux Pratiques 1</a></li><ul><li><a href="TP_chap1.html#title.1.1">🍀 Exercice 1 : Calculer le gradient d’une fonction simple avec PyTorch</a></li><li><a href="TP_chap1.html#title.1.2">⚖️ Exercice 2 : Trouver la droite qui passe au mieux par les données avec MSE</a></li><li><a href="TP_chap1.html#title.1.3">⚖️ Exercice 3 : Trouver la droite qui passe au mieux par les données avec une fonction de perte de type valeur absolue</a></li></ul><li><a href="TP_chap1.html#title.2">🏋️ Exercices supplémentaires 1</a></li><ul><li><a href="TP_chap1.html#title.2.1">🍀 Exercice supplémentaire 1 : Gradient d’une fonction polynomiale</a></li><li><a href="TP_chap1.html#title.2.2">🍀 Exercice supplémentaire 2 : Gradient de deux variables</a></li><li><a href="TP_chap1.html#title.2.3">⚖️ Exercice supplémentaire 3 : Comparaison des fonctions de perte MSE et MAE</a></li><li><a href="TP_chap1.html#title.2.4">🌶️ Exercice supplémentaire 4 : Visualiser une surface de perte en 3D &amp; descente de gradient</a></li></ul></ul></div>
 </div>
 <nav><ul class="pagination justify-content-center"><li class="page-item"><a class="page-link" href="chap0.html">&larr; Chapitre 0 - Installation des paquets et bibliothques nécessaires pour le cours</a></li><li class="page-item"><a class="page-link" href="index.html"><i class="bi bi-folder2"></i> Introduction aux fondamentaux de l&#039;apprentissage supervisé et du Deep Learning</a></li><li class="page-item"><a class="page-link" href="chap2.html">Chapitre 2 - Introduction  &rarr;</a></li></ul></nav>
 

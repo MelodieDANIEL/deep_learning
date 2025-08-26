@@ -154,7 +154,7 @@ Vous pouvez maintenant tester l’installation de PyTorch avec ce petit script P
    print("CUDA disponible ?  :", torch.cuda.is_available())
 
 - Si l'import fonctionne sans erreur, PyTorch est installé correctement.
-- Si ``torch.cuda.is_available()`` renvoie ``False``, cela signifie que votre machine n’a pas de GPU compatible CUDA ou qu'elle n'a pas accès au GPU probablement car les pilotes CUDA/cuDNN ne sont pas correctement installés.
+- Si ``torch.cuda.is_available()`` renvoie ``False``, cela signifie que votre machine n’a pas de GPU compatible CUDA ou qu'elle n'a probablement pas accès au GPU car les pilotes CUDA/cuDNN ne sont pas correctement installés.
 
 Vous pouvez toujours utiliser PyTorch sur CPU, mais le temps d'entraînement sera plus long notamment pour les modèles complexes performances seront moindres pour les tâches lourdes.
 
@@ -188,7 +188,7 @@ Mettez d’abord à jour la liste des paquets, puis installez les pilotes recomm
    sudo apt install nvidia-driver-Numero_de_version
    sudo apt install nvidia-cuda-toolkit
 
-(Le numéro de version peut varier selon votre GPU. Vous pouvez vérifier la version conseillée en tapnt ``ubuntu-drivers devices`` dans un terminal. Il y aura marqué "recommended" devant le pilote recommandé.)
+(Le numéro de version peut varier selon votre GPU. Vous pouvez vérifier la version conseillée en tapant ``ubuntu-drivers devices`` dans un terminal. Il sera marqué "recommended" devant le pilote recommandé.)
 
 **Redémarrez votre ordinateur après l’installation des pilotes.**
 
@@ -211,7 +211,7 @@ Relancez la commande :
 
    nvidia-smi
 
-Vous devez voir apparaître les informations sur votre GPU et la version du pilote installé.  
+Vous devez voir apparaître les informations sur votre GPU et la version du pilote installée.  
 À ce stade, PyTorch pourra utiliser le GPU si installé avec la bonne version CUDA. Pour vous en assurer, vous pouvez relancer le script Python de vérification :
 
 .. code-block:: python
@@ -234,7 +234,7 @@ Pour cela, vous pouvez taper dans un terminal :
 
    pip uninstall torch torchvision torchaudio
 
-Avant de réinstaller, il est important de vérifier la version de CUDA supportée par votre GPU.  
+Avant de le réinstaller, il est important de vérifier la version de CUDA supportée par votre GPU.  
 Pour cela, utilisez la commande suivante :
 
 .. code-block:: bash
@@ -287,7 +287,7 @@ L’installation inclut ``notebook`` ainsi que tous les outils nécessaires pour
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Créer un dossier pour les notebooks, par exemple ``cours_dl/notebooks/``.
-Ensuite, placez-vous dans ce dossier avec la commande `cd` :
+Ensuite, placez-vous dans ce dossier avec la commande ``cd`` :
 .. code-block:: bash
 
    cd cours_dl/notebooks/  
@@ -310,13 +310,13 @@ Pour démarrer Jupyter Notebook dans le dossier courant, utilisez :
 3.2 Créer un notebook
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- Cliquez sur **New → Python 3** pour créer un nouveau notebook comme illustrée par la figure ci-dessus.  
+- Cliquez sur **New → Python 3** pour créer un nouveau notebook comme illustré par la figure ci-dessous.  
 
 .. center::
     .. image:: images/jupyter_new_file.png
         :alt: Créer un nouveau notebook Jupyter
 
-- Chaque cellule de la figure ci-dessous peut contenir du code Python que vous pouvez exécuter avec `Shift + Enter`.  
+- Chaque cellule de la figure ci-dessous peut contenir du code Python que vous pouvez exécuter avec ``Shift + Enter``.  
 
 .. center::
     .. image:: images/jupyter_home_page.png
