@@ -648,12 +648,12 @@
   array (
     'file' => 'chap2',
     'url' => 'chap2.html',
-    'title' => 'Chapitre 2 - Introduction ',
+    'title' => 'Chapitre 2 — Perceptron multi-couches ',
     'titles' => 
     array (
       0 => 
       array (
-        0 => 'Chapitre 2 - Introduction ',
+        0 => 'Chapitre 2 — Perceptron multi-couches ',
         1 => 
         array (
           0 => 
@@ -665,16 +665,72 @@
           ),
           1 => 
           array (
-            0 => '📖 1. Qu&#039;est-ce que PyTorch ? ',
+            0 => '📖 1. Rappels sur les perceptrons',
             1 => 
             array (
+              0 => 
+              array (
+                0 => '1.1. Perceptron simple',
+                1 => 
+                array (
+                ),
+              ),
+              1 => 
+              array (
+                0 => '1.2. Perceptron intuition',
+                1 => 
+                array (
+                ),
+              ),
+              2 => 
+              array (
+                0 => '1.3. Mise à jour des paramètres',
+                1 => 
+                array (
+                ),
+              ),
+              3 => 
+              array (
+                0 => '1.4. Exemples d&#039;applications du perceptron simple',
+                1 => 
+                array (
+                ),
+              ),
+              4 => 
+              array (
+                0 => '1.5. Faire un perceptron dans PyTorch',
+                1 => 
+                array (
+                ),
+              ),
             ),
           ),
           2 => 
           array (
-            0 => '📖 20. Optimisation dans PyTorch',
+            0 => '📖 2. Fonction d&#039;activation',
             1 => 
             array (
+            ),
+          ),
+          3 => 
+          array (
+            0 => '📖 3. Epoch',
+            1 => 
+            array (
+              0 => 
+              array (
+                0 => '3.1 Définitions importantes',
+                1 => 
+                array (
+                ),
+              ),
+              1 => 
+              array (
+                0 => '3.2 Pourquoi plusieurs epochs ?',
+                1 => 
+                array (
+                ),
+              ),
             ),
           ),
         ),
@@ -683,7 +739,7 @@
     'tocs' => 
     array (
     ),
-    'ctime' => 1755802120,
+    'ctime' => 1756394998,
     'depends' => 
     array (
     ),

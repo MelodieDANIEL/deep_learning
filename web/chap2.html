@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <link rel="stylesheet" type="text/css" href="css/style.css" />
-<title>Intro Python - Chapitre 2 - Introduction </title>
+<title>Intro Python - Chapitre 2 — Perceptron multi-couches </title>
 
                 <meta http-equiv="X-UA-Compatible" content="IE=edge">
                 <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -105,51 +105,205 @@
 <div class="contents container">
 
 <div class="slide ">
-<a id="title.1"></a><h1>Chapitre 2 - Introduction </h1>
+<a id="title.1"></a><h1>Chapitre 2 — Perceptron multi-couches </h1>
 <a id="title.1.1"></a><h2>🎯 Objectifs du Chapitre</h2>
-<div class="alert alert-light p-2 fs-5 text-center"><p>À la fin de ce chapitre, vous saurez : </p>
-<ul><li class="dash">Créer et manipuler des tenseurs PyTorch sur CPU et GPU.</li>
-<li class="dash">Calculer automatiquement les gradients à l’aide de <code>autograd</code>.</li>
-<li class="dash">Définir une fonction de perte.</li>
-<li class="dash">Utiliser un optimiseur pour ajuster les paramètres d’un modèle.</li>
-<li class="dash">Implémenter une boucle d&#039;entraînement simple.</li>
+<div class="alert alert-light p-2 fs-5 text-center"><p>À la fin de cette section,  vous saurez :  </p>
+<ul><li class="dash">Le fonctionnement du perceptron simple.</li>
+<li class="dash">Utiliser une fonction d&#039;activation adaptée.</li>
+<li class="dash">L’importance de la normalisation / standardisation des données et l&#039;usage des epochs.</li>
+<li class="dash">Construire un réseau de neurones avec <code>torch.nn</code>.</li>
+<li class="dash">Faire un entraînement simple d’un MLP pour un problème de régression.</li>
+<li class="dash">Suivre l’évolution de la loss et interpréter les résultats.</li>
+<li class="dash">Utiliser <code>torch-summary</code> pour inspecter l’architecture du réseau.</li>
 </ul>
 
 </div>
 </div><div class="slide ">
-<a id="title.1.2"></a><h2>📖 1. Qu&#039;est-ce que PyTorch ? </h2>
+<a id="title.1.2"></a><h2>📖 1. Rappels sur les perceptrons</h2>
+<p>Le perceptron multi-couches (MLP de Multi-Layers Perceptron en anglais) est la brique de base des réseaux de neurones modernes. Dans ce chapitre, nous allons l’appliquer à des problèmes de régression simple. Avant de commencer, voici quelques rappels.</p>
+<a id="title.1.2.1"></a><h3>1.1. Perceptron simple</h3>
+<p>Le perceptron est le bloc de base d’un réseau de neurones. Il réalise une transformation linéaire suivie (ou pas) d’une fonction d’activation telle que :  </p>
+<blockquote>$$y = \sigma(Wx + b)$$
+<p>où : <br /> - \(y\) est la sortie du perceptron,<br /> - \(\sigma\) est une fonction d’activation,<br /> - \(W\) est la matrice des poids, <br /> - \(b\) est le biais et <br /> - \(x\) est l&#039;ensemble des entrées du perceptron.</p>
+</blockquote>
+</div><div class="slide ">
+<a id="title.1.2.2"></a><h3>1.2. Perceptron intuition</h3>
+<img src="images/chap2_perceptron.png"  alt="perceptron" align="center" width="40%" />
+<p>avec \(y= \sigma(x_1*w_1 + x_2*w_2 + ...+ x_i*w_i + ... + x_n*w_n + b)\)</p>
+<p>💡 <strong>Intuition :</strong></p>
+<ul><li class="dash">Chaque poids \(w_i\) mesure l’importance de la caractéristique \(x_i\).</li>
+<li class="dash">Le biais \(b\) déplace la frontière de décision.</li>
+<li class="dash">La fonction d’activation permet d’introduire de la non-linéarité, indispensable pour modéliser des relations complexes mais nous en parleront plus en détails par la suite.</li>
+</ul>
+
+</div><div class="slide ">
+<a id="title.1.2.3"></a><h3>1.3. Mise à jour des paramètres</h3>
+<p>Un perceptron possède deux types de <strong>paramètres</strong> : les <strong>poids</strong> et le <strong>biais</strong>.  </p>
+<p>Lors de l’entraînement, on souhaite ajuster ces paramètres pour améliorer les prédictions du modèle.  Pour cela, il faut mettre à jour les poids après avoir calculé la loss grâce à la fonction de perte et le gradient grâce à l&#039;optimiseur comme expliqué dans le chapitre précédent.  </p>
+<p>Pour rappel, on met à jours les paramètres du modèle grâce à l&#039;équation introduite dans le chapitre précédent. </p>
+$$\theta \leftarrow \theta - \eta \, \nabla_\theta \mathcal{L}(\theta)$$
+<p>où : <br />- \(\theta\) représente l’ensemble des paramètres du modèle (ici \(W\) et \(b\)), <br />- \(\mathcal{L}\) est la fonction de perte, <br />- \(\nabla_\theta \mathcal{L}\) est le gradient de la perte par rapport aux paramètres, <br />- \(\eta\) est le taux d’apprentissage (learning rate en anglais).</p>
+</div><div class="slide ">
+<a id="title.1.2.4"></a><h3>1.4. Exemples d&#039;applications du perceptron simple</h3>
+<p>Un perceptron simple ne peut résoudre que les problèmes linéairement séparables puisque en trouvant les paramètres du modèle, le perceptron trace une droite dans le plan des entrées et sépare les points selon qu’ils sont au-dessus ou en dessous de cette droite.</p>
+<p><strong>Exemple 1 : porte logique ET</strong></p>
+<table class="table table-striped"><tbody><tr><th>x₁</th><th>x₂</th><th>y=ET</th></tr><tr><td>0</td><td>0</td><td>0</td></tr><tr><td>0</td><td>1</td><td>0</td></tr><tr><td>1</td><td>0</td><td>0</td></tr><tr><td>1</td><td>1</td><td>1</td></tr></tbody></table>
+<p>Dans ce cas, une droite sépare bien les deux classes : <br />- la classe \(0\) (points en bas à gauche, en haut à gauche, en bas à droite), <br />- la classe \(1\) (point en haut à droite).  </p>
+<p>Un perceptron simple peut donc apprendre cette fonction.</p>
+</div><div class="slide ">
+<p><strong>Exemple 2 : porte logique XOR</strong></p>
+<table class="table table-striped"><tbody><tr><th>x₁</th><th>x₂</th><th>y=XOR</th></tr><tr><td>0</td><td>0</td><td>0</td></tr><tr><td>0</td><td>1</td><td>1</td></tr><tr><td>1</td><td>0</td><td>1</td></tr><tr><td>1</td><td>1</td><td>0</td></tr></tbody></table>
+<p>Ici, il est impossible de tracer une seule droite qui sépare correctement les classes. Autrement dit, XOR n’est pas linéairement séparable.  </p>
+<img src="images/chap2_et_vs_xor.png"  alt="Représentation du XOR dans le plan (non-séparable linéairement)" align="center" width="300%" />
+<p><strong>Conclusion :</strong> </p>
+<ul><li class="dash">Le perceptron simple suffit pour des tâches linéaires (comme ET, OU).</li>
+<li class="dash">Pour résoudre des problèmes plus complexes comme XOR, il faut introduire plusieurs couches de neurones et des fonctions d’activation non-linéaires : c’est le principe du <strong>perceptron multi-couches (MLP)</strong>.</li>
+</ul>
+
+</div><div class="slide ">
+<a id="title.1.2.5"></a><h3>1.5. Faire un perceptron dans PyTorch</h3>
+<p>Pour créer un perceptron simple dans PyTorch, on peut utiliser la fonction <code>Linear</code> de <code>torch.nn</code>, qui implémente une couche linéaire (ou affine) : \(y = Wx + b\). La fonction <code>Linear</code> prend en entrée le nombre d&#039;entrée \(x\) et le nombre de sortie \(y\).</p>
+<pre><code class="python hljs">import torch
+import torch.nn as nn
+
+# Données ET
+X = torch.tensor([[0,0],[0,1],[1,0],[1,1]], dtype=torch.float32)
+y = torch.tensor([[0],[0],[0],[1]], dtype=torch.float32)
+
+# Modèle linéaire (perceptron)
+model = nn.Linear(2,1)
+
+# Loss function et optimiseur
+loss_fc = nn.MSELoss()
+optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
+
+# Entraînement
+for _ in range(500):
+    optimizer.zero_grad()
+    loss = loss_fc(model(X), y)
+    loss.backward()
+    optimizer.step()
+
+# Résultat
+with torch.no_grad():
+    print((model(X)).round())
+    print(model.weight, model.bias)</code></pre>
+<p><strong>Remarque</strong> : si maintenant on change les entrées et sorties pour le XOR, le modèle ne pourra pas apprendre correctement la fonction (les \(W\) restent à 0 comme à l&#039;initialisation). Vous pouvez faire le test pour vérifier.</p>
+</div><div class="slide ">
+<p>################################ STOP ICI ################################</p>
+<p>################################ STOP ICI ################################</p>
+<p>################################ STOP ICI ################################</p>
+</div><div class="slide ">
+<a id="title.1.3"></a><h2>📖 2. Fonction d&#039;activation</h2>
+<p>Les fonctions d’activation introduisent de la non-linéarité dans le modèle, ce qui permet de mieux capturer des relations complexes dans les données. Voici quelques fonctions d’activation couramment utilisées :</p>
+<ol><li class=""><strong>Sigmoïde</strong> : \(\sigma(x) = \frac{1}{1 + e^{-x}}\)</li>
+<ul><li class="dash">Sortie entre 0 et 1.</li>
+<li class="dash">Utilisée pour les problèmes de classification binaire.</li>
+</ul>
+<li class=""><strong>Tanh</strong> : \(\tanh(x) = \frac{e^x - e^{-x}}{e^x + e^{-x}}\)</li>
+<ul><li class="dash">Sortie entre -1 et 1.</li>
+<li class="dash">Souvent utilisée dans les réseaux de neurones cachés.</li>
+</ul>
+<li class=""><strong>ReLU (Rectified Linear Unit)</strong> : \(\text{ReLU}(x) = \max(0, x)\)</li>
+<ul><li class="dash">Sortie nulle pour les entrées négatives.</li>
+<li class="dash">Très utilisée dans les réseaux de neurones profonds en raison de sa simplicité et de son efficacité.</li>
+</ul>
+<li class=""><strong>Softmax</strong> : \(\text{Softmax}(x_i) = \frac{e^{x_i}}{\sum_{j} e^{x_j}}\)</li>
+<ul><li class="dash">Transforme un vecteur en une distribution de probabilité.</li>
+<li class="dash">Utilisée en sortie des modèles de classification multi-classes.</li>
+</ul>
+</ol>
+
+</div><div class="slide ">
+<a id="title.1.4"></a><h2>📖 3. Epoch</h2>
+<p>Lorsqu’on entraîne un modèle, on doit présenter plusieurs fois l’ensemble des données d’apprentissage \(x\).</p>
+<a id="title.1.4.1"></a><h3>3.1 Définitions importantes</h3>
+<ul><li class="dash">Itération : mise à jour des paramètres après avoir traité un seul exemple ou un mini-batch.</li>
+<li class="dash">Batch / mini-batch : sous-ensemble d’exemples utilisés pour calculer la mise à jour.</li>
+<li class="dash"> Epoch : passage complet sur toutes les données d’apprentissage.</li>
+</ul>
+
+<p><strong>Exemple</strong> :</p>
+<p>Si vous avez 1000 exemples et que vous utilisez des mini-batchs de 100 : Une epoch correspond à 10 itérations (1000 ÷ 100).</p>
+<p>Après chaque epoch, chaque exemple a été utilisé exactement une fois pour mettre à jour les paramètres.</p>
+<a id="title.1.4.2"></a><h3>3.2 Pourquoi plusieurs epochs ?</h3>
+<p>Au début de l’entraînement, le modèle fait souvent de grandes erreurs.</p>
+<p>Chaque epoch permet aux poids et biais de s’ajuster progressivement pour mieux prédire les sorties.</p>
+<p>En général, plusieurs dizaines ou centaines d’epochs sont nécessaires pour que la loss se stabilise.</p>
+<p>💡 Intuition : imaginez un perceptron comme un élève qui apprend : il ne retient pas tout parfaitement du premier coup ; il faut plusieurs passages sur le même exercice pour maîtriser.</p>
+</div><div class="slide ">
+<ol><li class="">Normaliser / standardiser les données
+-----------------------------</li>
+</ol>
+
+<p>Pourquoi normaliser ?  </p>
+<ul><li class="dash">Les entrées de grande amplitude ralentissent l’apprentissage.</li>
+<li class="dash">Normaliser permet de mettre toutes les features à la même échelle.</li>
+</ul>
+
+<p>Deux approches classiques :  </p>
+<ul><li class="dash"><strong>Normalisation</strong> : valeurs entre 0 et 1.</li>
+<li class="dash"><strong>Standardisation</strong> : moyenne 0, variance 1.</li>
+</ul>
+
+<p>Exemple avec scikit-learn :  </p>
+<pre><code class="python hljs">from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)</code></pre>
+<ol><li class="">Utiliser <code>torch.nn</code> pour construire un MLP
+------------------------------------------------</li>
+<li class="dash"><code>Sequential</code> : permet d’empiler les couches facilement.</li>
+<li class="dash"><code>Linear</code> : couche affine (Wx+b).</li>
+<li class="dash">Fonctions d’activation : donnent la non-linéarité (ex. <code>nn.ReLU()</code>).</li>
+</ol>
+
+<p>Exemple minimal d’un réseau :  </p>
+<pre><code class="python hljs">import torch.nn as nn
+
+model = nn.Sequential(
+    nn.Linear(1, 10),   # entrée 1D -&gt; couche cachée 10 neurones
+    nn.ReLU(),          
+    nn.Linear(10, 1)    # sortie 1D (régression)
+)</code></pre>
+<ol><li class="">Suivi de la loss et visualisation
+-------------------------------------</li>
+<li class="dash">Pendant l’entraînement, enregistrer la loss à chaque epoch pour voir si elle diminue.</li>
+<li class="dash">Comparer <code>y_pred</code> et <code>y_true</code> avec Matplotlib.</li>
+</ol>
+
+<pre><code class="python hljs">import matplotlib.pyplot as plt
+
+plt.plot(losses)              # courbe de la loss
+plt.scatter(x, y_true)        # données réelles
+plt.scatter(x, y_pred)        # prédictions</code></pre>
+<ol><li class="">Inspecter le modèle avec <code>torch-summary</code>
+----------------------------------------------</li>
+</ol>
+
+<p>Permet de voir le nombre de paramètres par couche et la structure du réseau.  </p>
+<pre><code class="python hljs">from torchsummary import summary
+summary(model, input_size=(1,))</code></pre>
 <p>################################ Activation fonction ######################################
 Parler de la softmax, relu , etc.
 ##########################################################################################</p>
-</div><div class="slide ">
-<a id="title.1.3"></a><h2>📖 20. Optimisation dans PyTorch</h2>
-<p>PyTorch fournit le module <code>torch.optim</code> qui implémente plusieurs algorithmes d’optimisation (SGD, Adam, etc.).  </p>
-<p>Exemple avec la descente de gradient stochastique (SGD) :</p>
-<pre><code class="python hljs">import torch
-import torch.nn as nn
-import torch.optim as optim
+<p>################################ MLP ######################################</p>
+<p>faire une classe avec fonction pour les couches et une pour le forward comme :<br />..code-block:: python  <br />    class MLP(nn.Module):
+        def __<a href="">init</a>(self, input_size, hidden_size, output_size):
+            super(MLP, self).__<a href="">init</a>()
+            self.fc1 = nn.Linear(input_size, hidden_size)
+            self.fc2 = nn.Linear(hidden_size, output_size)</p>
+<blockquote><p>def forward(self, x):
+    x = F.relu(self.fc1(x))
+    x = self.fc2(x)
+    return x</p>
+</blockquote>
+<p>parler de dataset loader et parler de broadcasting ?</p>
+<ul><li class="dash">parler de .detach() et .clone() ?</li>
+<li class="dash">parler de autograd profiler.profile</li>
+<li class="dash">parler de la gestion des outliers
+##########################################################################################</li>
+</ul>
 
-# Exemple : un modèle très simple (une seule couche linéaire)
-model = nn.Linear(1, 1)
-
-# Fonction de perte
-loss_fn = nn.MSELoss()
-
-# Optimiseur : SGD avec un learning rate de 0.01
-optimizer = optim.SGD(model.parameters(), lr=0.01)
-
-# Exemple de données
-x = torch.tensor([[1.0], [2.0], [3.0]])
-y = torch.tensor([[2.0], [4.0], [6.0]])  # y = 2x
-
-# Étape d’entraînement
-y_pred = model(x)            # 1. prédiction
-loss = loss_fn(y_pred, y)    # 2. calcul de la perte
-
-optimizer.zero_grad()        # 3. réinitialise les gradients
-loss.backward()              # 4. rétropropagation
-optimizer.step()             # 5. mise à jour des poids</code></pre>
-<hr />
 </div>
 <nav><ul class="pagination justify-content-center"><li class="page-item"><a class="page-link" href="chap1.html">&larr; Chapitre 1 - Introduction à PyTorch et Optimisation de Modèles</a></li><li class="page-item"><a class="page-link" href="index.html"><i class="bi bi-folder2"></i> Introduction aux fondamentaux de l&#039;apprentissage supervisé et du Deep Learning</a></li></ul></nav>
 
