@@ -710,6 +710,48 @@
             0 => '📖 2. Fonction d&#039;activation',
             1 => 
             array (
+              0 => 
+              array (
+                0 => '2.1. Équations des fonctions d&#039;activation',
+                1 => 
+                array (
+                ),
+              ),
+              1 => 
+              array (
+                0 => '2.2. Représentation graphique des fonctions d&#039;activation',
+                1 => 
+                array (
+                ),
+              ),
+              2 => 
+              array (
+                0 => '2.3. Les fonctions d&#039;activation dans PyTorch',
+                1 => 
+                array (
+                ),
+              ),
+              3 => 
+              array (
+                0 => '2.4. Rôle de la fonction d’activation',
+                1 => 
+                array (
+                ),
+              ),
+              4 => 
+              array (
+                0 => '2.5. Exemple d&#039;utilisation des fonctions d&#039;activation',
+                1 => 
+                array (
+                ),
+              ),
+              5 => 
+              array (
+                0 => '2.6. Choisir la fonction d&#039;activation adaptée',
+                1 => 
+                array (
+                ),
+              ),
             ),
           ),
           3 => 
@@ -719,14 +761,105 @@
             array (
               0 => 
               array (
-                0 => '3.1 Définitions importantes',
+                0 => '3.1 Définitions',
                 1 => 
                 array (
                 ),
               ),
               1 => 
               array (
-                0 => '3.2 Pourquoi plusieurs epochs ?',
+                0 => '3.2 Pourquoi effectuer plusieurs epochs ?',
+                1 => 
+                array (
+                ),
+              ),
+            ),
+          ),
+          4 => 
+          array (
+            0 => '📖 4. Normalisation et standardisation des données',
+            1 => 
+            array (
+              0 => 
+              array (
+                0 => '4.1. Normalisation',
+                1 => 
+                array (
+                ),
+              ),
+              1 => 
+              array (
+                0 => '4.2. Exemple de normalisation avec PyTorch',
+                1 => 
+                array (
+                ),
+              ),
+              2 => 
+              array (
+                0 => '4.3. Standardisation',
+                1 => 
+                array (
+                ),
+              ),
+              3 => 
+              array (
+                0 => '4.4. Exemple de standardisation avec PyTorch',
+                1 => 
+                array (
+                ),
+              ),
+              4 => 
+              array (
+                0 => '4.5. Normalisation vs. Standardisation',
+                1 => 
+                array (
+                ),
+              ),
+              5 => 
+              array (
+                0 => '4.6. Ce qui est attendu après la standardisation',
+                1 => 
+                array (
+                ),
+              ),
+            ),
+          ),
+          5 => 
+          array (
+            0 => '📖 5. Réseaux de neurones multi-couches (MLP)',
+            1 => 
+            array (
+              0 => 
+              array (
+                0 => '5.1. Définitions',
+                1 => 
+                array (
+                ),
+              ),
+              1 => 
+              array (
+                0 => '5.2. Construction d&#039;un MLP',
+                1 => 
+                array (
+                ),
+              ),
+              2 => 
+              array (
+                0 => '5.3. Construire un MLP simple avec <code>torch.nn</code>',
+                1 => 
+                array (
+                ),
+              ),
+              3 => 
+              array (
+                0 => '5.4. Construire un MLP avec une classe',
+                1 => 
+                array (
+                ),
+              ),
+              4 => 
+              array (
+                0 => '5.5. Résoudre XOR avec un MLP',
                 1 => 
                 array (
                 ),
@@ -739,7 +872,7 @@
     'tocs' => 
     array (
     ),
-    'ctime' => 1756394998,
+    'ctime' => 1756484388,
     'depends' => 
     array (
     ),
