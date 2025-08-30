@@ -538,19 +538,51 @@ Ainsi, Autograd reproduit automatiquement ce calcul grâce au graphe computation
 
 
 .. slide::
-📖 12. Désactivation du suivi des gradients
+📖 12. Manipuler les tenseurs sans gradients 
 ---------------------
+En PyTorch, il est souvent utile de séparer certaines opérations du calcul des gradients. Voici trois outils pour cela : ``.detach()``, ``.clone()`` et ``torch.no_grad()``.
 
-Pour certaines opérations, par exemple lors de l'évaluation d'un modèle, il est inutile
-de calculer les gradients. On peut alors désactiver le suivi avec ``torch.no_grad()`` :
+12.1. ``.detach()``
+~~~~~~~~~~~~~~~~~~
+
+- Crée un nouveau tenseur avec les mêmes valeurs que l’original, mais sans suivre le calcul des gradients.
+- Utile pour utiliser ou visualiser des valeurs sans affecter la rétropropagation.
 
 .. code-block:: python
 
-    with torch.no_grad():
-        z = x * 2
-    print(z)
+   x = torch.tensor([1.0, 2.0], requires_grad=True)
+   y = x * 2
+   z = y.detach()  # z ne calcule pas de gradient
+   print(z)
 
-Cela permet d'économiser de la mémoire et d'accélérer les calculs.
+.. slide::
+12.2. ``.clone()``
+~~~~~~~~~~~~~~~~~
+
+- Crée une copie indépendante d’un tenseur.
+- La copie peut continuer à calculer des gradients si `requires_grad=True`.
+- Utile pour conserver un état avant modification.
+
+.. code-block:: python
+
+   y_clone = y.clone()
+   print(y_clone)
+
+.. slide::
+12.3. ``torch.no_grad()``
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Contexte qui empêche toutes les opérations à l’intérieur de calculer des gradients.
+- Utile pour l'évaluation du modèle, quand on ne veut pas mettre à jour les paramètres du modèle.
+- Permet d'économiser de la mémoire et d'accélérer les calculs.
+
+.. code-block:: python
+
+   with torch.no_grad():
+       y_no_grad = x * 2
+       print(y_no_grad)
+
+
 
 .. slide::
 📖 13. Les fonctions de perte (Loss Functions)

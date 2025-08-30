@@ -538,7 +538,7 @@ Exemple minimal en PyTorch avec une seule couche cachée et une activation non-l
 
     # Données XOR
     X = torch.tensor([[0,0],[0,1],[1,0],[1,1]], dtype=torch.float32)
-    y = torch.tensor([[0],[0],[0],[1]], dtype=torch.float32)
+    y = torch.tensor([[0],[1],[1],[0]], dtype=torch.float32)
 
     # Définition du MLP avec une classe
     class XORMLP(nn.Module):
@@ -601,54 +601,411 @@ Exemple minimal en PyTorch avec une seule couche cachée et une activation non-l
 - L’utilisation d’une classe et de la méthode ``forward`` rend le code plus modulable et facilite l’expérimentation avec différentes architectures de MLP.
 - Vous pouvez remplacer la ReLU par une Tanh et voir la différence dans l'affichage.
 
-.. slide::
-
-################################ STOP ICI ################################
-
-################################ STOP ICI ################################
-
-################################ STOP ICI ################################
-
-################################ STOP ICI ################################
-
-################################ STOP ICI ################################
-
-################################ STOP ICI ################################
-
 
 .. slide::
+5.6. Standardisation et entraînement d'un MLP sur un exemple de régression
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
-################################ MLP ######################################
-- il faut mettre en lumière epoch
-- Faire un exemple plus dure pour montrer l'intérêt de standardiser les données
-
-
-
-parler de dataset loader et parler de broadcasting ?
-
-- parler de .detach() et .clone() ?
-
-- parler de autograd profiler.profile
-
-- parler de la gestion des outliers
-##########################################################################################
-
-
-
-6. Suivi de la loss et visualisation
--------------------------------------
-
-- Pendant l’entraînement, enregistrer la loss à chaque epoch pour voir si elle diminue.  
-- Comparer ``y_pred`` et ``y_true`` avec Matplotlib.  
+On repart avec un exemple de régression simple pour illustrer l'importance de la standardisation des données avant l'entraînement d'un MLP. L'objectif est de prédire la sortie y pour de nouvelles entrées x que celles sur lesquelles le modèle a été entraîné.
 
 .. code-block:: python
 
+   import torch
+   import torch.nn as nn
+   import torch.optim as optim
    import matplotlib.pyplot as plt
 
-   plt.plot(losses)              # courbe de la loss
-   plt.scatter(x, y_true)        # données réelles
-   plt.scatter(x, y_pred)        # prédictions
+   # Données
+   X = torch.tensor([[0.],[10.],[20.],[30.],[40.],[50.]])
+   y = 2*X + 1 # relation linéaire exacte
+   # y = 2*X + 1 + torch.randn_like(X)*5  # relation linéaire bruitée
+
+   # Standardisation
+   X_mean, X_std = X.mean(), X.std()
+   X_stdized = (X - X_mean)/X_std
+
+   # Modèle simple
+   class MLP(nn.Module):
+       def __init__(self):
+           super().__init__()
+           self.net = nn.Sequential(
+               nn.Linear(1, 5),
+               nn.ReLU(),
+               nn.Linear(5,1)
+           )
+       def forward(self, x):
+           return self.net(x)
+
+   # Modèles
+   model_no_std = MLP()
+   model_std = MLP()
+
+   # Optimiseur
+   optimizer_no_std = optim.SGD(model_no_std.parameters(), lr=0.001)
+   optimizer_std = optim.SGD(model_std.parameters(), lr=0.01)
+
+   # Entraînement
+   for _ in range(5000):
+       # Sans standardisation
+       pred_no_std = model_no_std(X)
+       loss_no_std = ((pred_no_std - y)**2).mean()
+       optimizer_no_std.zero_grad()
+       loss_no_std.backward()
+       optimizer_no_std.step()
+
+       # Avec standardisation
+       pred_std = model_std(X_stdized)
+       loss_std = ((pred_std - y)**2).mean()
+       optimizer_std.zero_grad()
+       loss_std.backward()
+       optimizer_std.step()
+
+   # Test des prédictions
+   X_test = torch.tensor([[0.],[60.]])
+   X_test_std = (X_test - X_mean)/X_std
+
+   with torch.no_grad():
+       preds_no_std = model_no_std(X_test)
+       preds_std = model_std(X_test_std)
+
+   print("Prédictions finales (Sans standardisation) :", preds_no_std.squeeze().tolist())
+   print("Prédictions finales (Avec standardisation)  :", preds_std.squeeze().tolist())
+
+   # Visualisation
+   plt.scatter(X, y, color='black', label='Données')
+   plt.scatter(X_test, preds_no_std, color='red', label='Sans standardisation')
+   plt.scatter(X_test, preds_std, color='blue', label='Avec standardisation')
+   plt.legend()
+   plt.title("Impact de la standardisation sur la prédiction finale")
+   plt.xlabel("x")
+   plt.ylabel("y")
+   plt.show()
+
+.. slide::
+5.7. Analyse des résultats de l'exemple de régression
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+Les sorties attendues sont $$y_true = [1, 121]$$.
+
+- **Sans standardisation** :  
+  Prédictions finales $$\approx [1.0, 60.98]$$ → Le modèle prédit correctement pour $$x=0$$ mais extrapole mal pour $$x=60$$.  Cela montre que l’échelle des données peut déséquilibrer la descente de gradient.
+
+- **Avec standardisation** :  
+  Prédictions finales $$\approx [0.99999, 120.99]$$ → Le modèle prédit presque parfaitement la relation linéaire. La standardisation permet de centrer et réduire les données, équilibrant les gradients et accélérant la convergence.
+
+💡 **Conclusion** :
+
+    - La standardisation rend le modèle plus stable et fiable pour des valeurs en dehors de l’échelle d’entraînement.  
+    - Même pour un réseau simple, ne pas standardiser peut provoquer des extrapolations incorrectes, alors que la standardisation corrige ce problème.
+    - De plus, si les données d'entrée sont bruitées, ne pas standardiser peut dégrader encore plus les performances du modèle. Pour le tester, il suffit de décommenter la ligne ``y = 2*X + 1 + torch.randn_like(X)*5`` et relancer l'entraînement.
+
+.. slide::
+
+📖 6. Broadcasting
+----------------------------
+
+6.1 Qu'est-ce que le broadcasting ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Le broadcasting est un mécanisme qui permet à PyTorch de faire des opérations entre tenseurs de dimensions différentes sans avoir à écrire de boucles. C'est comme cela qu'est fait l'opération de centrage des données (soustraction de la moyenne) dans la standardisation des données.
+
+💡 Idée principale :
+
+- Si les dimensions des tenseurs sont compatibles, PyTorch réplique automatiquement le tenseur de plus petite dimension pour correspondre à la taille du tenseur le plus grand.
+- Cela permet de vectoriser les calculs et de rendre le code plus simple et rapide.
+
+.. slide::
+6.2 Exemple de broadcasting pour centrer des données
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+   import torch
+
+   # Matrice 3x2
+   X = torch.tensor([[1., 2.],
+                     [3., 4.],
+                     [5., 6.]])
+
+   # Moyenne de chaque colonne
+   mean = X.mean(dim=0)  # dimension (2,)
+
+   # On soustrait la moyenne à chaque ligne
+   X_centered = X - mean  # broadcasting
+
+   print("X centré :", X_centered)
+
+💡 Conclusion : Même si ``mean`` est un vecteur (dimension 2), PyTorch l’applique à toutes les lignes de ``X``. Le tenseur ``mean`` est automatiquement “étendu” pour correspondre à ``X``.  
+
+✅ Résultat : On peut centrer toutes les lignes d’un coup, sans boucle.
+
+
+
+.. slide::
+📖 7. Observer la loss et déterminer le nombre d’epochs
+------------------------------------------------------
+Lorsqu’on entraîne un modèle, il est essentiel de suivre l’évolution de la loss pour savoir si le modèle apprend correctement et converge vers une solution. Dans l’exemple précédent, nous avons comparé l’impact de la standardisation sur les prédictions finales. Nous allons maintenant observer l’évolution de la loss pendant l’entraînement pour mieux comprendre la convergence et déterminer un nombre d’epochs approprié. Nous allons continuer à utiliser les données suivantes pour entraîner le modèle :
+
+.. code-block:: python
+
+   # Données d'entraînement
+   X = torch.tensor([[0.],[10.],[20.],[30.],[40.],[50.]])
+   y = 2*X + 1
+
+7.1. Suivi de la loss
+~~~~~~~~~~~~~~~~~~~~~
+
+Pour suivre la loss pour le modèle avec et sans standardisation il faut d'abord créer deux listes pour stocker les valeurs de la loss à chaque epoch. Pour cela, il suffit d'ajouter le code suivant avant la classe de création du modèle : 
+
+.. code-block:: python
+
+    ...
+
+    # Listes pour stocker l'évolution de la loss
+    losses_no_std = []
+    losses_std = []
+
+    ...
+
+
+.. slide::
+Ensuite, pendant l’entraînement, on ajoute la valeur de la loss à dans les listes pour chaque epoch. Cela ce fait comme suit : 
+
+.. code-block:: python
+
+    ...
+
+    # Sans standardisation
+    pred_no_std = model_no_std(X)
+    
+    ...
+
+    optimizer_no_std.step()
+    losses_no_std.append(loss_no_std.item()) # Ligne à ajouter
+
+    # Avec standardisation
+    pred_std = model_std(X_stdized)
+    
+    ...
+
+    optimizer_std.step()
+    losses_std.append(loss_std.item()) # Ligne à ajouter
+
+    ...
+
+.. slide::
+Enfin on ajoute les lignes de code suivante pour tracer les loss à la fin du code : 
+
+.. code-block:: python
+
+    ...
+
+    # Visualisation de la loss
+    plt.plot(losses_no_std, label='Sans standardisation')
+    plt.plot(losses_std, label='Avec standardisation')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss MSE')
+    plt.title("Évolution de la loss pendant l'entraînement")
+    plt.legend()
+    plt.show()
+
+
+.. slide::
+7.2. Interprétation du résultat
+~~~~~~~~~~~~~~~~~~
+
+- **Convergence** :  
+  - Si la loss diminue et se stabilise autour d’une valeur faible, le modèle converge.  
+  - Si la loss reste très élevée ou diverge, le modèle ne converge pas correctement.
+
+- **Choix du nombre d’epochs** :  
+  - En regardant le graphique, on peut déterminer à partir de quel epoch la loss se stabilise.  
+  - Cela permet de choisir un nombre d’epochs suffisant sans sur-entraîner le modèle inutilement.
+  - Dans cet exemple, on découvre que pour le modèle qui s'entraîne avec standardisation, la loss se stabilise à 0 autour de 500 epochs. Vous pouvez réduire le nombre d'epochs et vérifier que 500 epochs suffisent.
+
+.. note::
+    **Remarque** : Si vous relancer l'entraînement, le graphique de la loss peut varier à cause de l'initialisation aléatoire des poids sauf si vous utilisez un ``seed`` fixe.
+
+.. slide::
+7.3. Early Stopping
+~~~~~~~~~~~~~~~~~~~~
+
+Pour éviter de trop entraîner le modèle, on peut surveiller la loss et arrêter l’entraînement lorsque la perte ne diminue plus. Cela s’appelle l’early stopping. On peut automatiser le processus avec PyTorch. Tout d'abord, il faut remmetre le nombre d'epoch à 5000. Ensuite il faut créer les variables suivantes et les ajouter avant la classe qui construit le modèle :
+
+.. code-block:: python
+
+    ...
+
+    # Paramètres pour l'early stopping
+    patience = 50       # nombre d'epochs sans amélioration avant arrêt
+    best_loss_std = float('inf') # meilleure loss observée pour le modèle avec standardisation (initialisée à l'infini pour que la première amélioration soit toujours acceptée)
+    counter_std = 0 # compteur d'epochs sans amélioration
+
+    patience_no_std = 50
+    best_loss_no_std = float('inf')    
+    counter_no_std = 0
+
+    ...
+
+.. slide::
+Ensuite, il faut ajouter le code suivant à la fin de chaque boucle d'entraînement pour vérifier si la loss s'est améliorée ou non. Si elle ne s'améliore pas pendant un certain nombre d'epochs (défini par ``patience``), l'entraînement s'arrête automatiquement. Voici le code à ajouter :
+
+.. code-block:: python
+
+    ...
+
+    # Sans standardisation
+
+    ...
+
+
+    losses_no_std.append(loss_no_std.item())
+
+    # Early stopping pour le modèle sans standardisation (code à ajouter)
+    if loss_no_std.item() < best_loss_no_std:
+        best_loss_no_std = loss_no_std.item()
+        counter_no_std = 0
+    else:
+        counter_no_std += 1
+    if counter_no_std >= patience_no_std:
+        print(f"Arrêt anticipé (sans std) à l'epoch {epoch}, loss = {best_loss_no_std:.4f}")
+        break
+
+    # Avec standardisation
+   
+    ...
+
+    losses_std.append(loss_std.item())
+
+    # Early stopping pour le modèle standardisé (code à ajouter)
+    if loss_std.item() < best_loss_std:
+        best_loss_std = loss_std.item()
+        counter_std = 0
+    else:
+        counter_std += 1
+    if counter_std >= patience:
+        print(f"Arrêt anticipé (avec std) à l'epoch {epoch}, loss = {best_loss_std:.4f}")
+        break
+
+    ...
+
+.. slide::
+
+💡 **Remarque** :  
+
+- Cette méthode simple permet de déterminer un nombre d’epochs approprié automatiquement.  
+- Pour cet exemple, le modèle sans standardisation des données ne converge jamais avec une loss $$\approx 0$$ tandis que le modèle avec standardisation des données converge à partir d'environ 200 epochs.
+- Dans la pratique, on combine souvent early stopping avec un jeu de validation pour éviter le surapprentissage.
+
+.. slide::
+7.4.  Observer la performance des gradients avec autograd profiler
+~~~~~~~~~~~~~~~~~~~~
+Pour encore plus améliorer la performance de votre modèle, PyTorch fournit ``torch.autograd.profiler.profile`` pour profiler le calcul des gradients.
+
+
+7.4.1. Rôle du profiler
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Profiler le calcul des gradients permet de :
+
+- Mesurer le temps et la mémoire consommés par chaque opération.
+- Identifier les goulots d'étranglement dans le réseau.
+- Optimiser et débugger les modèles complexes.
+
+.. slide::
+7.4.2. Exemple d'utilisation du profiler pour l'exemple de régression
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Pour tester le profiler, il suffit d'ajouter le code suivant juste après la définition du modèle :
+
+.. code-block:: python
+
+    ...
+
+    import torch.autograd.profiler as profiler
+
+    # Faire un profiling sur une seule passe avant la boucle d'entraînement
+    with profiler.profile(use_cuda=False) as prof_dummy:
+        # Forward + backward sur le modèle standardisé
+        pred_std = model_std(X_stdized)
+        loss_std = ((pred_std - y)**2).mean()
+        optimizer_std.zero_grad()
+        loss_std.backward()
+
+    # Afficher le profil
+    print("Profil pour le modèle standardisé (une seule passe avant entraînement) :")
+    print(prof_dummy.key_averages().table(sort_by="cpu_time_total"))
+
+    ...
+
+.. slide::
+**Conclusion** : 
+
+    - Les résultats permettent de savoir quelles opérations sont les plus coûteuses.  
+    - On n’utilise pas ce profiler à chaque entraînement, on le fait juste une fois pour optimiser ou comprendre le modèle.
+
+    - Chaque opération exécutée par PyTorch y est listée avec :
+        - `Self CPU %` : temps passé directement dans l’opération.
+        - `CPU total %` : temps total incluant les sous-opérations.
+        - `# of Calls` : nombre d’appels à l’opération.
+
+    - Les **couches linéaires** (`aten::linear`) prennent la majeure partie du temps : multiplication matricielle + bias.
+    - Les **activations** (`ReLU`, `Tanh`) et les calculs de **loss** (`mean`, `pow`) consomment moins de temps mais sont nécessaires pour propager les gradients.
+    - Les opérations comme `detach` ou `clone` apparaissent lorsqu’on fait des copies ou qu’on détache un tenseur du graphe pour ne pas calculer de gradient dessus.
+    - Ce profilage permet de **visualiser les goulots d’étranglement** et d’optimiser l’entraînement si nécessaire.
+
+    - Pour un petit MLP, le plus coûteux est le calcul des couches linéaires et du backward. Sur des modèles plus grands ou avec GPU, ces informations sont cruciales pour comprendre et améliorer les performances.
+
+
+
+.. slide::
+
+
+################################ STOP ICI ################################
+
+################################ STOP ICI ################################
+
+################################ STOP ICI ################################
+
+################################ STOP ICI ################################
+
+################################ STOP ICI ################################
+
+################################ STOP ICI ################################
+
+
+
+
+
+
+
+
+.. slide::
+
+
+Loss
+-------
+
+######################
+
+- parler de autograd profiler.profile  (À revoir)
+
+
+Pour analyser les performances de votre modèle, vous pouvez utiliser le profiler de PyTorch. Cela vous permettra d'identifier les goulots d'étranglement dans votre code et d'optimiser les performances.
+
+Voici comment utiliser le profiler :
+
+.. code-block:: python
+
+   import torch
+   from torch.profiler import profile, record_function, ProfilerActivity
+
+   # Exemple d'utilisation du profiler
+   with profile(activities=[ProfilerActivity.CPU], profile_memory=True) as prof:
+       model(input_tensor)
+
+   print(prof.key_averages().table(sort_by="cpu_time_total", row_limit=10))
+
+
+#########################
+
 
 
 7. Inspecter le modèle avec ``torch-summary``
@@ -661,25 +1018,4 @@ Permet de voir le nombre de paramètres par couche et la structure du réseau.
    from torchsummary import summary
    summary(model, input_size=(1,))
 
-
-
-
-.. slide::
-4. Normaliser / standardiser les données
------------------------------
-
-
-Exemple avec scikit-learn :  À ajouter ?????
-
-.. code-block:: python
-
-   from sklearn.preprocessing import StandardScaler
-   scaler = StandardScaler()
-   X_scaled = scaler.fit_transform(X)
-
-
-
-
-
-############################ Il faudra penser à créer un gitlab pour le cours ##################
 

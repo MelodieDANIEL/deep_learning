@@ -482,9 +482,30 @@
           ),
           12 => 
           array (
-            0 => '📖 12. Désactivation du suivi des gradients',
+            0 => '📖 12. Manipuler les tenseurs sans gradients ',
             1 => 
             array (
+              0 => 
+              array (
+                0 => '12.1. <code>.detach()</code>',
+                1 => 
+                array (
+                ),
+              ),
+              1 => 
+              array (
+                0 => '12.2. <code>.clone()</code>',
+                1 => 
+                array (
+                ),
+              ),
+              2 => 
+              array (
+                0 => '12.3. <code>torch.no_grad()</code>',
+                1 => 
+                array (
+                ),
+              ),
             ),
           ),
           13 => 
@@ -637,7 +658,7 @@
         0 => 'TP_chap1',
       ),
     ),
-    'ctime' => 1756227239,
+    'ctime' => 1756567735,
     'depends' => 
     array (
       0 => 'TP_chap1',
@@ -864,6 +885,97 @@
                 array (
                 ),
               ),
+              5 => 
+              array (
+                0 => '5.6. Standardisation et entraînement d&#039;un MLP sur un exemple de régression',
+                1 => 
+                array (
+                ),
+              ),
+              6 => 
+              array (
+                0 => '5.7. Analyse des résultats de l&#039;exemple de régression',
+                1 => 
+                array (
+                ),
+              ),
+            ),
+          ),
+          6 => 
+          array (
+            0 => '📖 6. Broadcasting',
+            1 => 
+            array (
+              0 => 
+              array (
+                0 => '6.1 Qu&#039;est-ce que le broadcasting ?',
+                1 => 
+                array (
+                ),
+              ),
+              1 => 
+              array (
+                0 => '6.2 Exemple de broadcasting pour centrer des données',
+                1 => 
+                array (
+                ),
+              ),
+            ),
+          ),
+          7 => 
+          array (
+            0 => '📖 7. Observer la loss et déterminer le nombre d’epochs',
+            1 => 
+            array (
+              0 => 
+              array (
+                0 => '7.1. Suivi de la loss',
+                1 => 
+                array (
+                ),
+              ),
+              1 => 
+              array (
+                0 => '7.2. Interprétation du résultat',
+                1 => 
+                array (
+                ),
+              ),
+              2 => 
+              array (
+                0 => '7.3. Early Stopping',
+                1 => 
+                array (
+                ),
+              ),
+              3 => 
+              array (
+                0 => '7.4.  Observer la performance des gradients avec autograd profiler',
+                1 => 
+                array (
+                ),
+              ),
+              4 => 
+              array (
+                0 => '7.4.1. Rôle du profiler',
+                1 => 
+                array (
+                ),
+              ),
+              5 => 
+              array (
+                0 => '7.4.2. Exemple d&#039;utilisation du profiler pour l&#039;exemple de régression',
+                1 => 
+                array (
+                ),
+              ),
+            ),
+          ),
+          8 => 
+          array (
+            0 => 'Loss',
+            1 => 
+            array (
             ),
           ),
         ),
@@ -872,7 +984,7 @@
     'tocs' => 
     array (
     ),
-    'ctime' => 1756484388,
+    'ctime' => 1756573319,
     'depends' => 
     array (
     ),
