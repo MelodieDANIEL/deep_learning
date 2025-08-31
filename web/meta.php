@@ -950,21 +950,28 @@
               ),
               3 => 
               array (
-                0 => '7.4.  Observer la performance des gradients avec autograd profiler',
+                0 => '📖 8. Observer le modèle avec <code>torch-summary</code> et la performance des gradients avec autograd profiler',
                 1 => 
                 array (
                 ),
               ),
               4 => 
               array (
-                0 => '7.4.1. Rôle du profiler',
+                0 => '8.1. Utiliser <code>torchsummary</code>',
                 1 => 
                 array (
                 ),
               ),
               5 => 
               array (
-                0 => '7.4.2. Exemple d&#039;utilisation du profiler pour l&#039;exemple de régression',
+                0 => '8.2. Rôle du profiler',
+                1 => 
+                array (
+                ),
+              ),
+              6 => 
+              array (
+                0 => '8.3. Exemple d&#039;utilisation du profiler pour l&#039;exemple de régression',
                 1 => 
                 array (
                 ),
@@ -973,7 +980,14 @@
           ),
           8 => 
           array (
-            0 => 'Loss',
+            0 => '📖 8. Inspecter le modèle avec <code>torch-summary</code>',
+            1 => 
+            array (
+            ),
+          ),
+          9 => 
+          array (
+            0 => '🏋️ Travaux Pratiques 2',
             1 => 
             array (
             ),
@@ -983,10 +997,15 @@
     ),
     'tocs' => 
     array (
+      0 => 
+      array (
+        0 => 'TP_chap2',
+      ),
     ),
-    'ctime' => 1756573319,
+    'ctime' => 1756639570,
     'depends' => 
     array (
+      0 => 'TP_chap2',
     ),
     'parent' => 'index',
   ),
@@ -1069,5 +1088,57 @@
     array (
     ),
     'parent' => 'chap1',
+  ),
+  'TP_chap2' => 
+  array (
+    'file' => 'TP_chap2',
+    'url' => 'TP_chap2.html',
+    'title' => '🏋️ Travaux Pratiques 2',
+    'titles' => 
+    array (
+      0 => 
+      array (
+        0 => '🏋️ Travaux Pratiques 2',
+        1 => 
+        array (
+          0 => 
+          array (
+            0 => '🍀 Exercice 1 : Approximations d’une fonction non linéaire',
+            1 => 
+            array (
+            ),
+          ),
+          1 => 
+          array (
+            0 => '⚖️ Exercice 2 : Comparaison de l&#039;entraînement d&#039;un MLP sur données brutes et standardisées',
+            1 => 
+            array (
+            ),
+          ),
+        ),
+      ),
+      1 => 
+      array (
+        0 => '🏋️ Exercices supplémentaires 2',
+        1 => 
+        array (
+          0 => 
+          array (
+            0 => '⚖️ Exercice supplémentaire 1 : Approximation d&#039;une fonction 2D avec un MLP ',
+            1 => 
+            array (
+            ),
+          ),
+        ),
+      ),
+    ),
+    'tocs' => 
+    array (
+    ),
+    'ctime' => 1756656196,
+    'depends' => 
+    array (
+    ),
+    'parent' => 'chap2',
   ),
 );

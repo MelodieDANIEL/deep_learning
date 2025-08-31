@@ -760,82 +760,105 @@ if counter_std &gt;= patience:
 </ul>
 
 </div><div class="slide ">
-<a id="title.1.8.4"></a><h3>7.4.  Observer la performance des gradients avec autograd profiler</h3>
-<p>Pour encore plus améliorer la performance de votre modèle, PyTorch fournit <code>torch.autograd.profiler.profile</code> pour profiler le calcul des gradients.</p>
-<a id="title.1.8.5"></a><h3>7.4.1. Rôle du profiler</h3>
-<p>Profiler le calcul des gradients permet de :</p>
+<a id="title.1.8.4"></a><h3>📖 8. Observer le modèle avec <code>torch-summary</code> et la performance des gradients avec autograd profiler</h3>
+<p>Il existe plusieurs outils PyTorch qui permettent d&#039;inspecter et de profiler les modèles. Le but étant de parvenir à identifier les goulots d&#039;étranglement et à optimiser les performances. Parmi eux, on trouve :</p>
+<ul><li class="dash"><code>torchsummary</code> : pour visualiser la structure du modèle et le nombre de paramètres par couche.</li>
+<li class="dash"><code>torch.autograd.profiler</code> : pour profiler le calcul des gradients et identifier les opérations coûteuses.</li>
+</ul>
+
+<a id="title.1.8.5"></a><h3>8.1. Utiliser <code>torchsummary</code></h3>
+<p><code>torchsummary</code> permet de visualiser la structure du modèle et le nombre de paramètres par couche avant l&#039;entraînement. Pour l&#039;utiliser, il faut d&#039;abord l&#039;installer :</p>
+<pre><code class="bash hljs">pip install torch-summary</code></pre>
+<p>Ensuite, juste après la définition de votre modèle, vous pouvez faire un résumé du modèle :</p>
+<pre><code class="python hljs">from torchsummary import summary
+
+# Modèle standardisé défini précédemment
+# Créer une copie sur CPU pour torchsummary
+model_std_cpu = MLP().to(&quot;cpu&quot;)
+
+# Résumé du modèle
+# input_size correspond aux dimensions d&#039;un échantillon (hors batch)
+# Ici, chaque échantillon a 1 feature (scalaire)
+summary(model_std_cpu, input_size=(1,), device=&quot;cpu&quot;)</code></pre>
+</div><div class="slide ">
+<p>Explications :</p>
+<ul><li class="dash"><code>input_size</code> : dimensions d’un échantillon (hors batch).
+  Dans notre exemple, chaque échantillon est un scalaire (1 feature), donc <code>input_size=(1,)</code>.  </li>
+<li class="dash"><code>device</code> : ici &quot;cpu&quot; pour éviter tout conflit CUDA si le modèle ou PyTorch envoie certains tenseurs sur GPU.</li>
+<li class="dash">Résultat : pour chaque couche, on voit :</li>
+<ul><li class="dash">le type de couche (Linear, ReLU…)</li>
+<li class="dash">la taille des tenseurs intermédiaires</li>
+<li class="dash">le nombre de paramètres</li>
+<li class="dash">le nombre de paramètres entraînables</li>
+</ul>
+</ul>
+
+</div><div class="slide ">
+<a id="title.1.8.6"></a><h3>8.2. Rôle du profiler</h3>
+<p>Pour encore plus améliorer la performance de votre modèle, PyTorch fournit <code>torch.autograd.profiler.profile</code> pour profiler le calcul des gradients ce qui permet de :</p>
 <ul><li class="dash">Mesurer le temps et la mémoire consommés par chaque opération.</li>
 <li class="dash">Identifier les goulots d&#039;étranglement dans le réseau.</li>
 <li class="dash">Optimiser et débugger les modèles complexes.</li>
 </ul>
 
 </div><div class="slide ">
-<a id="title.1.8.6"></a><h3>7.4.2. Exemple d&#039;utilisation du profiler pour l&#039;exemple de régression</h3>
-<p>Pour tester le profiler, il suffit d&#039;ajouter le code suivant juste après la définition du modèle :</p>
+<a id="title.1.8.7"></a><h3>8.3. Exemple d&#039;utilisation du profiler pour l&#039;exemple de régression</h3>
+<p>Pour tester le profiler, il suffit d&#039;ajouter le code suivant juste après le code de <code>torchsummary</code> :</p>
 <pre><code class="python hljs">...
 
+# torch.autograd.profiler est utilisé dans ce chapitre pour la simplicité
+# Pour des usages avancés (timeline, TensorBoard), on peut utiliser torch.profiler
 import torch.autograd.profiler as profiler
 
 # Faire un profiling sur une seule passe avant la boucle d&#039;entraînement
-with profiler.profile(use_cuda=False) as prof_dummy:
+with profiler.profile(use_cuda=True, profile_memory=True) as prof_dummy:
     # Forward + backward sur le modèle standardisé
     pred_std = model_std(X_stdized)
     loss_std = ((pred_std - y)**2).mean()
     optimizer_std.zero_grad()
     loss_std.backward()
 
-# Afficher le profil
-print(&quot;Profil pour le modèle standardisé (une seule passe avant entraînement) :&quot;)
+# Afficher le profil CPU (temps d&#039;exécution)
+print(&quot;Profil CPU pour le modèle standardisé (une seule passe avant entraînement) :&quot;)
 print(prof_dummy.key_averages().table(sort_by=&quot;cpu_time_total&quot;))
+
+# Afficher le profil GPU (mémoire consommée)
+print(prof_dummy.key_averages().table(sort_by=&quot;self_cuda_memory_usage&quot;, row_limit=10))
 
 ...</code></pre>
 </div><div class="slide ">
 <p><strong>Conclusion</strong> : </p>
-<ul><li class="dash">Les résultats permettent de savoir quelles opérations sont les plus coûteuses.</li>
-<li class="dash">On n’utilise pas ce profiler à chaque entraînement, on le fait juste une fois pour optimiser ou comprendre le modèle.</li>
-<li class="dash">Chaque opération exécutée par PyTorch y est listée avec :</li>
-<ul><li class="dash">`Self CPU %` : temps passé directement dans l’opération.</li>
-<li class="dash">`CPU total %` : temps total incluant les sous-opérations.</li>
-<li class="dash">`# of Calls` : nombre d’appels à l’opération.</li>
+<ul><li class="dash">On peut profiler à la fois le <strong>temps CPU</strong> et la <strong>mémoire GPU</strong>.</li>
+<li class="dash">On utilise :</li>
+<ul><li class="dash"><code>cpu_time_total</code> pour identifier les opérations coûteuses en calcul,</li>
+<li class="dash"><code>self_cuda_memory_usage</code> pour repérer celles qui consomment le plus de mémoire GPU.</li>
 </ul>
-<li class="dash">Les <strong>couches linéaires</strong> (`aten::linear`) prennent la majeure partie du temps : multiplication matricielle + bias.</li>
-<li class="dash">Les <strong>activations</strong> (`ReLU`, `Tanh`) et les calculs de <strong>loss</strong> (`mean`, `pow`) consomment moins de temps mais sont nécessaires pour propager les gradients.</li>
-<li class="dash">Les opérations comme `detach` ou `clone` apparaissent lorsqu’on fait des copies ou qu’on détache un tenseur du graphe pour ne pas calculer de gradient dessus.</li>
+<li class="dash">Le profiler ralentit fortement l&#039;exécution : il ne doit pas être utilisé pendant tout l’entraînement, mais seulement ponctuellement pour analyser ou optimiser.</li>
+<li class="dash">Chaque opération exécutée sur le CPU par PyTorch y est listée avec :</li>
+<ul><li class="dash"><code>Self CPU %</code> : temps passé directement dans l’opération.</li>
+<li class="dash"><code>CPU total %</code> : temps total incluant les sous-opérations.</li>
+<li class="dash"><code># of Calls</code> : nombre d’appels à l’opération.</li>
+</ul>
+<li class="dash">Chaque opération exécutée sur le GPU par PyTorch y est listée avec :</li>
+<ul><li class="dash"><code>Self CUDA Memory Usage</code> : mémoire GPU utilisée directement par l’opération.</li>
+<li class="dash"><code>CUDA Memory Usage</code> : mémoire totale incluant les sous-opérations.</li>
+<li class="dash"><code># of Calls</code> : nombre d’appels à l’opération.</li>
+</ul>
+<li class="dash">Les <strong>couches linéaires</strong> (<code>aten::linear</code>) prennent la majeure partie du temps : multiplication matricielle + bias.</li>
+<li class="dash">Les <strong>activations</strong> (<code>ReLU</code>, <code>Tanh</code>) et les calculs de <strong>loss</strong> (<code>mean</code>, <code>pow</code>) consomment moins de temps mais sont nécessaires pour propager les gradients.</li>
+<li class="dash">Les opérations comme <code>detach</code> ou <code>clone</code> apparaissent lorsqu’on fait des copies ou qu’on détache un tenseur du graphe pour ne pas calculer de gradient dessus.</li>
 <li class="dash">Ce profilage permet de <strong>visualiser les goulots d’étranglement</strong> et d’optimiser l’entraînement si nécessaire.</li>
 <li class="dash">Pour un petit MLP, le plus coûteux est le calcul des couches linéaires et du backward. Sur des modèles plus grands ou avec GPU, ces informations sont cruciales pour comprendre et améliorer les performances.</li>
 </ul>
 
-</div><div class="slide ">
-<p>################################ STOP ICI ################################</p>
-<p>################################ STOP ICI ################################</p>
-<p>################################ STOP ICI ################################</p>
-<p>################################ STOP ICI ################################</p>
-<p>################################ STOP ICI ################################</p>
-<p>################################ STOP ICI ################################</p>
-</div><div class="slide ">
-<a id="title.1.9"></a><h2>Loss</h2>
-<p>######################</p>
-<ul><li class="dash">parler de autograd profiler.profile  (À revoir)</li>
-</ul>
-
-<p>Pour analyser les performances de votre modèle, vous pouvez utiliser le profiler de PyTorch. Cela vous permettra d&#039;identifier les goulots d&#039;étranglement dans votre code et d&#039;optimiser les performances.</p>
-<p>Voici comment utiliser le profiler :</p>
-<pre><code class="python hljs">import torch
-from torch.profiler import profile, record_function, ProfilerActivity
-
-# Exemple d&#039;utilisation du profiler
-with profile(activities=[ProfilerActivity.CPU], profile_memory=True) as prof:
-    model(input_tensor)
-
-print(prof.key_averages().table(sort_by=&quot;cpu_time_total&quot;, row_limit=10))</code></pre>
-<p>#########################</p>
-<ol><li class="">Inspecter le modèle avec <code>torch-summary</code>
-----------------------------------------------</li>
-</ol>
-
+<a id="title.1.9"></a><h2>📖 8. Inspecter le modèle avec <code>torch-summary</code></h2>
+<p>Un dernier outil PyTorch dont nous allons parler dans ce chapitre est appelé <code>torch-summary</code> et permet de visualiser la structure du modèle et le nombre de paramètres par couche. Pour cela, il suffit de taper le code suivant : </p>
 <p>Permet de voir le nombre de paramètres par couche et la structure du réseau.  </p>
 <pre><code class="python hljs">from torchsummary import summary
 summary(model, input_size=(1,))</code></pre>
+</div><div class="slide ">
+<a id="title.1.10"></a><h2>🏋️ Travaux Pratiques 2</h2>
+<div class="toc"><ul><li><a href="TP_chap2.html#title.1">🏋️ Travaux Pratiques 2</a></li><ul><li><a href="TP_chap2.html#title.1.1">🍀 Exercice 1 : Approximations d’une fonction non linéaire</a></li><li><a href="TP_chap2.html#title.1.2">⚖️ Exercice 2 : Comparaison de l&#039;entraînement d&#039;un MLP sur données brutes et standardisées</a></li></ul><li><a href="TP_chap2.html#title.2">🏋️ Exercices supplémentaires 2</a></li><ul><li><a href="TP_chap2.html#title.2.1">⚖️ Exercice supplémentaire 1 : Approximation d&#039;une fonction 2D avec un MLP </a></li></ul></ul></div>
 </div>
 <nav><ul class="pagination justify-content-center"><li class="page-item"><a class="page-link" href="chap1.html">&larr; Chapitre 1 - Introduction à PyTorch et Optimisation de Modèles</a></li><li class="page-item"><a class="page-link" href="index.html"><i class="bi bi-folder2"></i> Introduction aux fondamentaux de l&#039;apprentissage supervisé et du Deep Learning</a></li></ul></nav>
 
