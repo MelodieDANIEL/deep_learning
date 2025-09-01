@@ -188,6 +188,70 @@ y = 3*X1 + 0.05*X2**2 + torch.randn(N,1) * 0.5</code></pre>
 <p><strong>Résultat attendu :</strong> <br />Le graphique montre les prédictions du MLP sur les données brutes (rouge) et standardisées (bleu) par rapport aux données réelles (noir).  Vous devez obtenir un résultat similaire à celui-ci avant de réduire le nombre d&#039;epochs :</p>
 <img src="images/chap2_exo_2_resultat.png"  alt="Comparaison MLP brutes vs standardisées" align="center" />
 </div><div class="slide ">
+<a id="title.1.3"></a><h2>🌶️ Exercice 3 : Overfitting et généralisation</h2>
+<p>Cet exercise permet d&#039;observer l&#039;overfitting avec un MLP sur des données bruitées. L&#039;overfitting se produit lorsque le modèle apprend trop bien les détails des données d&#039;entraînement, au détriment de sa capacité à généraliser sur de nouvelles données.</p>
+<p><strong>Objectif :</strong></p>
+<ul><li class="dash">Comparer un MLP de petite taille et un MLP de grande taille.</li>
+<li class="dash">Observer ce qui se passe si on entraîne trop longtemps un petit MLP.</li>
+<li class="dash">Visualiser comment la complexité du modèle et le bruit des données influencent la qualité des prédictions.</li>
+<li class="dash">Tester les modèles sur de nouvelles données.</li>
+</ul>
+
+<p><strong>Consigne :</strong> Écrire un programme qui :  </p>
+<p>1) Générer un jeu de données 1D avec <code>N=100</code> points :  </p>
+<ul><li class="dash"><code>X</code> uniformément dans \([-3,3]\).</li>
+<li class="dash"><code>y = sin(X) + bruit</code> avec <code>bruit = 0.2 * torch.randn_like(y)</code>.</li>
+</ul>
+
+<p>2) Définir trois modèles MLP avec <code>Tanh</code> comme activation :  </p>
+<ul><li class="dash">Petit : 2 couches cachées de 5 neurones chacune</li>
+<li class="dash">Petit entraîné longtemps : même architecture, mais entraîné avec plus d’epochs</li>
+<li class="dash">Grand : 2 couches cachées de 50 neurones chacune</li>
+</ul>
+
+<p>3) Entraîner chaque modèle avec <code>MSELoss</code> et Adam pendant :  </p>
+<ul><li class="dash">Petit : 2000 epochs</li>
+<li class="dash">Petit long : 10000 epochs</li>
+<li class="dash">Grand : 2000 epochs</li>
+</ul>
+
+<p>4) Tracer sur le même graphique :  </p>
+<ul><li class="dash">Les points de données bruitées</li>
+<li class="dash">La fonction vraie `sin(X)`</li>
+<li class="dash">Les prédictions des trois MLP</li>
+</ul>
+
+<p>5) Tracer également l’évolution de la loss pour chaque modèle.</p>
+<p>6) Tester les modèles sur une nouvelle valeur de X (ex. X=0.5) et afficher les prédictions et la valeur vraie.</p>
+<p><strong>Questions :</strong></p>
+<p>7) Que remarquez-vous sur la capacité de généralisation du MLP petit vs grand ? <br />8) Que se passe-t-il si on augmente encore le nombre d’epochs pour le MLP petit ? <br />9) Quel rôle joue le bruit dans la difficulté de l’apprentissage ? <br />10) Comment pourrait-on améliorer la généralisation des modèles (pistes) ?
+11) Pouvez vous écrire du code pour éviter de l&#039;overfitting ?</p>
+<p><strong>Astuce :</strong></p>
+<div class="spoiler"><ol><li class="discover">Utiliser <code>torch.manual_seed(0)</code> pour la reproductibilité.</li>
+<li class="discover">Pour l’entraînement, penser à <code>optimizer.zero_grad()</code>, <code>loss.backward()</code>, <code>optimizer.step()</code>.</li>
+<li class="discover">Stocker les losses à chaque epoch pour pouvoir les tracer ensuite.</li>
+<li class="discover">Pour la nouvelle valeur de test, utiliser <code>with torch.no_grad()</code>.</li>
+<li class="discover">Faire de l&#039;Early Stopping pour prévenir l&#039;overfitting.</li>
+</ol>
+
+</div>
+<p><strong>Résultats attendus :</strong></p>
+<ul><li class="dash">Voici un exemple de graphique attendu pour les prédictions des trois modèles par rapport aux données bruitées et à la fonction vraie :</li>
+</ul>
+
+<img src="images/chap2_exo_3_resultat.png"  alt="Comparaison MLP petit vs grand" align="center" />
+<ul><li class="dash">Les prédictions sur la nouvelle valeur permettent de comparer la capacité de généralisation des modèles. Vous devriez obtenir des résultats similaires à ceux-ci:
+    Pour X = 0.50 :
+        MLP petit = 0.5706, MLP petit entraîné longtemps = 0.7065, MLP grand = 0.7116 et Valeur vraie = 0.4794.</li>
+</ul>
+
+<p><strong>Réusltat pour éviter l&#039;overfitting :</strong></p>
+<div class="spoiler"><blockquote><img src="images/chap2_exo_3_suite_resultat.png"  />
+<p>:alt: Comparaison MLP petit vs grand
+:align: center</p>
+</blockquote>
+</div>
+</div><div class="slide ">
 <a id="title.2"></a><h1>🏋️ Exercices supplémentaires 2</h1>
 <p>Dans cette section, il y a des exercices supplémentaires pour vous entraîner. Ils suivent le même classement de difficulté que précédemment.</p>
 </div><div class="slide ">
@@ -197,31 +261,27 @@ y = 3*X1 + 0.05*X2**2 + torch.randn(N,1) * 0.5</code></pre>
 $$y = \sin(X_1) + \cos(X_2)$$
 <p>où $(X_1, X_2) \in [-2,2]^2$, et visualiser la prédiction du modèle par rapport à la fonction réelle.</p>
 <p><strong>Consigne :</strong>  </p>
-<ol><li class="">Générer <code>N = 800</code> points aléatoires \((X_1, X_2)\) dans \([-2,2]\) et calculer \(y\) en suivant la fonction.</li>
-<li class="">Standardiser les entrées pour le MLP.</li>
-<li class="">Créer un MLP simple :</li>
+<p>1) Générer <code>N = 800</code> points aléatoires \((X_1, X_2)\) dans \([-2,2]\) et calculer \(y\) en suivant la fonction.</p>
+<p>2) Standardiser les entrées pour le MLP.</p>
+<p>3) Créer un MLP simple :</p>
 <ul><li class="dash">Entrée : 2 features</li>
 <li class="dash">2 couches cachées de 64 neurones avec activation <code>Tanh</code></li>
 <li class="dash">Sortie : 1 prédiction</li>
 </ul>
-<li class="">Entraîner le modèle avec Adam et MSE loss pendant 1000 epochs.</li>
-<li class="">Ajouter early stopping avec <code>patience = 20</code> et <code>tolerance = 0.1</code>.</li>
-<li class="">Préparer une grille 2D pour visualiser la fonction réelle et la prédiction du modèle.</li>
-<li class="">Afficher sur une seule figure 3D* :</li>
+
+<p>4) Entraîner le modèle avec Adam et MSE loss pendant 1000 epochs.</p>
+<p>5) Ajouter early stopping avec <code>patience = 20</code> et <code>tolerance = 0.1</code>.</p>
+<p>6) Préparer une grille 2D pour visualiser la fonction réelle et la prédiction du modèle.</p>
+<p>7) Afficher sur une seule figure 3D* :</p>
 <ul><li class="dash">Surface réelle en vert transparent</li>
 <li class="dash">Surface prédite par le MLP en orange semi-transparent</li>
 <li class="dash">Ajouter une légende pour distinguer les surfaces</li>
 </ul>
-<li class="">Tracer l&#039;évolution de la loss pendant l&#039;entraînement pour vérifier la convergence.</li>
-<li class="">Refaire un test avec des données bruitées (ajouter un bruit gaussien de moyenne 0 et écart-type 0.6 à y) et observer l&#039;impact sur la prédiction du MLP.</li>
-</ol>
 
+<p>8) Tracer l&#039;évolution de la loss pendant l&#039;entraînement pour vérifier la convergence.</p>
+<p>9) Refaire un test avec des données bruitées (ajouter un bruit gaussien de moyenne 0 et écart-type 0.6 à y) et observer l&#039;impact sur la prédiction du MLP.</p>
 <p><strong>Questions :</strong>  </p>
-<ul><li class="dash">Que remarquez-vous sur la capacité du MLP à approximer la fonction sous-jacente malgré le bruit ?</li>
-<li class="dash">Que se passe-t-il si vous augmentez ou diminuez le niveau de bruit ?</li>
-<li class="dash">Comment l’early stopping impacte-t-il l’apprentissage ?</li>
-</ul>
-
+<p>10) Que remarquez-vous sur la capacité du MLP à approximer la fonction sous-jacente malgré le bruit ? <br />11) Que se passe-t-il si vous augmentez ou diminuez le niveau de bruit ? <br />12) Comment l’early stopping impacte-t-il l’apprentissage ?</p>
 <p><strong>Astuce :</strong></p>
 <div class="spoiler"><ol><li class="discover">Pour l&#039;early stopping, stocker la meilleure loss et un compteur d&#039;epochs sans amélioration.</li>
 <li class="discover">Pour la visualisation, utiliser <code>ax.plot_surface</code> pour les surfaces et <code>Patch</code> pour la légende.</li>
@@ -273,15 +333,60 @@ plt.tight_layout()
 plt.show()</code></pre>
 </blockquote>
 </div>
-<p><strong>Résultat attendu :</strong></p>
-<ul><li class="dash">Voici un exemple de la figure 3D attendues pour les points 1 à 8 de la consigne avec la surface réelle (verte) et la surface prédite par le MLP (orange) :</li>
+<p><strong>Résultats attendus :</strong></p>
+<ul><li class="dash">Voici un exemple de la figure 3D attendue pour les points 1 à 8 de la consigne avec la surface réelle (verte) et la surface prédite par le MLP (orange) :</li>
 </ul>
 
 <img src="images/chap2_exo_sup_1_resultat.png"  alt="Résultat attendu MLP 2D" align="center" />
-<ul><li class="dash">Voici un exemple de la figure 3D attendues pour le point 9 de la consigne avec la surface réelle (verte) et la surface prédite par le MLP (orange) :</li>
+<ul><li class="dash">Voici un exemple de la figure 3D attendue pour le point 9 de la consigne avec la surface réelle (verte) et la surface prédite par le MLP (orange) :</li>
 </ul>
 
 <img src="images/chap2_exo_sup_1_suite_resultat.png"  alt="Résultat attendu MLP 2D" align="center" />
+</div><div class="slide ">
+<a id="title.2.2"></a><h2>⚖️ Exercice supplémentaire 2 : Comparaison de deux MLP avec torchsummary</h2>
+<p>Dans cet exercice, vous allez comparer deux MLP pour approximer une fonction non linéaire. L&#039;objectif est d&#039;observer l&#039;impact de la taille du réseau sur la performance et de comprendre comment <code>torchsummary</code> permet d&#039;évaluer la structure du modèle.</p>
+<p><strong>Objectif</strong> :</p>
+<ul><li class="dash">Comprendre comment la taille et la complexité d&#039;un MLP influencent la qualité des prédictions.</li>
+<li class="dash">Utiliser <code>torchsummary</code> pour visualiser le nombre de paramètres et la structure du réseau.</li>
+<li class="dash">Comparer deux MLP sur une même fonction et interpréter leurs résultats.</li>
+</ul>
+
+<p><strong>Consignes</strong> :</p>
+<p>1) Générer un jeu de données avec la fonction non linéaire suivante : </p>
+<blockquote><pre><code class="python hljs">import torch
+torch.manual_seed(0)
+N = 200
+X = torch.linspace(0, 3, N).unsqueeze(1)
+y = torch.exp(X) + 0.1*torch.randn_like(X)  # fonction exponentielle bruitée</code></pre>
+</blockquote>
+<p>2) Définir deux MLP avec <code>nn.Module</code> et une activation <code>Tanh</code> :</p>
+<ul><li class="dash"><strong>Petit MLP</strong> : 2 couches cachées de 5 neurones chacune</li>
+<li class="dash"><strong>Grand MLP</strong> : 2 couches cachées de 50 neurones chacune</li>
+</ul>
+
+<p>3) Entraîner les deux modèles avec Adam et <code>nn.MSELoss()</code> pendant 2000 epochs et learning rate 0.01.</p>
+<p>4) Utiliser <code>torchsummary</code> pour afficher la structure et le nombre de paramètres de chaque modèle.</p>
+<p>5) Tracer les prédictions des deux MLP sur le même graphique ainsi que la fonction vraie.</p>
+<p>6) Comparer les performances et interpréter les résultats à l’aide du résumé des modèles.</p>
+<p><strong>Astuce avancée :</strong>        </p>
+<div class="spoiler"><ul><li class="dash discover">Pour <code>torchsummary</code>, vous pouvez faire :</li>
+</ul>
+
+<pre><code class="python hljs">from torchsummary import summary
+summary(model, input_size=(1,))</code></pre>
+<ul><li class="dash">Stockez les pertes à chaque epoch pour tracer l&#039;évolution et vérifier la convergence.</li>
+<li class="dash">Le petit MLP a moins de paramètres et risque moins de sur-apprentissage, mais peut être limité pour des fonctions très complexes.</li>
+<li class="dash">Le grand MLP peut sur-apprendre le bruit si le dataset est petit ou bruité.</li>
+</ul>
+
+</div>
+<p><strong>Résultats attendus :</strong></p>
+<ul><li class="dash">Une figure montrant les prédictions des deux MLP et la fonction vraie comme celle ci-dessous.</li>
+<li class="dash">Le résumé des modèles avec le nombre de paramètres et la structure (torchsummary).</li>
+<li class="dash">Discussion : quel MLP capture mieux la fonction ?</li>
+</ul>
+
+<img src="images/chap2_exo_sup_2_resultat.png"  alt="Résultat attendu MLP" align="center" />
 </div>
 <nav><ul class="pagination justify-content-center"><li class="page-item"><a class="page-link" href="chap2.html"><i class="bi bi-folder2"></i> Chapitre 2 — Perceptron multi-couches </a></li></ul></nav>
 

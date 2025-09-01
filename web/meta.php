@@ -1115,6 +1115,13 @@
             array (
             ),
           ),
+          2 => 
+          array (
+            0 => '🌶️ Exercice 3 : Overfitting et généralisation',
+            1 => 
+            array (
+            ),
+          ),
         ),
       ),
       1 => 
@@ -1129,13 +1136,20 @@
             array (
             ),
           ),
+          1 => 
+          array (
+            0 => '⚖️ Exercice supplémentaire 2 : Comparaison de deux MLP avec torchsummary',
+            1 => 
+            array (
+            ),
+          ),
         ),
       ),
     ),
     'tocs' => 
     array (
     ),
-    'ctime' => 1756656196,
+    'ctime' => 1756724730,
     'depends' => 
     array (
     ),
