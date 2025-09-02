@@ -63,7 +63,7 @@ Les **tenseurs** sont la structure de base de PyTorch. Ce sont des tableaux mult
 - Une matrice est un tenseur 2D.  
 - On peut avoir des tenseurs 3D, 4D, etc.   
 
-Les tenseurs à haute dimensions sont très utilisés en deep learning (par exemple pour les images ou les vidéos). Nous allons voir comment créer et manipuler des tenseurs dans PyTorch. Vous pouvez copier-coller les exemples de code ci-dessous dans un notebook Jupyter pour les tester et voir les affichages. Pour utiliserles fonctions de PyTorch, il faut d'abord l'importer :
+Les tenseurs à haute dimension sont très utilisés en deep learning (par exemple pour les images ou les vidéos). Nous allons voir comment créer et manipuler des tenseurs dans PyTorch. Vous pouvez copier-coller les exemples de code ci-dessous dans un notebook Jupyter pour les tester et voir les affichages. Pour utiliserles fonctions de PyTorch, il faut d'abord l'importer :
 .. code-block:: python
 
    import torch
@@ -121,7 +121,7 @@ PyTorch permet de générer facilement des suites de nombres avec des pas régul
 1. **torch.arange(debut, fin, pas)**  
 
    - Crée une suite en commençant à ``debut``  
-   - S’arrête *avant* ``fin`` (attention, la borne supérieure est exclue !)  
+   - S’arrête avant ``fin`` (attention, la borne supérieure est exclue !)  
    - Utilise le ``pas`` indiqué  
 
 .. code-block:: python
@@ -470,10 +470,38 @@ Autograd utilise ce graphe pour calculer automatiquement les dérivées par rapp
 - ``backward()`` calcule les dérivées de ``z`` par rapport à chaque élément de ``x``.
 - ``x.grad`` contient maintenant les gradients.
 
-11.1. Principe de la rétropropagation
+
+.. slide::
+11.1. But de la rétropropagation
+~~~~~~~~~~~~~~
+
+Le but est de minimiser une fonction de perte en ajustant les paramètres du modèle. La rétropropagation permet de calculer efficacement les gradients nécessaires pour mettre à jour ces paramètres via des algorithmes d'optimisation comme la descente de gradient.
+
+Le gradient d’une fonction $$f(x)$$ est la pente de la courbe en un point. Le gradient indique la direction de variation la plus forte de la fonction : c’est comme une boussole qui pointe vers la direction où la fonction croît le plus vite. Pour minimiser la perte, on avance dans la direction opposée. Voici comment on calcule le gradient :
+
+- En 1D : $$f'(x) = \lim_{h \to 0} \frac{f(x+h) - f(x)}{h}$$
+- En plusieurs dimensions : $$\nabla f(x) = \left( \frac{\partial f}{\partial x_1}, \dots, \frac{\partial f}{\partial x_n} \right)$$
+
+Par exemple si $$f(x) = x^2$$ alors : 
+
+.. figure:: images/chap1_grad.png
+   :alt: 
+   :align: center
+
+- Pour \( x < 0 \), gradient négatif → la fonction décroît. 
+- Pour \( x > 0 \), gradient positif → la fonction croît. 
+- Au minimum (en \( x=0 \)), gradient nul.
+
+.. note::
+
+   Pour minimiser la fonction de perte, il faut trouver \(x\) pour lequel $$\nabla f(x) = 0$$.  
+   **Attention** : un gradient nul peut aussi correspondre à un maximum. En apprentissage, on espère converger vers un minimum.
+
+.. slide::
+11.2. Principe de la rétropropagation
 ~~~~~~~~~~~~~~~~~
 
-Le principe de la rétropropagation signifie PyTorch parcourt le graphe **en sens inverse** pour faire le calcul des dérivées.
+Le principe de la rétropropagation signifie que PyTorch parcourt le graphe **en sens inverse** pour faire le calcul des dérivées. Si on repart sur l'exemple de la section précédente, la rétropropagation dans PyTorch :
 
 
 1. Commence par la sortie ``z``.
@@ -481,7 +509,7 @@ Le principe de la rétropropagation signifie PyTorch parcourt le graphe **en sen
 3. Stocke le gradient dans ``x.grad``.
 
 .. slide::
-11.2. Calcul des gradients dans notre exemple
+11.3. Calcul des gradients dans notre exemple
 ~~~~~~~~~~~~~~~~~
 
 - $$\frac{dz}{dy} = 1$$ car $$z = y.sum()$$ 
@@ -495,7 +523,7 @@ On obtient donc :
     print(x.grad)  # tensor([7., 9.])
 
 .. slide::
-11.3. Détail du calcul des gradients
+11.4. Détail du calcul des gradients
 ~~~~~~~~~~~~~~~~~
 
 On a $$y = [y_1, y_2] = [x_1² + 3x_1,  x_2² + 3x_2]$$ et $$z = y_1 + y_2$$.
@@ -521,7 +549,7 @@ $$\frac{dz}{dx} = [\frac{dz}{dx_1}, \frac{dz}{dx_2}] = \frac{dz}{dy} * \frac{dy}
 et donc $$\frac{dz}{dx} = [2x_1 + 3, 2x_2 + 3]$$. 
 
 .. slide::
-11.4. Résultat numérique pour notre exemple 
+11.5. Résultat numérique pour notre exemple 
 ~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
@@ -538,19 +566,51 @@ Ainsi, Autograd reproduit automatiquement ce calcul grâce au graphe computation
 
 
 .. slide::
-📖 12. Désactivation du suivi des gradients
+📖 12. Manipuler les tenseurs sans gradients 
 ---------------------
+En PyTorch, il est souvent utile de séparer certaines opérations du calcul des gradients. Voici trois outils pour cela : ``.detach()``, ``.clone()`` et ``torch.no_grad()``.
 
-Pour certaines opérations, par exemple lors de l'évaluation d'un modèle, il est inutile
-de calculer les gradients. On peut alors désactiver le suivi avec ``torch.no_grad()`` :
+12.1. ``.detach()``
+~~~~~~~~~~~~~~~~~~
+
+- Crée un nouveau tenseur avec les mêmes valeurs que l’original, mais sans suivre le calcul des gradients.
+- Utile pour utiliser ou visualiser des valeurs sans affecter la rétropropagation.
 
 .. code-block:: python
 
-    with torch.no_grad():
-        z = x * 2
-    print(z)
+   x = torch.tensor([1.0, 2.0], requires_grad=True)
+   y = x * 2
+   z = y.detach()  # z ne calcule pas de gradient
+   print(z)
 
-Cela permet d'économiser de la mémoire et d'accélérer les calculs.
+.. slide::
+12.2. ``.clone()``
+~~~~~~~~~~~~~~~~~
+
+- Crée une copie indépendante d’un tenseur.
+- La copie peut continuer à calculer des gradients si `requires_grad=True`.
+- Utile pour conserver un état avant modification.
+
+.. code-block:: python
+
+   y_clone = y.clone()
+   print(y_clone)
+
+.. slide::
+12.3. ``torch.no_grad()``
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Contexte qui empêche toutes les opérations à l’intérieur de calculer des gradients.
+- Utile pour l'évaluation du modèle, quand on ne veut pas mettre à jour les paramètres du modèle.
+- Permet d'économiser de la mémoire et d'accélérer les calculs.
+
+.. code-block:: python
+
+   with torch.no_grad():
+       y_no_grad = x * 2
+       print(y_no_grad)
+
+
 
 .. slide::
 📖 13. Les fonctions de perte (Loss Functions)
@@ -600,7 +660,7 @@ où :
     - $$y_i$$ est la valeur attendue (target) et
     - $$\hat{y}_i$$ est la prédiction du modèle.
 
-La fonction MSE calcule la moyenne des erreurs au carrées de toutes les données.
+La fonction MSE calcule la moyenne des erreurs au carré de toutes les données.
 
 .. slide::
 15.2. Exemple d'une régression avec MSE dans PyTorch
@@ -820,7 +880,7 @@ En répétant plusieurs mises à jour, $$a$$ converge vers 2, et la perte devien
 📖 19. Descente de gradient avec PyTorch
 ----------------------------------------
 
-PyTorch fournit le module ``torch.optim`` qui implémente plusieurs algorithmes d’optimisation. Dans PyTorch, l’algorithme de descente de gradient est appelé SGD (Stochastic Gradient Descent) et peut-être importé via ``torch.optim.SGD`` :
+PyTorch fournit le module ``torch.optim`` qui implémente plusieurs algorithmes d’optimisation. Dans PyTorch, l’algorithme de descente de gradient est appelé SGD (Stochastic Gradient Descent) et peut être importé via ``torch.optim.SGD`` :
 
 .. code-block:: python
    import torch.optim as optim

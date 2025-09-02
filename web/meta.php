@@ -268,7 +268,7 @@
     'tocs' => 
     array (
     ),
-    'ctime' => 1756112341,
+    'ctime' => 1756825179,
     'depends' => 
     array (
     ),
@@ -454,28 +454,35 @@
             array (
               0 => 
               array (
-                0 => '11.1. Principe de la rétropropagation',
+                0 => '11.1. But de la rétropropagation',
                 1 => 
                 array (
                 ),
               ),
               1 => 
               array (
-                0 => '11.2. Calcul des gradients dans notre exemple',
+                0 => '11.2. Principe de la rétropropagation',
                 1 => 
                 array (
                 ),
               ),
               2 => 
               array (
-                0 => '11.3. Détail du calcul des gradients',
+                0 => '11.3. Calcul des gradients dans notre exemple',
                 1 => 
                 array (
                 ),
               ),
               3 => 
               array (
-                0 => '11.4. Résultat numérique pour notre exemple ',
+                0 => '11.4. Détail du calcul des gradients',
+                1 => 
+                array (
+                ),
+              ),
+              4 => 
+              array (
+                0 => '11.5. Résultat numérique pour notre exemple ',
                 1 => 
                 array (
                 ),
@@ -484,9 +491,30 @@
           ),
           12 => 
           array (
-            0 => '📖 12. Désactivation du suivi des gradients',
+            0 => '📖 12. Manipuler les tenseurs sans gradients ',
             1 => 
             array (
+              0 => 
+              array (
+                0 => '12.1. <code>.detach()</code>',
+                1 => 
+                array (
+                ),
+              ),
+              1 => 
+              array (
+                0 => '12.2. <code>.clone()</code>',
+                1 => 
+                array (
+                ),
+              ),
+              2 => 
+              array (
+                0 => '12.3. <code>torch.no_grad()</code>',
+                1 => 
+                array (
+                ),
+              ),
             ),
           ),
           13 => 
@@ -639,7 +667,7 @@
         0 => 'TP_chap1',
       ),
     ),
-    'ctime' => 1756112341,
+    'ctime' => 1756825179,
     'depends' => 
     array (
       0 => 'TP_chap1',
@@ -650,12 +678,12 @@
   array (
     'file' => 'chap2',
     'url' => 'chap2.html',
-    'title' => 'Chapitre 2 - Introduction ',
+    'title' => 'Chapitre 2 — Perceptron multi-couches ',
     'titles' => 
     array (
       0 => 
       array (
-        0 => 'Chapitre 2 - Introduction ',
+        0 => 'Chapitre 2 — Perceptron multi-couches ',
         1 => 
         array (
           0 => 
@@ -667,14 +695,301 @@
           ),
           1 => 
           array (
-            0 => '📖 1. Qu&#039;est-ce que PyTorch ? ',
+            0 => '📖 1. Rappels sur les perceptrons',
             1 => 
             array (
+              0 => 
+              array (
+                0 => '1.1. Perceptron simple',
+                1 => 
+                array (
+                ),
+              ),
+              1 => 
+              array (
+                0 => '1.2. Perceptron intuition',
+                1 => 
+                array (
+                ),
+              ),
+              2 => 
+              array (
+                0 => '1.3. Mise à jour des paramètres',
+                1 => 
+                array (
+                ),
+              ),
+              3 => 
+              array (
+                0 => '1.4. Exemples d&#039;applications du perceptron simple',
+                1 => 
+                array (
+                ),
+              ),
+              4 => 
+              array (
+                0 => '1.5. Faire un perceptron dans PyTorch',
+                1 => 
+                array (
+                ),
+              ),
             ),
           ),
           2 => 
           array (
-            0 => '📖 20. Optimisation dans PyTorch',
+            0 => '📖 2. Fonction d&#039;activation',
+            1 => 
+            array (
+              0 => 
+              array (
+                0 => '2.1. Équations des fonctions d&#039;activation',
+                1 => 
+                array (
+                ),
+              ),
+              1 => 
+              array (
+                0 => '2.2. Représentation graphique des fonctions d&#039;activation',
+                1 => 
+                array (
+                ),
+              ),
+              2 => 
+              array (
+                0 => '2.3. Les fonctions d&#039;activation dans PyTorch',
+                1 => 
+                array (
+                ),
+              ),
+              3 => 
+              array (
+                0 => '2.4. Rôle de la fonction d’activation',
+                1 => 
+                array (
+                ),
+              ),
+              4 => 
+              array (
+                0 => '2.5. Exemple d&#039;utilisation des fonctions d&#039;activation',
+                1 => 
+                array (
+                ),
+              ),
+              5 => 
+              array (
+                0 => '2.6. Choisir la fonction d&#039;activation adaptée',
+                1 => 
+                array (
+                ),
+              ),
+            ),
+          ),
+          3 => 
+          array (
+            0 => '📖 3. Epoch',
+            1 => 
+            array (
+              0 => 
+              array (
+                0 => '3.1 Définitions',
+                1 => 
+                array (
+                ),
+              ),
+              1 => 
+              array (
+                0 => '3.2 Pourquoi effectuer plusieurs epochs ?',
+                1 => 
+                array (
+                ),
+              ),
+            ),
+          ),
+          4 => 
+          array (
+            0 => '📖 4. Normalisation et standardisation des données',
+            1 => 
+            array (
+              0 => 
+              array (
+                0 => '4.1. Normalisation',
+                1 => 
+                array (
+                ),
+              ),
+              1 => 
+              array (
+                0 => '4.2. Exemple de normalisation avec PyTorch',
+                1 => 
+                array (
+                ),
+              ),
+              2 => 
+              array (
+                0 => '4.3. Standardisation',
+                1 => 
+                array (
+                ),
+              ),
+              3 => 
+              array (
+                0 => '4.4. Exemple de standardisation avec PyTorch',
+                1 => 
+                array (
+                ),
+              ),
+              4 => 
+              array (
+                0 => '4.5. Normalisation vs. Standardisation',
+                1 => 
+                array (
+                ),
+              ),
+              5 => 
+              array (
+                0 => '4.6. Ce qui est attendu après la standardisation',
+                1 => 
+                array (
+                ),
+              ),
+            ),
+          ),
+          5 => 
+          array (
+            0 => '📖 5. Réseaux de neurones multi-couches (MLP)',
+            1 => 
+            array (
+              0 => 
+              array (
+                0 => '5.1. Définitions',
+                1 => 
+                array (
+                ),
+              ),
+              1 => 
+              array (
+                0 => '5.2. Construction d&#039;un MLP',
+                1 => 
+                array (
+                ),
+              ),
+              2 => 
+              array (
+                0 => '5.3. Construire un MLP simple avec <code>torch.nn</code>',
+                1 => 
+                array (
+                ),
+              ),
+              3 => 
+              array (
+                0 => '5.4. Construire un MLP avec une classe',
+                1 => 
+                array (
+                ),
+              ),
+              4 => 
+              array (
+                0 => '5.5. Résoudre XOR avec un MLP',
+                1 => 
+                array (
+                ),
+              ),
+              5 => 
+              array (
+                0 => '5.6. Standardisation et entraînement d&#039;un MLP sur un exemple de régression',
+                1 => 
+                array (
+                ),
+              ),
+              6 => 
+              array (
+                0 => '5.7. Analyse des résultats de l&#039;exemple de régression',
+                1 => 
+                array (
+                ),
+              ),
+            ),
+          ),
+          6 => 
+          array (
+            0 => '📖 6. Broadcasting',
+            1 => 
+            array (
+              0 => 
+              array (
+                0 => '6.1 Qu&#039;est-ce que le broadcasting ?',
+                1 => 
+                array (
+                ),
+              ),
+              1 => 
+              array (
+                0 => '6.2 Exemple de broadcasting pour centrer des données',
+                1 => 
+                array (
+                ),
+              ),
+            ),
+          ),
+          7 => 
+          array (
+            0 => '📖 7. Observer la loss et déterminer le nombre d’epochs',
+            1 => 
+            array (
+              0 => 
+              array (
+                0 => '7.1. Suivi de la loss',
+                1 => 
+                array (
+                ),
+              ),
+              1 => 
+              array (
+                0 => '7.2. Interprétation du résultat',
+                1 => 
+                array (
+                ),
+              ),
+              2 => 
+              array (
+                0 => '7.3. Early Stopping',
+                1 => 
+                array (
+                ),
+              ),
+            ),
+          ),
+          8 => 
+          array (
+            0 => '📖 8. Observer le modèle avec <code>torch-summary</code> et la performance des gradients avec autograd profiler',
+            1 => 
+            array (
+              0 => 
+              array (
+                0 => '8.1. Utiliser <code>torchsummary</code>',
+                1 => 
+                array (
+                ),
+              ),
+              1 => 
+              array (
+                0 => '8.2. Rôle du profiler',
+                1 => 
+                array (
+                ),
+              ),
+              2 => 
+              array (
+                0 => '8.3. Exemple d&#039;utilisation du profiler pour l&#039;exemple de régression',
+                1 => 
+                array (
+                ),
+              ),
+            ),
+          ),
+          9 => 
+          array (
+            0 => '🏋️ Travaux Pratiques 2',
             1 => 
             array (
             ),
@@ -684,10 +999,15 @@
     ),
     'tocs' => 
     array (
+      0 => 
+      array (
+        0 => 'TP_chap2',
+      ),
     ),
-    'ctime' => 1756112341,
+    'ctime' => 1756825179,
     'depends' => 
     array (
+      0 => 'TP_chap2',
     ),
     'parent' => 'index',
   ),
@@ -811,7 +1131,7 @@
           ),
           2 => 
           array (
-            0 => '⚖️ Exercice supplémentaire 3 : Comparaison de des fonctions de perte MSE et MAE',
+            0 => '⚖️ Exercice supplémentaire 3 : Comparaison des fonctions de perte MSE et MAE',
             1 => 
             array (
             ),
@@ -829,11 +1149,77 @@
     'tocs' => 
     array (
     ),
-    'ctime' => 1756112341,
+    'ctime' => 1756825179,
     'depends' => 
     array (
     ),
     'parent' => 'chap1',
+  ),
+  'TP_chap2' => 
+  array (
+    'file' => 'TP_chap2',
+    'url' => 'TP_chap2.html',
+    'title' => '🏋️ Travaux Pratiques 2',
+    'titles' => 
+    array (
+      0 => 
+      array (
+        0 => '🏋️ Travaux Pratiques 2',
+        1 => 
+        array (
+          0 => 
+          array (
+            0 => '🍀 Exercice 1 : Approximations d’une fonction non linéaire',
+            1 => 
+            array (
+            ),
+          ),
+          1 => 
+          array (
+            0 => '⚖️ Exercice 2 : Comparaison de l&#039;entraînement d&#039;un MLP sur données brutes et standardisées',
+            1 => 
+            array (
+            ),
+          ),
+          2 => 
+          array (
+            0 => '🌶️ Exercice 3 : Overfitting et généralisation',
+            1 => 
+            array (
+            ),
+          ),
+        ),
+      ),
+      1 => 
+      array (
+        0 => '🏋️ Exercices supplémentaires 2',
+        1 => 
+        array (
+          0 => 
+          array (
+            0 => '⚖️ Exercice supplémentaire 1 : Approximation d&#039;une fonction 2D avec un MLP ',
+            1 => 
+            array (
+            ),
+          ),
+          1 => 
+          array (
+            0 => '⚖️ Exercice supplémentaire 2 : Comparaison de deux MLP avec torchsummary',
+            1 => 
+            array (
+            ),
+          ),
+        ),
+      ),
+    ),
+    'tocs' => 
+    array (
+    ),
+    'ctime' => 1756825179,
+    'depends' => 
+    array (
+    ),
+    'parent' => 'chap2',
   ),
   'TP_chap4' => 
   array (

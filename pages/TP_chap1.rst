@@ -35,8 +35,7 @@ Considérons la fonction suivante : $$f(a) = a^2 + a$$, avec $$a = 1.0$$.
 ⚖️ Exercice 2 : Trouver la droite qui passe au mieux par les données avec MSE
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Dans cet exercice, vous allez implémenter une **boucle d'entraînement simple** pour ajuster les paramètres d'une droite 
-aux données fournies.
+Dans cet exercice, vous allez implémenter une **boucle d'entraînement simple** pour ajuster les paramètres d'une droite aux données fournies.
 
 On vous donne les données suivantes :
 
@@ -60,17 +59,17 @@ où : $$a$$ et $$b$$ sont des paramètres appris automatiquement en minimisant l
 
     1) Dans un premier temps, vous pouvez faire une boucle de 10000 itérations et coder vous-même la fonction de perte.
 
-    2) Afficher les paramètres appris $$a$$ et $$b$$.
+    2) Affichez les paramètres appris $$a$$ et $$b$$.
 
-    3) Ensuite, trouver un moyen plus intelligent d'arrêter l'entraînement de tel sorte à ce que le modèle converge avec le minimum d'itérations.
-    
-    4) Afficher le nombre d'itérations nécessaires pour converger.
-    
-    5) Tracer les données réelles et les données prédites pour comparer visuellement le résultat.
+    3) Ensuite, trouvez un moyen plus intelligent d'arrêter l'entraînement de telle sorte que le modèle converge avec le minimum d'itérations.
 
-    6) Utiliser la fonction de perte MSE fournie par PyTorch et afficher les paramètres appris $$a$$ et $$b$$.
+    4) Affichez le nombre d'itérations nécessaires pour converger.
 
-    7) Vérifier que le résultat des paramètres et le tracé sont similaires à ceux obtenus avec la boucle d'entraînement manuelle.
+    5) Tracez les données réelles et les données prédites pour comparer visuellement le résultat.
+
+    6) Utilisez la fonction de perte MSE fournie par PyTorch et affichez les paramètres appris $$a$$ et $$b$$.
+
+    7) Vérifiez que le résultat des paramètres et le tracé sont similaires à ceux obtenus avec la boucle d'entraînement manuelle.
 
 
 **Remarque :** Pour utiliser ``matplotlib``, vous devez l'installer avec la commande suivante :
@@ -124,7 +123,7 @@ L'objectif est le même que celui de l'exercice précédent (faire de la régres
 1) Réutilisez la boucle d'entraînement de l’exercice précédent qui s'arrête au bout de 2500 itérations et qui utilise un learning rate de 0.01.  
 2) Remplacez la fonction de perte MSE par une fonction de perte de type MAE. Il faudra chercher dans la documentation comment l'implémenter dans PyTorch.  
 3) Testez avec l’optimiseur SGD puis avec l’optimiseur Adam.  
-4) Pour chaque optimiseur, affichez les paramètres appris appris $$a$$ et $$b$$.
+4) Pour chaque optimiseur, affichez les paramètres appris $$a$$ et $$b$$.
 5) Tracez les données réelles et les données prédites pour comparer visuellement les résultats.  
 6) Comparez les deux méthodes : que constatez-vous en termes de stabilité et de vitesse de convergence ?  
 7) Expliquez quel optimiseur est meilleur et pourquoi?   
@@ -137,7 +136,7 @@ L'objectif est le même que celui de l'exercice précédent (faire de la régres
 
 
 **Résultat attendu :**
-Vous devez obtenir des valeurs pour les paramètres proche de :
+Vous devez obtenir des valeurs pour les paramètres proches de :
 
     - Adam -> a = 1.5451, b = 12.5996
     - SGD  -> a = 2.3039, b = 12.1880
@@ -204,7 +203,7 @@ Considérons la fonction suivante $$f(a, b) = a \cdot b + a^2$$ avec $$a = 2.0$$
 Les dérivées partielles sont, dans les deux cas, égales à : $$∂f/∂a = 7$$ et $$∂f/∂b = 2$$.
 
 
-⚖️ Exercice supplémentaire 3 : Comparaison de des fonctions de perte MSE et MAE
+⚖️ Exercice supplémentaire 3 : Comparaison des fonctions de perte MSE et MAE
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 On vous donne les données suivantes :
@@ -231,11 +230,11 @@ où : $$a$$, $$b$$ et $$c$$ sont des paramètres appris automatiquement en minim
 
 1) Réutilisez la boucle d'entraînement de l’exercice 3 qui s'arrête au bout de 1000 itérations et qui utilise un learning rate de 0.01.  
 
-2) Tester la fonction de perte MSE et MAE.
+2) Testez la fonction de perte MSE et MAE.
 
-3) Pour chaque fonction de perte, afficher les paramètres appris $$a$$, $$b$$ et $$c$$.
+3) Pour chaque fonction de perte, affichez les paramètres appris $$a$$, $$b$$ et $$c$$.
 
-4) Pour chaque fonction de perte, tracer les données réelles et les données prédites et comparer visuellement les résultats. 
+4) Pour chaque fonction de perte, tracez les données réelles et les données prédites et comparez visuellement les résultats.
 
 6) Quelle différence observez-vous dans la convergence et les paramètres appris ?
 
@@ -279,17 +278,17 @@ On considère la fonction suivante :
 
 **Consignes :**
 
-1) Calculer à la main le gradient de $$f(a,b)$$ et ses dérivées partielles .
+1) Calculez à la main le gradient de $$f(a,b)$$ et ses dérivées partielles .
 
-2) Implémenter une boucle de descente de gradient avec un point de départ choisi (par exemple $$a=2.5$$, $$b=-2.0$$) et un learning rate de 0.1.
+2) Implémentez une boucle de descente de gradient avec un point de départ choisi (par exemple $$a=2.5$$, $$b=-2.0$$) et un learning rate de 0.1.
 
-3) Stocker les points de la trajectoire au cours des itérations.  
+3) Stockez les points de la trajectoire au cours des itérations.  
 
-4) Tracer la surface 3D de $$f(a, b)$$ avec Matplotlib.  
+4) Tracez la surface 3D de $$f(a, b)$$ avec Matplotlib.  
 
-5) Ajouter sur la surface des flèches représentant les étapes de la descente de gradient.  
+5) Ajoutez sur la surface des flèches représentant les étapes de la descente de gradient.  
 
-6) Expliquer ce que représente la trajectoire observée et pourquoi elle converge vers $$(a, b) = (0,0)$$.
+6) Expliquez ce que représente la trajectoire observée et pourquoi elle converge vers $$(a, b) = (0,0)$$.
 
 7) Testez plusieurs learning rate (ex: 0.02, 0.1, 0.5, 2.0) pour observer convergence lente, rapide, ou divergence.
 

@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" type="text/css" href="css/style.css" />
+<title>Intro Python - 🏋️ Travaux Pratiques 2</title>
+
+                <meta http-equiv="X-UA-Compatible" content="IE=edge">
+                <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            
+
+                <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+                <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+            
+<link href="https://fonts.googleapis.com/css2?family=Gentium+Basic&display=swap" rel="stylesheet"> 
+<link rel="stylesheet" type="text/css" href="slidey/bootstrap/css/bootstrap.min.css" />
+<link rel="stylesheet" type="text/css" href="slidey/bootstrap-icons/font/bootstrap-icons.css" />
+<link rel="stylesheet" type="text/css" href="slidey/highlight.css" />
+<link rel="stylesheet" type="text/css" href="slidey/slidey.css" />
+<link rel="stylesheet" type="text/css" href="slidey/slidey.menu.css" />
+<link rel="stylesheet" type="text/css" href="slidey/slidey.step.css" />
+<link rel="stylesheet" type="text/css" href="slidey/slidey.code.css" />
+<link rel="stylesheet" type="text/css" href="slidey/slidey.slide.css" />
+<script type="text/javascript" src="slidey/js/jquery.js"></script>
+<script type="text/javascript" src="slidey/js/slidey.permalink.js"></script>
+<script type="text/javascript" src="slidey/js/slidey.menu.js"></script>
+<script type="text/javascript" src="slidey/js/slidey.mobile.js"></script>
+<script type="text/javascript" src="slidey/js/slidey.spoilers.js"></script>
+<script type="text/javascript" src="slidey/js/slidey.steps.js"></script>
+<script type="text/javascript" src="slidey/js/slidey.js"></script>
+<script type="text/javascript" src="slidey/js/main.js"></script>
+<script type="text/javascript" src="slidey/bootstrap/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="slidey/highlight/highlight.pack.js"></script>
+<link rel="icon" type="image/x-icon" href="favicon.ico" />
+</head>
+<body>
+<!-- Modal log-in window -->
+<div class="modal fade" id="loginWindow">
+  <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Log-in</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>    
+        <div class="modal-body">
+            <form>
+                Mot de passe&nbsp;:<br />
+                <input class="form-control" type="password" name="password" />
+            </form>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div>
+
+<div class="core">
+
+    <script>hljs.highlightAll();</script>
+
+<!-- Extra-controls for mobile device -->
+<div class="mobileControls">
+    <div class="btn-group">
+        <a href="javascript:void(0)" class="left btn btn-light btn-lg">
+            <i class="bi bi-arrow-up"></i>
+        </a>
+        <a href="javascript:void(0)" class="right btn btn-light btn-lg">
+            <i class="bi bi-arrow-down"></i>
+        </a>
+        <a href="javascript:void(0)" class="up btn btn-light btn-lg">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <a href="javascript:void(0)" class="down btn btn-light btn-lg">
+            <i class="bi bi-arrow-right"></i>
+        </a>
+        <a href="javascript:void(0)" class="login btn btn-light btn-lg">
+            <i class="bi bi-lock"></i>
+        </a>
+    </div>
+</div>
+
+<!-- Controls -->
+<div class="slideMode">
+    <div class="btn-group">
+        <a href="javascript:void(0)" class="btn btn-light btn-lg slideModeSlide"><i class="bi bi-film"></i></a>
+        <a href="javascript:void(0)" class="btn btn-light btn-lg followMode"><i class="bi bi-stopwatch"></i> </a>
+        <a href="index.html" class="btn btn-light btn-lg goHome"><i class="bi bi-house"></i></a>
+    </div>
+</div>
+
+<div class="exitSlideMode">
+    <div class="btn-group">
+        <a href="javascript:void(0)" class="btn btn-light btn-lg followMode"><i class="bi bi-stopwatch"></i></a>
+        <a href="javascript:void(0)" class="btn btn-light btn-lg showMobile"><i class="bi bi-phone"></i></a>
+        <a href="javascript:void(0)" class="btn btn-light btn-lg stopShow">
+            <span class="currentSlideNumber">
+            </span>
+            <i class="bi bi-x-lg"></i>
+        </a>
+    </div>
+</div>
+
+<!-- Browsing menu -->
+<div class="menu">
+</div>
+
+<div class="contents container">
+
+<a id="title.1"></a><h1>🏋️ Travaux Pratiques 2</h1>
+<div class="slide ">
+<p>Sur cette page se trouvent des exercices de TP sur le Chapitre 2. Ils sont classés par niveau de difficulté :</p>
+<ul><li class="discover">Facile : 🍀</li>
+<li class="discover">Moyen : ⚖️</li>
+<li class="discover">Difficile : 🌶️</li>
+</ul>
+
+</div><div class="slide ">
+<a id="title.1.1"></a><h2>🍀 Exercice 1 : Approximations d’une fonction non linéaire</h2>
+<p>Dans cet exercice, vous allez implémenter une boucle d&#039;entraînement simple pour ajuster les paramètres d’un modèle polynômial comme dans le chapitre 1, puis comparer les résultats avec ceux d&#039;un modèle MLP.</p>
+<p>On vous donne les données suivantes :</p>
+<pre><code class="python hljs">torch.manual_seed(0)
+
+X = torch.linspace(-3, 3, 100).unsqueeze(1)
+y_true = torch.sin(X) + 0.1 * torch.randn(X.size())  # fonction sinusoïdale bruitée</code></pre>
+<p><strong>Objectif :</strong> Comparer deux modèles pour approximer la fonction :</p>
+<ol><li class="">Polynôme cubique : \(y = f(x) = a x^3 + b x^2 + c x + d\), où \(a, b, c, d\) sont des paramètres appris automatiquement en minimisant l’erreur entre les prédictions et les données réelles comme dans le chapitre 1.</li>
+<li class="">MLP simple :</li>
+<ul><li class="dash">Implémenté sous forme de classe <code>nn.Module</code></li>
+<li class="dash">2 couches cachées de 10 neurones chacune avec <code>ReLU</code> pour l&#039;activation</li>
+<li class="dash">Entrée : 1 feature, sortie : 1 prédiction</li>
+</ul>
+</ol>
+
+<p><strong>Consigne :</strong> Écrire un programme qui :</p>
+<p>1) Ajuste les paramètres du polynôme cubique aux données en utilisant PyTorch. <br />2) Affiche les paramètres appris \(a, b, c, d\). <br />3) Implémente ensuite un MLP et entraîne-le sur les mêmes données pendant 5000 epochs avec un learning rate de 0.01. <br />4) Compare visuellement les deux modèles avec les données réelles sur un même graphique.<br />5) Que remarquez-vous sur les performances des deux modèles ?
+6) Que se passe-t-il si vous augmentez le nombre du polynôme ?</p>
+<p><strong>Astuce :</strong></p>
+<div class="spoiler"><ol><li class="discover">Initialiser les paramètres du polynôme avec <code>torch.randn(1, requires_grad=True)</code>.</li>
+<li class="discover">Utiliser <code>nn.MSELoss()</code> comme fonction de perte pour les deux modèles.</li>
+<li class="discover">Pour le MLP, créer une classe héritant de <code>nn.Module</code> et définir <code>forward</code>.</li>
+<li class="discover">Utiliser <code>optimizer.zero_grad()</code>, <code>loss.backward()</code>, <code>optimizer.step()</code> à chaque itération.</li>
+<li class="discover">On voit que le MLP parvient à mieux s&#039;adapter aux données, car il peut capturer des relations non linéaires plus complexes.</li>
+</ol>
+
+</div>
+<p><strong>Résultat attendu :</strong> Vous devez obtenir un graphique similaire à celui ci-dessous où :  </p>
+<ul><li class="dash">les points bleus correspondent aux données réelles (<code>y_true</code>)</li>
+<li class="dash">la courbe rouge correspond au polynôme cubique</li>
+<li class="dash">la courbe verte correspond au MLP</li>
+</ul>
+
+<img src="images/chap2_exo_1_resultat.png"  alt="Résultat Exercice 1" align="center" />
+</div><div class="slide ">
+<a id="title.1.2"></a><h2>⚖️ Exercice 2 : Comparaison de l&#039;entraînement d&#039;un MLP sur données brutes et standardisées</h2>
+<p>Dans cet exercice, vous allez entraîner un MLP simple sur un jeu de données synthétiques avec deux features ayant des échelles différentes. Vous comparerez les performances lorsque les données sont brutes ou standardisées.</p>
+<p>On vous donne les données suivantes :</p>
+<pre><code class="python hljs"># Données synthétiques
+N = 500
+X1 = torch.linspace(0, 1, N).unsqueeze(1)      # petite amplitude
+X2 = torch.linspace(0, 100, N).unsqueeze(1)    # grande amplitude
+X = torch.cat([X1, X2], dim=1)
+y = 3*X1 + 0.05*X2**2 + torch.randn(N,1) * 0.5</code></pre>
+<p><strong>Objectif :</strong> <br />Comprendre l’importance de la standardisation des données pour l’entraînement d’un réseau de neurones et observer l’évolution de la loss.</p>
+<p><strong>Consigne :</strong> Écrire un programme qui :  </p>
+<p>1) Définit une classe MLP simple sans couches cachées avec : </p>
+<ul><li class="dash">une couche linéaire d’entrée (2 features) vers 20 neurones</li>
+<li class="dash">une fonction d’activation <code>ReLU</code></li>
+<li class="dash">une couche de sortie avec 1 prédiction</li>
+</ul>
+
+<p>2) Crée deux modèles : un pour les données brutes, un pour les données standardisées.  </p>
+<p>3) Entraîne les deux modèles avec Adam et une fonction de perte MSE pendant 1000 epochs avec un learning rate de 0.01.</p>
+<p>4) Stocke et trace l’évolution de la loss pour les deux modèles.  </p>
+<p>5) Trace les prédictions finales des deux modèles sur le même graphique que les données réelles.  </p>
+<p>6) Comparez les performances des deux modèles et notez lequel converge plus vite et donne de meilleures prédictions.</p>
+<p>7) A quelle epoch peut-on considérer que le modèle sur données standardisées a convergé et comment on peut faire pour le déterminer ?</p>
+<p><strong>Astuce :</strong></p>
+<div class="spoiler"><ol><li class="discover">N’oubliez pas d&#039;initialiser les poids du modèle avec <code>torch.randn()</code> pour un démarrage aléatoire et de  mettre <code>optimizer.zero_grad()</code> avant <code>loss.backward()</code>.</li>
+<li class="discover">Pour standardiser, utilisez <code>(X - X_mean)/X_std</code>.</li>
+<li class="discover">Pour visualiser la loss : stockez <code>loss.item()</code> à chaque epoch et utilisez <code>matplotlib.pyplot.plot()</code>.</li>
+<li class="discover">Pour visualiser les prédictions, utilisez un scatter plot avec les données réelles et les prédictions des deux modèles.</li>
+<li class="discover">Pour savoir quand stopper l&#039;entraînement, vous pouvez faire du Early Stopping.</li>
+<li class="discover">Pour que l’early stopping fonctionne correctement avec ce type de données, il est conseillé de :</li>
+<ul><li class="dash discover">Mettre le paramètre <code>patience</code> à 20.</li>
+<li class="dash discover">Comparer la perte actuelle avec la meilleure perte précédente en utilisant un seuil de tolérance. Par exemple, arrondir la perte à 5 pour considérer une amélioration significative (<code>if loss.item() &lt; best_loss - 5</code>)</li>
+</ul>
+</ol>
+
+</div>
+<p><strong>Résultat attendu :</strong> <br />Le graphique montre les prédictions du MLP sur les données brutes (rouge) et standardisées (bleu) par rapport aux données réelles (noir).  Vous devez obtenir un résultat similaire à celui-ci avant de réduire le nombre d&#039;epochs :</p>
+<img src="images/chap2_exo_2_resultat.png"  alt="Comparaison MLP brutes vs standardisées" align="center" />
+</div><div class="slide ">
+<a id="title.1.3"></a><h2>🌶️ Exercice 3 : Overfitting et généralisation</h2>
+<p>Cet exercise permet d&#039;observer l&#039;overfitting avec un MLP sur des données bruitées. L&#039;overfitting se produit lorsque le modèle apprend trop bien les détails des données d&#039;entraînement, au détriment de sa capacité à généraliser sur de nouvelles données.</p>
+<p><strong>Objectif :</strong></p>
+<ul><li class="dash">Comparer un MLP de petite taille et un MLP de grande taille.</li>
+<li class="dash">Observer ce qui se passe si on entraîne trop longtemps un petit MLP.</li>
+<li class="dash">Visualiser comment la complexité du modèle et le bruit des données influencent la qualité des prédictions.</li>
+<li class="dash">Tester les modèles sur de nouvelles données.</li>
+</ul>
+
+<p><strong>Consigne :</strong> Écrire un programme qui :  </p>
+<p>1) Génère un jeu de données 1D avec <code>N=100</code> points :  </p>
+<ul><li class="dash"><code>X</code> uniformément dans \([-3,3]\).</li>
+<li class="dash"><code>y = sin(X) + bruit</code> avec <code>bruit = 0.2 * torch.randn_like(y)</code>.</li>
+</ul>
+
+<p>2) Définit trois modèles MLP avec <code>Tanh</code> comme activation :  </p>
+<ul><li class="dash">Petit : 2 couches cachées de 5 neurones chacune</li>
+<li class="dash">Petit entraîné longtemps : même architecture, mais entraîné avec plus d’epochs</li>
+<li class="dash">Grand : 2 couches cachées de 50 neurones chacune</li>
+</ul>
+
+<p>3) Entraîne chaque modèle avec <code>MSELoss</code> et Adam pendant :  </p>
+<ul><li class="dash">Petit : 2000 epochs</li>
+<li class="dash">Petit long : 10000 epochs</li>
+<li class="dash">Grand : 2000 epochs</li>
+</ul>
+
+<p>4) Trace sur le même graphique :  </p>
+<ul><li class="dash">Les points de données bruitées</li>
+<li class="dash">La fonction vraie `sin(X)`</li>
+<li class="dash">Les prédictions des trois MLP</li>
+</ul>
+
+<p>5) Trace également l’évolution de la loss pour chaque modèle.</p>
+<p>6) Teste les modèles sur une nouvelle valeur de X (ex. X=0.5) et affiche les prédictions et la valeur vraie.</p>
+<p><strong>Questions :</strong></p>
+<p>7) Que remarquez-vous sur la capacité de généralisation du MLP petit vs grand ? <br />8) Que se passe-t-il si on augmente encore le nombre d’epochs pour le MLP petit ? <br />9) Quel rôle joue le bruit dans la difficulté de l’apprentissage ? <br />10) Comment pourrait-on améliorer la généralisation des modèles (pistes) ?
+11) Pouvez-vous écrire du code pour éviter de l&#039;overfitting ?</p>
+<p><strong>Astuce :</strong></p>
+<div class="spoiler"><ol><li class="discover">Utiliser <code>torch.manual_seed(0)</code> pour la reproductibilité.</li>
+<li class="discover">Pour l’entraînement, penser à <code>optimizer.zero_grad()</code>, <code>loss.backward()</code>, <code>optimizer.step()</code>.</li>
+<li class="discover">Stocker les losses à chaque epoch pour pouvoir les tracer ensuite.</li>
+<li class="discover">Pour la nouvelle valeur de test, utiliser <code>with torch.no_grad()</code>.</li>
+<li class="discover">Faire de l&#039;Early Stopping pour prévenir l&#039;overfitting.</li>
+</ol>
+
+</div>
+<p><strong>Résultats attendus :</strong></p>
+<ul><li class="dash">Voici un exemple de graphique attendu pour les prédictions des trois modèles par rapport aux données bruitées et à la fonction vraie :</li>
+</ul>
+
+<img src="images/chap2_exo_3_resultat.png"  alt="Comparaison MLP petit vs grand" align="center" />
+<ul><li class="dash">Les prédictions sur la nouvelle valeur permettent de comparer la capacité de généralisation des modèles. Vous devriez obtenir des résultats similaires à ceux-ci:
+    Pour X = 0.50 :
+        MLP petit = 0.5706, MLP petit entraîné longtemps = 0.7065, MLP grand = 0.7116 et Valeur vraie = 0.4794.</li>
+</ul>
+
+<p><strong>Réusltat pour éviter l&#039;overfitting :</strong></p>
+<div class="spoiler"><blockquote><img src="images/chap2_exo_3_suite_resultat.png"  />
+<p>:alt: Comparaison MLP petit vs grand
+:align: center</p>
+</blockquote>
+</div>
+</div><div class="slide ">
+<a id="title.2"></a><h1>🏋️ Exercices supplémentaires 2</h1>
+<p>Dans cette section, il y a des exercices supplémentaires pour vous entraîner. Ils suivent le même classement de difficulté que précédemment.</p>
+</div><div class="slide ">
+<a id="title.2.1"></a><h2>⚖️ Exercice supplémentaire 1 : Approximation d&#039;une fonction 2D avec un MLP </h2>
+<p>Cet exercise propose l&#039;entraînement d&#039;un MLP avec des données en 2D.</p>
+<p><strong>Objectif :</strong> Entraîner un MLP pour approximer la fonction suivante :</p>
+$$y = \sin(X_1) + \cos(X_2)$$
+<p>où $(X_1, X_2) \in [-2,2]^2$, et visualiser la prédiction du modèle par rapport à la fonction réelle.</p>
+<p><strong>Consigne :</strong>  </p>
+<p>1) Générer <code>N = 800</code> points aléatoires \((X_1, X_2)\) dans \([-2,2]\) et calculer \(y\) en suivant la fonction.</p>
+<p>2) Standardiser les entrées pour le MLP.</p>
+<p>3) Créer un MLP simple :</p>
+<ul><li class="dash">Entrée : 2 features</li>
+<li class="dash">2 couches cachées de 64 neurones avec activation <code>Tanh</code></li>
+<li class="dash">Sortie : 1 prédiction</li>
+</ul>
+
+<p>4) Entraîner le modèle avec Adam et MSE loss pendant 1000 epochs.</p>
+<p>5) Ajouter early stopping avec <code>patience = 20</code> et <code>tolerance = 0.1</code>.</p>
+<p>6) Préparer une grille 2D pour visualiser la fonction réelle et la prédiction du modèle.</p>
+<p>7) Afficher sur une seule figure 3D* :</p>
+<ul><li class="dash">Surface réelle en vert transparent</li>
+<li class="dash">Surface prédite par le MLP en orange semi-transparent</li>
+<li class="dash">Ajouter une légende pour distinguer les surfaces</li>
+</ul>
+
+<p>8) Tracer l&#039;évolution de la loss pendant l&#039;entraînement pour vérifier la convergence.</p>
+<p>9) Refaire un test avec des données bruitées (ajouter un bruit gaussien de moyenne 0 et écart-type 0.6 à y) et observer l&#039;impact sur la prédiction du MLP.</p>
+<p><strong>Questions :</strong>  </p>
+<p>10) Que remarquez-vous sur la capacité du MLP à approximer la fonction sous-jacente malgré le bruit ? <br />11) Que se passe-t-il si vous augmentez ou diminuez le niveau de bruit ? <br />12) Comment l’early stopping impacte-t-il l’apprentissage ?</p>
+<p><strong>Astuce :</strong></p>
+<div class="spoiler"><ol><li class="discover">Pour l&#039;early stopping, stocker la meilleure loss et un compteur d&#039;epochs sans amélioration.</li>
+<li class="discover">Pour la visualisation, utiliser <code>ax.plot_surface</code> pour les surfaces et <code>Patch</code> pour la légende.</li>
+<li class="discover">La standardisation permet au MLP de mieux converger.</li>
+<li class="discover">Vérifier la loss finale pour s&#039;assurer que le modèle a appris correctement la fonction.</li>
+<li class="discover">Pour générer le bruit, utilisez <code>0.6 * torch.randn_like(y_clean)</code>.</li>
+</ol>
+
+</div>
+<p><strong>Astuce avancée :</strong>        </p>
+<div class="spoiler"><blockquote><p><strong>Voici le code pour la visualisation 3D avec Matplotlib :</strong></p>
+<pre><code class="python hljs">x1g, x2g = torch.meshgrid(
+torch.linspace(-2, 2, 80),
+torch.linspace(-2, 2, 80),
+indexing=&quot;ij&quot;
+)
+
+Xg = torch.cat([x1g.reshape(-1,1), x2g.reshape(-1,1)], dim=1)
+Xg_std = (Xg - X_mean) / X_std
+
+with torch.no_grad():
+    y_true_grid = (torch.sin(x1g) + torch.cos(x2g))
+    y_pred_grid = model(Xg_std).reshape(80, 80)
+    y_pred_train = model(X_stdized)
+
+fig = plt.figure(figsize=(9,7))
+ax = fig.add_subplot(111, projection=&#039;3d&#039;)
+ax.set_title(&quot;MLP 2D avec Early Stopping&quot;)
+ax.set_xlabel(&quot;X1&quot;); ax.set_ylabel(&quot;X2&quot;); ax.set_zlabel(&quot;y&quot;)
+ax.set_xlim(-2, 2); ax.set_ylim(-2, 2); ax.set_zlim(-2, 2)
+try:
+    ax.set_box_aspect((1,1,1))
+except Exception:
+    pass
+ax.view_init(elev=25, azim=35)
+
+ax.plot_surface(x1g.numpy(), x2g.numpy(), y_true_grid.numpy(),
+                cmap=&quot;Greens&quot;, alpha=0.45, linewidth=0)
+ax.plot_surface(x1g.numpy(), x2g.numpy(), y_pred_grid.numpy(),
+                cmap=&quot;Oranges&quot;, alpha=0.70, linewidth=0)
+legend_elements = [
+    Patch(facecolor=&quot;tab:green&quot;, alpha=0.45, label=&quot;Surface vraie&quot;),
+    Patch(facecolor=&quot;tab:orange&quot;, alpha=0.70, label=&quot;Surface MLP&quot;)
+]
+ax.legend(handles=legend_elements, loc=&quot;upper left&quot;)
+
+
+plt.tight_layout()
+plt.show()</code></pre>
+</blockquote>
+</div>
+<p><strong>Résultats attendus :</strong></p>
+<ul><li class="dash">Voici un exemple de la figure 3D attendue pour les points 1 à 8 de la consigne avec la surface réelle (verte) et la surface prédite par le MLP (orange) :</li>
+</ul>
+
+<img src="images/chap2_exo_sup_1_resultat.png"  alt="Résultat attendu MLP 2D" align="center" />
+<ul><li class="dash">Voici un exemple de la figure 3D attendue pour le point 9 de la consigne avec la surface réelle (verte) et la surface prédite par le MLP (orange) :</li>
+</ul>
+
+<img src="images/chap2_exo_sup_1_suite_resultat.png"  alt="Résultat attendu MLP 2D" align="center" />
+</div><div class="slide ">
+<a id="title.2.2"></a><h2>⚖️ Exercice supplémentaire 2 : Comparaison de deux MLP avec torchsummary</h2>
+<p>Dans cet exercice, vous allez comparer deux MLP pour approximer une fonction non linéaire. L&#039;objectif est d&#039;observer l&#039;impact de la taille du réseau sur la performance et de comprendre comment <code>torchsummary</code> permet d&#039;évaluer la structure du modèle.</p>
+<p><strong>Objectif</strong> :</p>
+<ul><li class="dash">Comprendre comment la taille et la complexité d&#039;un MLP influencent la qualité des prédictions.</li>
+<li class="dash">Utiliser <code>torchsummary</code> pour visualiser le nombre de paramètres et la structure du réseau.</li>
+<li class="dash">Comparer deux MLP sur une même fonction et interpréter leurs résultats.</li>
+</ul>
+
+<p><strong>Consignes</strong> :</p>
+<p>1) Générer un jeu de données avec la fonction non linéaire suivante : </p>
+<blockquote><pre><code class="python hljs">import torch
+torch.manual_seed(0)
+N = 200
+X = torch.linspace(0, 3, N).unsqueeze(1)
+y = torch.exp(X) + 0.1*torch.randn_like(X)  # fonction exponentielle bruitée</code></pre>
+</blockquote>
+<p>2) Définir deux MLP avec <code>nn.Module</code> et une activation <code>Tanh</code> :</p>
+<ul><li class="dash"><strong>Petit MLP</strong> : 2 couches cachées de 5 neurones chacune</li>
+<li class="dash"><strong>Grand MLP</strong> : 2 couches cachées de 50 neurones chacune</li>
+</ul>
+
+<p>3) Entraîner les deux modèles avec Adam et <code>nn.MSELoss()</code> pendant 2000 epochs et learning rate 0.01.</p>
+<p>4) Utiliser <code>torchsummary</code> pour afficher la structure et le nombre de paramètres de chaque modèle.</p>
+<p>5) Tracer les prédictions des deux MLP sur le même graphique ainsi que la fonction vraie.</p>
+<p>6) Comparer les performances et interpréter les résultats à l’aide du résumé des modèles.</p>
+<p><strong>Astuce avancée :</strong>        </p>
+<div class="spoiler"><ul><li class="dash discover">Pour <code>torchsummary</code>, vous pouvez faire :</li>
+</ul>
+
+<pre><code class="python hljs">from torchsummary import summary
+summary(model, input_size=(1,))</code></pre>
+<ul><li class="dash">Stockez les pertes à chaque epoch pour tracer l&#039;évolution et vérifier la convergence.</li>
+<li class="dash">Le petit MLP a moins de paramètres et risque moins de sur-apprentissage, mais peut être limité pour des fonctions très complexes.</li>
+<li class="dash">Le grand MLP peut sur-apprendre le bruit si le dataset est petit ou bruité.</li>
+</ul>
+
+</div>
+<p><strong>Résultats attendus :</strong></p>
+<ul><li class="dash">Une figure montrant les prédictions des deux MLP et la fonction vraie comme celle ci-dessous.</li>
+<li class="dash">Le résumé des modèles avec le nombre de paramètres et la structure (torchsummary).</li>
+<li class="dash">Discussion : quel MLP capture mieux la fonction ?</li>
+</ul>
+
+<img src="images/chap2_exo_sup_2_resultat.png"  alt="Résultat attendu MLP" align="center" />
+</div>
+<nav><ul class="pagination justify-content-center"><li class="page-item"><a class="page-link" href="chap2.html"><i class="bi bi-folder2"></i> Chapitre 2 — Perceptron multi-couches </a></li></ul></nav>
+
+</div> <!-- /contents -->
+</div> <!-- /core -->
+
+</body>
+</html>
