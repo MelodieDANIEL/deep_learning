@@ -470,10 +470,38 @@ Autograd utilise ce graphe pour calculer automatiquement les dérivées par rapp
 - ``backward()`` calcule les dérivées de ``z`` par rapport à chaque élément de ``x``.
 - ``x.grad`` contient maintenant les gradients.
 
-11.1. Principe de la rétropropagation
+
+.. slide::
+11.1. But de la rétropropagation
+~~~~~~~~~~~~~~
+
+Le but est de minimiser une fonction de perte en ajustant les paramètres du modèle. La rétropropagation permet de calculer efficacement les gradients nécessaires pour mettre à jour ces paramètres via des algorithmes d'optimisation comme la descente de gradient.
+
+Le gradient d’une fonction $$f(x)$$ est la pente de la courbe en un point. Le gradient indique la direction de variation la plus forte de la fonction : c’est comme une boussole qui pointe vers la direction où la fonction croît le plus vite. Pour minimiser la perte, on avance dans la direction opposée. Voici comment on calcule le gradient :
+
+- En 1D : $$f'(x) = \lim_{h \to 0} \frac{f(x+h) - f(x)}{h}$$
+- En plusieurs dimensions : $$\nabla f(x) = \left( \frac{\partial f}{\partial x_1}, \dots, \frac{\partial f}{\partial x_n} \right)$$
+
+Par exemple si $$f(x) = x^2$$ alors : 
+
+.. figure:: images/chap1_grad.png
+   :alt: 
+   :align: center
+
+- Pour \( x < 0 \), gradient négatif → la fonction décroît. 
+- Pour \( x > 0 \), gradient positif → la fonction croît. 
+- Au minimum (en \( x=0 \)), gradient nul.
+
+.. note::
+
+   Pour minimiser la fonction de perte, il faut trouver \(x\) pour lequel $$\nabla f(x) = 0$$.  
+   **Attention** : un gradient nul peut aussi correspondre à un maximum. En apprentissage, on espère converger vers un minimum.
+
+.. slide::
+11.2. Principe de la rétropropagation
 ~~~~~~~~~~~~~~~~~
 
-Le principe de la rétropropagation signifie que PyTorch parcourt le graphe **en sens inverse** pour faire le calcul des dérivées.
+Le principe de la rétropropagation signifie que PyTorch parcourt le graphe **en sens inverse** pour faire le calcul des dérivées. Si on repart sur l'exemple de la section précédente, la rétropropagation dans PyTorch :
 
 
 1. Commence par la sortie ``z``.
@@ -481,7 +509,7 @@ Le principe de la rétropropagation signifie que PyTorch parcourt le graphe **en
 3. Stocke le gradient dans ``x.grad``.
 
 .. slide::
-11.2. Calcul des gradients dans notre exemple
+11.3. Calcul des gradients dans notre exemple
 ~~~~~~~~~~~~~~~~~
 
 - $$\frac{dz}{dy} = 1$$ car $$z = y.sum()$$ 
@@ -495,7 +523,7 @@ On obtient donc :
     print(x.grad)  # tensor([7., 9.])
 
 .. slide::
-11.3. Détail du calcul des gradients
+11.4. Détail du calcul des gradients
 ~~~~~~~~~~~~~~~~~
 
 On a $$y = [y_1, y_2] = [x_1² + 3x_1,  x_2² + 3x_2]$$ et $$z = y_1 + y_2$$.
@@ -521,7 +549,7 @@ $$\frac{dz}{dx} = [\frac{dz}{dx_1}, \frac{dz}{dx_2}] = \frac{dz}{dy} * \frac{dy}
 et donc $$\frac{dz}{dx} = [2x_1 + 3, 2x_2 + 3]$$. 
 
 .. slide::
-11.4. Résultat numérique pour notre exemple 
+11.5. Résultat numérique pour notre exemple 
 ~~~~~~~~~~~~~~~~~
 
 .. code-block:: python

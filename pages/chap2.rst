@@ -56,7 +56,7 @@ avec $$y= \sigma(x_1*w_1 + x_2*w_2 + ...+ x_i*w_i + ... + x_n*w_n + b)$$
 
     - Chaque poids $$w_i$$ mesure l’importance de la caractéristique $$x_i$$.  
     - Le biais $$b$$ déplace la frontière de décision.  
-    - La fonction d’activation permet d’introduire de la non-linéarité, indispensable pour modéliser des relations complexes mais nous en parleront plus en détails par la suite.  
+    - La fonction d’activation permet d’introduire de la non-linéarité, indispensable pour modéliser des relations complexes mais nous en parlerons plus en détails par la suite.  
 
 
 .. slide::
@@ -85,7 +85,7 @@ où :
 1.4. Exemples d'applications du perceptron simple
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Un perceptron simple ne peut résoudre que les problèmes linéairement séparables puisque en trouvant les paramètres du modèle, le perceptron trace une droite dans le plan des entrées et sépare les points selon qu’ils sont au-dessus ou en dessous de cette droite.
+Un perceptron simple ne peut résoudre que les problèmes linéairement séparables puisqu'en trouvant les paramètres du modèle, le perceptron trace une droite dans le plan des entrées et sépare les points selon qu’ils sont au-dessus ou en dessous de cette droite.
 
 **Exemple 1 : porte logique ET**
 
@@ -182,7 +182,7 @@ Les fonctions d’activation introduisent de la non-linéarité dans le modèle,
 2.1. Équations des fonctions d'activation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Voici quatres fonctions d’activation couramment utilisées :
+Voici quatre fonctions d’activation couramment utilisées :
 
 1. **Sigmoïde** : $$\sigma(x) = \frac{1}{1 + e^{-x}}$$
    - Sortie comprise entre 0 et 1.
@@ -212,7 +212,7 @@ Voici quatres fonctions d’activation couramment utilisées :
 2.3. Les fonctions d'activation dans PyTorch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Dans PyTorch, les fonctions d'activation sont disponibles dans la bibliothèque `torch.nn`. Voici quelques exemples :
+Dans PyTorch, les fonctions d'activation sont disponibles dans la bibliothèque ``torch.nn``. Voici quelques exemples :
 
 1. **Sigmoïde** : ``nn.sigmoid(x)``
 2. **Tanh** : ``nn.tanh(x)``
@@ -323,7 +323,7 @@ Avant d'entraîner un modèle, il est important de préparer les données pour q
 4.1. Normalisation
 ~~~~~~~~~~~~~~~~~
 
-La normalisation consiste à mettre les valeurs dans une plage donnée, souvent entre 0 et 1. Cela est utile lorsque les données ont des échelles très différentes. Pour ceal , il faut appliquer la formule suivante à chaque donnée:
+La normalisation consiste à mettre les valeurs dans une plage donnée, souvent entre 0 et 1. Cela est utile lorsque les données ont des échelles très différentes. Pour cela, il faut appliquer la formule suivante à chaque donnée:
 
 .. math::
 
@@ -401,12 +401,12 @@ Après avoir centré et réduit les données, la standardisation permet généra
 
 **Pourquoi ?**
 
-  - Une moyenne proche de 0 aide les fonctions d'activation et la descente de gradient à mieux fonctionner, sans que le modèle doive apprendre un biais pour décaler toutes les données.
-  - Un écart-type proche de 1 met toutes les données sur une échelle comparable, ce qui évite que certaines variables dans dans les données dominent les gradients et permet une descente plus directe vers le minimum de la loss.
+  - Une moyenne proche de 0 aide les fonctions d'activation et la descente de gradient à mieux fonctionner, sans que le modèle ne doive apprendre un biais pour décaler toutes les données.
+  - Un écart-type proche de 1 met toutes les données sur une échelle comparable, ce qui évite que certaines variables dans les données dominent les gradients et permet une descente plus directe vers le minimum de la loss.
 
 
 .. note::
-   Si la standardisation est appliquée sur un mini-batch (par exemple avec BatchNorm1d), la moyenne et l’écart-type sont calculés sur ce mini-batch. Dans ce cas, la moyenne n’est pas exactement 0 et l’écart-type n’est pas exactement 1 pour l’ensemble du dataset. De plus, certains modules comme BatchNorm peuvent apprendre un scale et un shift, modifiant légèrement ces valeurs finales.
+   Si la standardisation est appliquée sur un mini-batch (par exemple avec ``BatchNorm1d``), la moyenne et l’écart-type sont calculés sur ce mini-batch. Dans ce cas, la moyenne n’est pas exactement 0 et l’écart-type n’est pas exactement 1 pour l’ensemble du dataset. De plus, certains modules comme BatchNorm peuvent apprendre un scale et un shift, modifiant légèrement ces valeurs finales.
 
 **Est-ce grave si ce n'est pas exactement 0 et 1 ?**
 
@@ -473,7 +473,7 @@ Exemple minimal d’un réseau de neurones pour une régression 1D avec un MLP �
 
     - La première couche transforme l’entrée en un vecteur de dimension 10.
     - La deuxième couche réduit ce vecteur à 5 dimensions, permettant au réseau de combiner et transformer les features.
-    - Chaque couche cachée est suivie d’une fonction d’activation pour capturer la non-linéarité. 
+    - Chaque couche cachée est suivie d’une fonction d’activation capturant la non-linéarité. 
     - La couche finale produit la sortie finale du réseau.
 
 .. note:: 
@@ -484,7 +484,7 @@ Exemple minimal d’un réseau de neurones pour une régression 1D avec un MLP �
 5.4. Construire un MLP avec une classe
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Dans PyTorch, il est courant de définir un modèle en créant une classe qui hérite de ``nn.Module``. Cela permet de mieux organiser le code, de réutiliser le modèle facilement. Dans ce cas, la méthode ``forward``  décrit comment les données traversent le réseau.
+Dans PyTorch, il est courant de définir un modèle en créant une classe qui hérite de ``nn.Module``. Cela permet de mieux organiser le code, de réutiliser facilement le modèle. Dans ce cas, la méthode ``forward``  décrit comment les données traversent le réseau.
 
 Voici le même exemple que précédemment avec une classe :
 
@@ -767,7 +767,7 @@ Pour suivre la loss pour le modèle avec et sans standardisation il faut d'abord
 
 
 .. slide::
-Ensuite, pendant l’entraînement, on ajoute la valeur de la loss à dans les listes pour chaque epoch. Cela ce fait comme suit : 
+Ensuite, pendant l’entraînement, on ajoute la valeur de la loss dans les listes à chaque epoch. Cela se fait comme suit : 
 
 .. code-block:: python
 
@@ -792,7 +792,7 @@ Ensuite, pendant l’entraînement, on ajoute la valeur de la loss à dans les l
     ...
 
 .. slide::
-Enfin on ajoute les lignes de code suivante pour tracer les loss à la fin du code : 
+Enfin on ajoute les lignes de code suivantes pour tracer les loss à la fin du code : 
 
 .. code-block:: python
 
@@ -818,7 +818,7 @@ Enfin on ajoute les lignes de code suivante pour tracer les loss à la fin du co
 
 - **Choix du nombre d’epochs** :  
   - En regardant le graphique, on peut déterminer à partir de quel epoch la loss se stabilise.  
-  - Cela permet de choisir un nombre d’epochs suffisant sans sur-entraîner le modèle inutilement.
+  - Cela permet de choisir un nombre d’epochs suffisant sans sur-entraîner inutilement le modèle.
   - Dans cet exemple, on découvre que pour le modèle qui s'entraîne avec standardisation, la loss se stabilise à 0 autour de 500 epochs. Vous pouvez réduire le nombre d'epochs et vérifier que 500 epochs suffisent.
 
 .. note::
@@ -828,7 +828,7 @@ Enfin on ajoute les lignes de code suivante pour tracer les loss à la fin du co
 7.3. Early Stopping
 ~~~~~~~~~~~~~~~~~~~~
 
-Pour éviter de trop entraîner le modèle, on peut surveiller la loss et arrêter l’entraînement lorsque la perte ne diminue plus. Cela s’appelle l’early stopping. On peut automatiser le processus avec PyTorch. Tout d'abord, il faut remmetre le nombre d'epoch à 5000. Ensuite il faut créer les variables suivantes et les ajouter avant la classe qui construit le modèle :
+Pour éviter de trop entraîner le modèle, on peut surveiller la loss et arrêter l’entraînement lorsque la perte ne diminue plus. Cela s’appelle l’early stopping. On peut automatiser le processus avec PyTorch. Tout d'abord, il faut remettre le nombre d'epoch à 5000. Ensuite il faut créer les variables suivantes et les ajouter avant la classe qui construit le modèle :
 
 .. code-block:: python
 
@@ -897,7 +897,7 @@ Ensuite, il faut ajouter le code suivant à la fin de chaque boucle d'entraînem
 
 .. slide::
 📖 8. Observer le modèle avec ``torch-summary`` et la performance des gradients avec autograd profiler
-~~~~~~~~~~~~~~~~~~~~
+-------------------
 
 Il existe plusieurs outils PyTorch qui permettent d'inspecter et de profiler les modèles. Le but étant de parvenir à identifier les goulots d'étranglement et à optimiser les performances. Parmi eux, on trouve :
 
@@ -933,7 +933,7 @@ Explications :
 
 - ``input_size`` : dimensions d’un échantillon (hors batch).  
   Dans notre exemple, chaque échantillon est un scalaire (1 feature), donc ``input_size=(1,)``.  
-- ``device`` : ici "cpu" pour éviter tout conflit CUDA si le modèle ou PyTorch envoie certains tenseurs sur GPU.  
+- ``device`` : est égal à ``"cpu"`` pour éviter tout conflit CUDA si le modèle ou PyTorch envoie certains tenseurs sur GPU.  
 
 - Résultat : pour chaque couche, on voit :
 
@@ -1011,18 +1011,6 @@ Pour tester le profiler, il suffit d'ajouter le code suivant juste après le cod
 
     - Pour un petit MLP, le plus coûteux est le calcul des couches linéaires et du backward. Sur des modèles plus grands ou avec GPU, ces informations sont cruciales pour comprendre et améliorer les performances.
 
-..Slide::
-📖 8. Inspecter le modèle avec ``torch-summary``
---------------------------------------
-
-Un dernier outil PyTorch dont nous allons parler dans ce chapitre est appelé ``torch-summary`` et permet de visualiser la structure du modèle et le nombre de paramètres par couche. Pour cela, il suffit de taper le code suivant : 
-
-Permet de voir le nombre de paramètres par couche et la structure du réseau.  
-
-.. code-block:: python
-
-   from torchsummary import summary
-   summary(model, input_size=(1,))
 
 .. slide::
 🏋️ Travaux Pratiques 2

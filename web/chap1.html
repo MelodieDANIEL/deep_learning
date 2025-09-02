@@ -445,15 +445,31 @@ print(x.grad)</code></pre>
 <li class="dash"><code>x.grad</code> contient maintenant les gradients.</li>
 </ul>
 
-<a id="title.1.12.1"></a><h3>11.1. Principe de la rétropropagation</h3>
-<p>Le principe de la rétropropagation signifie que PyTorch parcourt le graphe <strong>en sens inverse</strong> pour faire le calcul des dérivées.</p>
+</div><div class="slide ">
+<a id="title.1.12.1"></a><h3>11.1. But de la rétropropagation</h3>
+<p>Le but est de minimiser une fonction de perte en ajustant les paramètres du modèle. La rétropropagation permet de calculer efficacement les gradients nécessaires pour mettre à jour ces paramètres via des algorithmes d&#039;optimisation comme la descente de gradient.</p>
+<p>Le gradient d’une fonction \(f(x)\) est la pente de la courbe en un point. Le gradient indique la direction de variation la plus forte de la fonction : c’est comme une boussole qui pointe vers la direction où la fonction croît le plus vite. Pour minimiser la perte, on avance dans la direction opposée. Voici comment on calcule le gradient :</p>
+<ul><li class="dash">En 1D : \(f'(x) = \lim_{h \to 0} \frac{f(x+h) - f(x)}{h}\)</li>
+<li class="dash">En plusieurs dimensions : \(\nabla f(x) = \left( \frac{\partial f}{\partial x_1}, \dots, \frac{\partial f}{\partial x_n} \right)\)</li>
+</ul>
+
+<p>Par exemple si \(f(x) = x^2\) alors : </p>
+<figure><img src="images/chap1_grad.png"  alt="" align="center" /><figcaption><ul><li class="dash">Pour \( x &lt; 0 \), gradient négatif → la fonction décroît.</li>
+<li class="dash">Pour \( x &gt; 0 \), gradient positif → la fonction croît.</li>
+<li class="dash">Au minimum (en \( x=0 \)), gradient nul.</li>
+</ul></figcaption></figure>
+<div class="alert alert-info"><p>Pour minimiser la fonction de perte, il faut trouver \(x\) pour lequel \(\nabla f(x) = 0\). <br /><strong>Attention</strong> : un gradient nul peut aussi correspondre à un maximum. En apprentissage, on espère converger vers un minimum.</p>
+</div>
+</div><div class="slide ">
+<a id="title.1.12.2"></a><h3>11.2. Principe de la rétropropagation</h3>
+<p>Le principe de la rétropropagation signifie que PyTorch parcourt le graphe <strong>en sens inverse</strong> pour faire le calcul des dérivées. Si on repart sur l&#039;exemple de la section précédente, la rétropropagation dans PyTorch :</p>
 <ol><li class="">Commence par la sortie <code>z</code>.</li>
 <li class="">Recule vers les nœuds précédents (<code>y</code> puis <code>x</code>) en appliquant la règle de dérivation.</li>
 <li class="">Stocke le gradient dans <code>x.grad</code>.</li>
 </ol>
 
 </div><div class="slide ">
-<a id="title.1.12.2"></a><h3>11.2. Calcul des gradients dans notre exemple</h3>
+<a id="title.1.12.3"></a><h3>11.3. Calcul des gradients dans notre exemple</h3>
 <ul><li class="dash">\(\frac{dz}{dy} = 1\) car \(z = y.sum()\)</li>
 <li class="dash">\(\frac{dy}{dx} =\) dérivée de \((x^2 + 3*x) = 2*x + 3\)</li>
 <li class="dash">\(\frac{dz}{dx} = \frac{dz}{dy} * \frac{dy}{dx} = 2*x + 3\)</li>
@@ -462,7 +478,7 @@ print(x.grad)</code></pre>
 <p>On obtient donc :</p>
 <pre><code class="python hljs">print(x.grad)  # tensor([7., 9.])</code></pre>
 </div><div class="slide ">
-<a id="title.1.12.3"></a><h3>11.3. Détail du calcul des gradients</h3>
+<a id="title.1.12.4"></a><h3>11.4. Détail du calcul des gradients</h3>
 <p>On a \(y = [y_1, y_2] = [x_1² + 3x_1,  x_2² + 3x_2]\) et \(z = y_1 + y_2\).</p>
 <p><strong>Étape 1 : dérivée de z par rapport à y</strong></p>
 <p>Comme \(z = y_1 + y_2\), on a \(\frac{dz}{dy_1} = 1\) et \(\frac{dz}{dy_2} = 1\).</p>
@@ -475,7 +491,7 @@ On peut aussi regrouper sous forme vectorielle, telle que \(\frac{dy}{dx} = [\fr
 <p>\(\frac{dz}{dx} = [\frac{dz}{dx_1}, \frac{dz}{dx_2}] = \frac{dz}{dy} * \frac{dy}{dx}\) et \(\frac{dz}{dx} = [\frac{dz}{dy_1}*\frac{dy_1}{dx_1}, \frac{dz}{dy_2}*\frac{dy_2}{dx_2}] = [1 * (2x_1 + 3), 1 * (2x_2 + 3)]\) </p>
 <p>et donc \(\frac{dz}{dx} = [2x_1 + 3, 2x_2 + 3]\). </p>
 </div><div class="slide ">
-<a id="title.1.12.4"></a><h3>11.4. Résultat numérique pour notre exemple </h3>
+<a id="title.1.12.5"></a><h3>11.5. Résultat numérique pour notre exemple </h3>
 <pre><code class="python hljs">print(x)       # tensor([2., 3.], requires_grad=True)
 print(x.grad)  # tensor([7., 9.])</code></pre>
 <p>Car :</p>

@@ -266,7 +266,7 @@
     'tocs' => 
     array (
     ),
-    'ctime' => 1756227050,
+    'ctime' => 1756818554,
     'depends' => 
     array (
     ),
@@ -452,28 +452,35 @@
             array (
               0 => 
               array (
-                0 => '11.1. Principe de la rétropropagation',
+                0 => '11.1. But de la rétropropagation',
                 1 => 
                 array (
                 ),
               ),
               1 => 
               array (
-                0 => '11.2. Calcul des gradients dans notre exemple',
+                0 => '11.2. Principe de la rétropropagation',
                 1 => 
                 array (
                 ),
               ),
               2 => 
               array (
-                0 => '11.3. Détail du calcul des gradients',
+                0 => '11.3. Calcul des gradients dans notre exemple',
                 1 => 
                 array (
                 ),
               ),
               3 => 
               array (
-                0 => '11.4. Résultat numérique pour notre exemple ',
+                0 => '11.4. Détail du calcul des gradients',
+                1 => 
+                array (
+                ),
+              ),
+              4 => 
+              array (
+                0 => '11.5. Résultat numérique pour notre exemple ',
                 1 => 
                 array (
                 ),
@@ -658,7 +665,7 @@
         0 => 'TP_chap1',
       ),
     ),
-    'ctime' => 1756567735,
+    'ctime' => 1756820466,
     'depends' => 
     array (
       0 => 'TP_chap1',
@@ -948,41 +955,34 @@
                 array (
                 ),
               ),
-              3 => 
-              array (
-                0 => '📖 8. Observer le modèle avec <code>torch-summary</code> et la performance des gradients avec autograd profiler',
-                1 => 
-                array (
-                ),
-              ),
-              4 => 
+            ),
+          ),
+          8 => 
+          array (
+            0 => '📖 8. Observer le modèle avec <code>torch-summary</code> et la performance des gradients avec autograd profiler',
+            1 => 
+            array (
+              0 => 
               array (
                 0 => '8.1. Utiliser <code>torchsummary</code>',
                 1 => 
                 array (
                 ),
               ),
-              5 => 
+              1 => 
               array (
                 0 => '8.2. Rôle du profiler',
                 1 => 
                 array (
                 ),
               ),
-              6 => 
+              2 => 
               array (
                 0 => '8.3. Exemple d&#039;utilisation du profiler pour l&#039;exemple de régression',
                 1 => 
                 array (
                 ),
               ),
-            ),
-          ),
-          8 => 
-          array (
-            0 => '📖 8. Inspecter le modèle avec <code>torch-summary</code>',
-            1 => 
-            array (
             ),
           ),
           9 => 
@@ -1002,7 +1002,7 @@
         0 => 'TP_chap2',
       ),
     ),
-    'ctime' => 1756639570,
+    'ctime' => 1756817047,
     'depends' => 
     array (
       0 => 'TP_chap2',
@@ -1149,7 +1149,7 @@
     'tocs' => 
     array (
     ),
-    'ctime' => 1756724730,
+    'ctime' => 1756819237,
     'depends' => 
     array (
     ),

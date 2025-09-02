@@ -124,7 +124,7 @@ y_true = torch.sin(X) + 0.1 * torch.randn(X.size())  # fonction sinusoïdale bru
 <ol><li class="">Polynôme cubique : \(y = f(x) = a x^3 + b x^2 + c x + d\), où \(a, b, c, d\) sont des paramètres appris automatiquement en minimisant l’erreur entre les prédictions et les données réelles comme dans le chapitre 1.</li>
 <li class="">MLP simple :</li>
 <ul><li class="dash">Implémenté sous forme de classe <code>nn.Module</code></li>
-<li class="dash">2 couches cachées de 10 neurones chacune avec `ReLU`` pour l&#039;activation</li>
+<li class="dash">2 couches cachées de 10 neurones chacune avec <code>ReLU</code> pour l&#039;activation</li>
 <li class="dash">Entrée : 1 feature, sortie : 1 prédiction</li>
 </ul>
 </ol>
@@ -173,7 +173,7 @@ y = 3*X1 + 0.05*X2**2 + torch.randn(N,1) * 0.5</code></pre>
 <p>6) Comparez les performances des deux modèles et notez lequel converge plus vite et donne de meilleures prédictions.</p>
 <p>7) A quelle epoch peut-on considérer que le modèle sur données standardisées a convergé et comment on peut faire pour le déterminer ?</p>
 <p><strong>Astuce :</strong></p>
-<div class="spoiler"><ol><li class="discover">N’oubliez pas d initialiser les poids du modèle avec <code>torch.randn()</code> pour un démarrage aléatoire et de  mettre <code>optimizer.zero_grad()</code> avant <code>loss.backward()</code>.</li>
+<div class="spoiler"><ol><li class="discover">N’oubliez pas d&#039;initialiser les poids du modèle avec <code>torch.randn()</code> pour un démarrage aléatoire et de  mettre <code>optimizer.zero_grad()</code> avant <code>loss.backward()</code>.</li>
 <li class="discover">Pour standardiser, utilisez <code>(X - X_mean)/X_std</code>.</li>
 <li class="discover">Pour visualiser la loss : stockez <code>loss.item()</code> à chaque epoch et utilisez <code>matplotlib.pyplot.plot()</code>.</li>
 <li class="discover">Pour visualiser les prédictions, utilisez un scatter plot avec les données réelles et les prédictions des deux modèles.</li>
@@ -198,34 +198,34 @@ y = 3*X1 + 0.05*X2**2 + torch.randn(N,1) * 0.5</code></pre>
 </ul>
 
 <p><strong>Consigne :</strong> Écrire un programme qui :  </p>
-<p>1) Générer un jeu de données 1D avec <code>N=100</code> points :  </p>
+<p>1) Génère un jeu de données 1D avec <code>N=100</code> points :  </p>
 <ul><li class="dash"><code>X</code> uniformément dans \([-3,3]\).</li>
 <li class="dash"><code>y = sin(X) + bruit</code> avec <code>bruit = 0.2 * torch.randn_like(y)</code>.</li>
 </ul>
 
-<p>2) Définir trois modèles MLP avec <code>Tanh</code> comme activation :  </p>
+<p>2) Définit trois modèles MLP avec <code>Tanh</code> comme activation :  </p>
 <ul><li class="dash">Petit : 2 couches cachées de 5 neurones chacune</li>
 <li class="dash">Petit entraîné longtemps : même architecture, mais entraîné avec plus d’epochs</li>
 <li class="dash">Grand : 2 couches cachées de 50 neurones chacune</li>
 </ul>
 
-<p>3) Entraîner chaque modèle avec <code>MSELoss</code> et Adam pendant :  </p>
+<p>3) Entraîne chaque modèle avec <code>MSELoss</code> et Adam pendant :  </p>
 <ul><li class="dash">Petit : 2000 epochs</li>
 <li class="dash">Petit long : 10000 epochs</li>
 <li class="dash">Grand : 2000 epochs</li>
 </ul>
 
-<p>4) Tracer sur le même graphique :  </p>
+<p>4) Trace sur le même graphique :  </p>
 <ul><li class="dash">Les points de données bruitées</li>
 <li class="dash">La fonction vraie `sin(X)`</li>
 <li class="dash">Les prédictions des trois MLP</li>
 </ul>
 
-<p>5) Tracer également l’évolution de la loss pour chaque modèle.</p>
-<p>6) Tester les modèles sur une nouvelle valeur de X (ex. X=0.5) et afficher les prédictions et la valeur vraie.</p>
+<p>5) Trace également l’évolution de la loss pour chaque modèle.</p>
+<p>6) Teste les modèles sur une nouvelle valeur de X (ex. X=0.5) et affiche les prédictions et la valeur vraie.</p>
 <p><strong>Questions :</strong></p>
 <p>7) Que remarquez-vous sur la capacité de généralisation du MLP petit vs grand ? <br />8) Que se passe-t-il si on augmente encore le nombre d’epochs pour le MLP petit ? <br />9) Quel rôle joue le bruit dans la difficulté de l’apprentissage ? <br />10) Comment pourrait-on améliorer la généralisation des modèles (pistes) ?
-11) Pouvez vous écrire du code pour éviter de l&#039;overfitting ?</p>
+11) Pouvez-vous écrire du code pour éviter de l&#039;overfitting ?</p>
 <p><strong>Astuce :</strong></p>
 <div class="spoiler"><ol><li class="discover">Utiliser <code>torch.manual_seed(0)</code> pour la reproductibilité.</li>
 <li class="discover">Pour l’entraînement, penser à <code>optimizer.zero_grad()</code>, <code>loss.backward()</code>, <code>optimizer.step()</code>.</li>

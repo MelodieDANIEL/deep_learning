@@ -32,7 +32,7 @@ On vous donne les données suivantes :
 2. MLP simple :  
 
     - Implémenté sous forme de classe ``nn.Module``  
-    - 2 couches cachées de 10 neurones chacune avec `ReLU`` pour l'activation
+    - 2 couches cachées de 10 neurones chacune avec ``ReLU`` pour l'activation
     - Entrée : 1 feature, sortie : 1 prédiction
 
 **Consigne :** Écrire un programme qui :
@@ -111,7 +111,7 @@ Comprendre l’importance de la standardisation des données pour l’entraînem
 **Astuce :**
 .. spoiler::
     .. discoverList::
-        1. N’oubliez pas d initialiser les poids du modèle avec ``torch.randn()`` pour un démarrage aléatoire et de  mettre ``optimizer.zero_grad()`` avant ``loss.backward()``.  
+        1. N’oubliez pas d'initialiser les poids du modèle avec ``torch.randn()`` pour un démarrage aléatoire et de  mettre ``optimizer.zero_grad()`` avant ``loss.backward()``.  
         2. Pour standardiser, utilisez ``(X - X_mean)/X_std``.  
         3. Pour visualiser la loss : stockez ``loss.item()`` à chaque epoch et utilisez ``matplotlib.pyplot.plot()``.  
         4. Pour visualiser les prédictions, utilisez un scatter plot avec les données réelles et les prédictions des deux modèles.
@@ -144,32 +144,32 @@ Cet exercise permet d'observer l'overfitting avec un MLP sur des données bruit�
 
 **Consigne :** Écrire un programme qui :  
 
-1) Générer un jeu de données 1D avec ``N=100`` points :  
+1) Génère un jeu de données 1D avec ``N=100`` points :  
 
    - ``X`` uniformément dans $$[-3,3]$$.
    - ``y = sin(X) + bruit`` avec ``bruit = 0.2 * torch.randn_like(y)``.
 
-2) Définir trois modèles MLP avec ``Tanh`` comme activation :  
+2) Définit trois modèles MLP avec ``Tanh`` comme activation :  
 
    - Petit : 2 couches cachées de 5 neurones chacune  
    - Petit entraîné longtemps : même architecture, mais entraîné avec plus d’epochs  
    - Grand : 2 couches cachées de 50 neurones chacune
 
-3) Entraîner chaque modèle avec ``MSELoss`` et Adam pendant :  
+3) Entraîne chaque modèle avec ``MSELoss`` et Adam pendant :  
 
    - Petit : 2000 epochs  
    - Petit long : 10000 epochs  
    - Grand : 2000 epochs
 
-4) Tracer sur le même graphique :  
+4) Trace sur le même graphique :  
 
    - Les points de données bruitées  
    - La fonction vraie `sin(X)`  
    - Les prédictions des trois MLP  
 
-5) Tracer également l’évolution de la loss pour chaque modèle.
+5) Trace également l’évolution de la loss pour chaque modèle.
 
-6) Tester les modèles sur une nouvelle valeur de X (ex. X=0.5) et afficher les prédictions et la valeur vraie.
+6) Teste les modèles sur une nouvelle valeur de X (ex. X=0.5) et affiche les prédictions et la valeur vraie.
 
 **Questions :**
 
@@ -177,7 +177,7 @@ Cet exercise permet d'observer l'overfitting avec un MLP sur des données bruit�
 8) Que se passe-t-il si on augmente encore le nombre d’epochs pour le MLP petit ?  
 9) Quel rôle joue le bruit dans la difficulté de l’apprentissage ?  
 10) Comment pourrait-on améliorer la généralisation des modèles (pistes) ?
-11) Pouvez vous écrire du code pour éviter de l'overfitting ?
+11) Pouvez-vous écrire du code pour éviter de l'overfitting ?
 
 **Astuce :**
 .. spoiler::

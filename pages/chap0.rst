@@ -292,7 +292,7 @@ Ensuite, placez-vous dans ce dossier avec la commande ``cd`` :
 
    cd cours_dl/notebooks/  
 
-Pour démarrer Jupyter Notebook dans le dossier courant, utilisez :
+Pour démarrer Jupyter Notebook dans le dossier courant, assurez-vous d'avoir activé l'environnement virtuel, puis tapez :
 
 .. code-block:: bash
 
