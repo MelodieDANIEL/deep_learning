@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <link rel="stylesheet" type="text/css" href="css/style.css" />
-<title>Intro Python - Introduction aux fondamentaux de l&#039;apprentissage supervisé et du Deep Learning</title>
+<title>Intro Python - Exercice 0 : Mise en place</title>
 
                 <meta http-equiv="X-UA-Compatible" content="IE=edge">
                 <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -104,19 +104,42 @@
 
 <div class="contents container">
 
-<a id="title.1"></a><h1>Introduction aux fondamentaux de l&#039;apprentissage supervisé et du Deep Learning</h1>
 <div class="slide ">
-<a id="title.1.1"></a><h2>Présentation</h2>
-<div class="alert alert-light p-2 fs-5 text-center"><p><strong>Objectif</strong> : Découvrir et s&#039;approprier les fondamentaux de l&#039;apprentissage supervisé et du Deep Learning</p>
-</div>
-<div class="center"><p>Mélodie DANIEL - <a href="mailto:melodie.daniel@u-bordeaux.fr">melodie.daniel@u-bordeaux.fr</a></p>
-<p>Loann GIOVANNANGELI - <a href="mailto:loann.giovannangeli@u-bordeaux.fr">loann.giovannangeli@u-bordeaux.fr</a></p>
-</div>
+<a id="title.1"></a><h1>Exercice 0 : Mise en place</h1>
+<p>Créer un notebook Jupyter et importer les bibliothèques nécessaires. Assurez-vous que celles-ci soient disponibles dans votre noyau jupyter.</p>
+<ul><li class="dash">numpy</li>
+<li class="dash">matplotlib</li>
+<li class="dash">skimage</li>
+<li class="dash">torch</li>
+</ul>
+
 </div><div class="slide ">
-<a id="title.1.2"></a><h2>Sommaire</h2>
-<div class="toc"><ul><li><a href="chap0.html#title.1">Chapitre 0 - Installation des paquets et bibliothques nécessaires pour le cours</a></li><ul><li><a href="chap0.html#title.1.1">🎯 Objectifs du Chapitre</a></li><li><a href="chap0.html#title.1.2">📖 1. Créer un environnement virtuel</a></li><ul></ul><li><a href="chap0.html#title.1.3">📖 2. Installation de PyTorch</a></li><ul></ul><li><a href="chap0.html#title.1.4">📖 3. Installer Jupyter Notebook (optionnel mais recommandé)</a></li><ul></ul><li><a href="chap0.html#title.1.5">📖 4. Documentation utile</a></li><ul></ul></ul><li><a href="chap1.html#title.1">Chapitre 1 - Introduction à PyTorch et Optimisation de Modèles</a></li><ul><li><a href="chap1.html#title.1.1">🎯 Objectifs du Chapitre</a></li><li><a href="chap1.html#title.1.2">📖 1. Qu&#039;est-ce que PyTorch ? </a></li><li><a href="chap1.html#title.1.3">📖 2. Qu&#039;est-ce qu&#039;un tenseur ?</a></li><li><a href="chap1.html#title.1.4">📖 3. Création de tenseurs</a></li><ul></ul><li><a href="chap1.html#title.1.5">📖 4. Connaître la forme d&#039;un tenseur</a></li><li><a href="chap1.html#title.1.6">📖 5. Types de tenseurs et conversion</a></li><li><a href="chap1.html#title.1.7">📖 6. Opérations de base</a></li><li><a href="chap1.html#title.1.8">📖 7. Tenseurs sur GPU</a></li><li><a href="chap1.html#title.1.9">📖 8.  Manipulation avancée des tenseurs</a></li><ul></ul><li><a href="chap1.html#title.1.10">📖 9. Autograd avec PyTorch</a></li><ul></ul><li><a href="chap1.html#title.1.11">📖 10. Graphe computationnel</a></li><ul></ul><li><a href="chap1.html#title.1.12">📖 11. Calcul des gradients et rétropropagation </a></li><ul></ul><li><a href="chap1.html#title.1.13">📖 12. Désactivation du suivi des gradients</a></li><li><a href="chap1.html#title.1.14">📖 13. Les fonctions de perte (Loss Functions)</a></li><li><a href="chap1.html#title.1.15">📖 14. Pourquoi la fonction de perte est essentielle ?</a></li><li><a href="chap1.html#title.1.16">📖 15. Régression &amp; Erreur quadratique moyenne (MSE)</a></li><ul></ul><li><a href="chap1.html#title.1.17">📖 16. Classification &amp; Entropie croisée</a></li><ul></ul><li><a href="chap1.html#title.1.18">📖 17. Optimisation</a></li><li><a href="chap1.html#title.1.19">📖 18. Descente de gradient</a></li><ul></ul><li><a href="chap1.html#title.1.20">📖 19. Descente de gradient avec PyTorch</a></li><li><a href="chap1.html#title.1.21">📖 20. Optimiseur Adam</a></li><ul></ul><li><a href="chap1.html#title.1.22">🏋️ Travaux Pratiques 1</a></li></ul><li><a href="chap2.html#title.1">Chapitre 2 - Introduction </a></li><ul><li><a href="chap2.html#title.1.1">🎯 Objectifs du Chapitre</a></li><li><a href="chap2.html#title.1.2">📖 1. Qu&#039;est-ce que PyTorch ? </a></li><li><a href="chap2.html#title.1.3">📖 20. Optimisation dans PyTorch</a></li></ul><li><a href="chap4.html#title.1">Chapitre 4 - Manipulation d&#039;images</a></li><ul><li><a href="chap4.html#title.1.1">🎯 Objectifs du Chapitre</a></li><li><a href="chap4.html#title.1.2">📖 1. Qu&#039;est-ce qu&#039;une image ?</a></li><li><a href="chap4.html#title.1.3">📖 2. Le slicing en Python</a></li><li><a href="chap4.html#title.1.4">📖 3. Convolution</a></li><li><a href="chap4.html#title.1.5">🏋️ Travaux Pratiques</a></li></ul></ul></div>
+<a id="title.2"></a><h1>Exercice 1 : Fichier Image</h1>
+<p>1) Téléchargez l&#039;image suivante.</p>
+<p>2) Charger l&#039;image avec la bibliothèque matplotlib.</p>
+<p>3) Afficher l&#039;image chargée.</p>
+<p>4) Expliquer le format numérique de l&#039;image chargée.</p>
+<figure><img src="images/tp4/elephants.png"  align="center" width="250px" alt="elephants.png" /></figure>
+</div><div class="slide ">
+<a id="title.3"></a><h1>Exercice 2 : Traitement d&#039;une image</h1>
+<p>1) <strong>[En une seule ligne]</strong> Atténuer les couleurs (réduire alpha)</p>
+<figure><img src="images/tp4/low_alpha.png"  align="center" width="250px" /><figcaption><p>2) <strong>[En une seule ligne]</strong> Donner un alpha différent (aléatoire) à chaque pixel, afficher pour vérifier puis remettre à 1</p></figcaption></figure>
+<figure><img src="images/tp4/rand_alpha.png"  align="center" width="250px" /><figcaption><p>3) <strong>[En une seule ligne]</strong> Récupérer et afficher uniquement l&#039;éléphanteau (attention au système de coordonnées !)</p></figcaption></figure>
+<figure><img src="images/tp4/baby.png"  align="center" width="250px" /><figcaption><p>4) Faites en sorte que l&#039;image soit affichée correctement avec l&#039;origine (0,0) en bas à gauche</p></figcaption></figure>
+<figure><img src="images/tp4/origin00.png"  align="center" width="250px" /><figcaption><p>5) Découpez l&#039;image en morceaux (aka, patches) de taille 240x240 pixels, affichez-les dans une seule figure</p></figcaption></figure>
+<figure><img src="images/tp4/patches.png"  align="center" width="250px" /><figcaption><p>6) Redimmensionnez chaque patch en 64x64 pixels
+7) Reconstituez et affichez l&#039;image a partir des patches redimensionnés</p></figcaption></figure>
+<figure><img src="images/tp4/patches_reconstituted.png"  align="center" width="250px" /><figcaption><p>8) Afficher l&#039;histogramme des couleurs de l&#039;image</p></figcaption></figure>
+<figure><img src="images/tp4/color_hist.png"  align="center" width="400px" /><figcaption><p>9) Changer la couleur du ciel bleu en bleu sombre (nuit)</p></figcaption></figure>
+<figure><img src="images/tp4/blue_sky.png"  align="center" width="400px" /><figcaption><p>10) Réduisez la résolution de l&#039;image d&#039;un facteur 20.</p></figcaption></figure>
+<figure><img src="images/tp4/rescale.png"  align="center" width="250px" /><figcaption><p>11) Appliquer un filtre de convolution gaussien pour lisser l&#039;image en basse résolution</p></figcaption></figure>
+<figure><img src="images/tp4/conv.png"  align="center" width="500px" /></figure>
+</div><div class="slide ">
+<a id="title.4"></a><h1>Exercice 3 : Traitement d&#039;un batch d&#039;images</h1>
+<p>1) Récupérez sur internet une image de Chien, Chat et Cheval, puis redimensionnez les toutes aux mêmes dimensions. </p>
+<p>2) Appliquez ensuite les mêmes traitements (exercice 2.) sur le batch d&#039;images [Elephants, Chien, Chat, Cheval] en utilisant la bibliothèque PyTorch. Adaptez les questions si nécessaire (par exemple lorsqu&#039;il n&#039;y a pas d&#039;éléphanteau dans les images). ⚠️ Votre code doit traiter toutes les images simultanément.</p>
 </div>
-<nav><ul class="pagination justify-content-center"></ul></nav>
+<nav><ul class="pagination justify-content-center"><li class="page-item"><a class="page-link" href="chap4.html"><i class="bi bi-folder2"></i> Chapitre 4 - Manipulation d&#039;images</a></li></ul></nav>
 
 </div> <!-- /contents -->
 </div> <!-- /core -->

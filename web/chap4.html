@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" type="text/css" href="css/style.css" />
+<title>Intro Python - Chapitre 4 - Manipulation d&#039;images</title>
+
+                <meta http-equiv="X-UA-Compatible" content="IE=edge">
+                <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            
+
+                <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+                <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+            
+<link href="https://fonts.googleapis.com/css2?family=Gentium+Basic&display=swap" rel="stylesheet"> 
+<link rel="stylesheet" type="text/css" href="slidey/bootstrap/css/bootstrap.min.css" />
+<link rel="stylesheet" type="text/css" href="slidey/bootstrap-icons/font/bootstrap-icons.css" />
+<link rel="stylesheet" type="text/css" href="slidey/highlight.css" />
+<link rel="stylesheet" type="text/css" href="slidey/slidey.css" />
+<link rel="stylesheet" type="text/css" href="slidey/slidey.menu.css" />
+<link rel="stylesheet" type="text/css" href="slidey/slidey.step.css" />
+<link rel="stylesheet" type="text/css" href="slidey/slidey.code.css" />
+<link rel="stylesheet" type="text/css" href="slidey/slidey.slide.css" />
+<script type="text/javascript" src="slidey/js/jquery.js"></script>
+<script type="text/javascript" src="slidey/js/slidey.permalink.js"></script>
+<script type="text/javascript" src="slidey/js/slidey.menu.js"></script>
+<script type="text/javascript" src="slidey/js/slidey.mobile.js"></script>
+<script type="text/javascript" src="slidey/js/slidey.spoilers.js"></script>
+<script type="text/javascript" src="slidey/js/slidey.steps.js"></script>
+<script type="text/javascript" src="slidey/js/slidey.js"></script>
+<script type="text/javascript" src="slidey/js/main.js"></script>
+<script type="text/javascript" src="slidey/bootstrap/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="slidey/highlight/highlight.pack.js"></script>
+<link rel="icon" type="image/x-icon" href="favicon.ico" />
+</head>
+<body>
+<!-- Modal log-in window -->
+<div class="modal fade" id="loginWindow">
+  <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Log-in</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>    
+        <div class="modal-body">
+            <form>
+                Mot de passe&nbsp;:<br />
+                <input class="form-control" type="password" name="password" />
+            </form>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div>
+
+<div class="core">
+
+    <script>hljs.highlightAll();</script>
+
+<!-- Extra-controls for mobile device -->
+<div class="mobileControls">
+    <div class="btn-group">
+        <a href="javascript:void(0)" class="left btn btn-light btn-lg">
+            <i class="bi bi-arrow-up"></i>
+        </a>
+        <a href="javascript:void(0)" class="right btn btn-light btn-lg">
+            <i class="bi bi-arrow-down"></i>
+        </a>
+        <a href="javascript:void(0)" class="up btn btn-light btn-lg">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <a href="javascript:void(0)" class="down btn btn-light btn-lg">
+            <i class="bi bi-arrow-right"></i>
+        </a>
+        <a href="javascript:void(0)" class="login btn btn-light btn-lg">
+            <i class="bi bi-lock"></i>
+        </a>
+    </div>
+</div>
+
+<!-- Controls -->
+<div class="slideMode">
+    <div class="btn-group">
+        <a href="javascript:void(0)" class="btn btn-light btn-lg slideModeSlide"><i class="bi bi-film"></i></a>
+        <a href="javascript:void(0)" class="btn btn-light btn-lg followMode"><i class="bi bi-stopwatch"></i> </a>
+        <a href="index.html" class="btn btn-light btn-lg goHome"><i class="bi bi-house"></i></a>
+    </div>
+</div>
+
+<div class="exitSlideMode">
+    <div class="btn-group">
+        <a href="javascript:void(0)" class="btn btn-light btn-lg followMode"><i class="bi bi-stopwatch"></i></a>
+        <a href="javascript:void(0)" class="btn btn-light btn-lg showMobile"><i class="bi bi-phone"></i></a>
+        <a href="javascript:void(0)" class="btn btn-light btn-lg stopShow">
+            <span class="currentSlideNumber">
+            </span>
+            <i class="bi bi-x-lg"></i>
+        </a>
+    </div>
+</div>
+
+<!-- Browsing menu -->
+<div class="menu">
+</div>
+
+<div class="contents container">
+
+<div class="slide ">
+<a id="title.1"></a><h1>Chapitre 4 - Manipulation d&#039;images</h1>
+<a id="title.1.1"></a><h2>🎯 Objectifs du Chapitre</h2>
+<div class="alert alert-light p-2 fs-5 text-center"><p>À la fin de ce chapitre, vous saurez : </p>
+<ul><li class="dash">Charger, afficher et sauvegarder des fichiers au format image.</li>
+<li class="dash">Manipuler le contenu d&#039;images (redimensionnement, recadrage, rotation, etc.).</li>
+<li class="dash">Faire du slicing sur des tenseurs.</li>
+<li class="dash">Appliquer une convolution 2D sur une image.</li>
+</ul>
+
+</div>
+</div><div class="slide ">
+<a id="title.1.2"></a><h2>📖 1. Qu&#039;est-ce qu&#039;une image ?</h2>
+<p>Une image numérique est une représentation discrète d&#039;une scène visuelle.<br />Elle est constituée d&#039;une grille de pixels organisés en lignes et en colonnes.
+La valeur de chaque pixel détermine la couleur et la luminosité à cet emplacement précis de l&#039;image, et peut être donné dans différents espaces colorimétriques, utilisant un ou plusieurs canaux (channel). Par exemple, une image en niveaux de gris utilise un seul canal, tandis qu&#039;une image en couleur RGB (Red, Green, Blue) utilise trois canaux.</p>
+<p>Une image est ainsi représentée par un tenseur \(H \times W \times C\) où<br />- \(H\) est la hauteur (nombre de lignes),<br />- \(W\) est la largeur (nombre de colonnes) et<br />- \(C\) est le nombre de canaux (1 pour les images en niveaux de gris, 3 pour les images RGB, etc.).</p>
+<p>⚠️ En fonction de la bibliothèque que l&#039;on utilise, une image peut se présenter sous la forme <em>channel-first</em> (C, H, W) ou <em>channel-last</em> (H, W, C). Ces deux représentations sont identiques, mais il faut faire attention au format utilisé avant de réaliser des opérations matricielles pour lesquelles l&#039;ordre des dimensions est important !</p>
+<figure><img src="images/image_tensor.png"  align="center" width="200px" alt="Représentation tensorielle d&#039;une image" /><figcaption><p><strong>Figure 1</strong> : Exemple de représentation tensorielle d&#039;une image (Hauteur × Largeur × Canaux).</p></figcaption></figure>
+<p>Ainsi, dans une image RGB, chaque pixel a une coordonée (x, y) dans \(W \times H\) qui permet d&#039;accéder à sa couleur encodée par trois valeurs : une pour chaque canal R, G et B. Par exemple, un pixel rouge pur aura les valeurs [255, 0, 0] dans un espace colorimétrique où chaque canal varie de 0 à 255 (i.e., encodé sur 8 bits). En Machine Learning, il est commun de normaliser ces valeurs de [0; 255] vers [0; 1].</p>
+<p>D&#039;autres espaces de couleurs existent, comme HSL, HSV, CIELAB... et permettent de modéliser les couleurs plus finement que l&#039;espace RGB . Cependant, RGB ainsi que sa variente RGBA (qui contient un canal Alpha supplémentaire pour encoder la transparence) sont les plus utilisés en Machine Learning.</p>
+<figure><img src="images/rgb.jpg"  align="center" width="300px" alt="Espace de couleur RGB" /><figcaption><p><strong>Figure 2</strong> : Espace de couleur RGB.</p></figcaption></figure>
+</div><div class="slide ">
+<a id="title.1.3"></a><h2>📖 2. Le slicing en Python</h2>
+<p>Pour manipuler des sous-parties de tenseurs (et donc d&#039;image), nous avons besoin de sélectionner des plages de valeur à l&#039;intérieur de celles-ci. La méthode que vous connaissez déjà pour cela est l&#039;utilisation de boucles <em>for</em>, avec des indices de début et de fin. Cependant, cette méthode est souvent verbeuse, et l&#039;approche itérative n&#039;est pas adaptée à l&#039;exécution au GPU.</p>
+<p>Le slicing est une technique en Python qui permet d&#039;extraire des sous-parties d&#039;une séquence (comme une liste, une chaîne de caractères ou un tableau) en spécifiant des indices de début, de fin et un pas.
+Ici, nous nous concentrerons sur le slicing appliqué aux tableaux NumPy qui sont couramment utilisés pour représenter des images, et pour lesquelles les opérations disponibles sont semblables à celles des tenseurs PyTorch.</p>
+<p>Le slicing en Python utilise la syntaxe suivante : <em>sequence[start:stop:step]</em>, où :</p>
+<ul><li class="dash"><em>start</em> est l&#039;indice de début (inclusif),</li>
+<li class="dash"><em>stop</em> est l&#039;indice de fin (exclusif),</li>
+<li class="dash"><em>step</em> est le pas (optionnel, par défaut 1).</li>
+<li class="dash">&#039; <em>:</em> &#039; est le caractère spécial utilisé comme séparateur</li>
+</ul>
+
+<pre><code class="python hljs">sequence = np.array([0, 1, 2, 3, 4, 5])
+print(sequence[1:6])    # &#039;[1, 2, 3, 4, 5]&#039;, affiche de l&#039;indice 1 (inclu) à l&#039;indice 6 (exclu)
+print(sequence[1:6:2])  # &#039;[1, 3, 5]&#039;, affiche de l&#039;indice 1 (inclu) à l&#039;indice 6 (exclu) avec un pas de 2</code></pre>
+<p>Il est également possible d&#039;utiliser les indices négatifs, et il n&#039;est pas nécessaire de spécifier tous les paramètres :</p>
+<pre><code class="python hljs">sequence = np.array([0, 1, 2, 3, 4, 5]))
+print(sequence[2:])  # &#039;[2, 3, 4, 5]&#039;, affiche de l&#039;indice 2 (inclu) jusqu&#039;à la fin
+print(sequence[:4])  # &#039;[0, 1, 2, 3]&#039;, affiche du début jusqu&#039;à l&#039;indice 4 (exclu)
+print(sequence[-3:]) # &#039;[3, 4, 5]&#039;, affiche les 3 derniers éléments</code></pre>
+<p>Pour réaliser du slicing sur un tableau multidimensionnel, il suffit de séparer les indices de chaque dimension par une virgule :</p>
+<pre><code class="python hljs">sequence_2d = np.array([
+   [0, 1, 2], 
+   [10, 11, 12], 
+   [20, 21, 22]
+])
+print(sequence_2d[:, 0])  # &#039;[0, 10, 20]&#039;, affiche la première colonne de chaque ligne
+print(sequence_2d[0, :])  # &#039;[0, 1, 2]&#039;, affiche tous les éléments de la première ligne</code></pre>
+<p>Une image étant un tenseur 3D, le slicing peut être utilisé pour accéder à des parties spécifiques de l&#039;image, comme une région rectangulaire ou un canal de couleur particulier : </p>
+<pre><code class="python hljs">img = np.random.randint(0, 256, (50, 50, 3), dtype=np.uint8)  
+# Image aléatoire de taille 50x50 avec 3 canaux (RVB)
+
+top_left_10px = img[:10, :10, :]  # Sélectionne un carré de 10x10 pixels à partir de l&#039;origine (x=0, y=0, par défaut en haut à gauche). 
+# Résultat : un tenseur de taille (10, 10, 3)
+
+red_channel = img[:, :, 0]        # Sélectionne le premier canal (rouge) de l&#039;image. 
+# Résultat : un tenseur de taille (50, 50) ou (50, 50, 1) selon la bibliothèque utilisée</code></pre>
+</div><div class="slide ">
+<a id="title.1.4"></a><h2>📖 3. Convolution</h2>
+<p>Une convolution est une opération mathématique qui applique un filtre (ou noyau, &quot;kernel&quot; en anglais) sur un signal. <em>Appliquer le filtre</em> consiste à faire glisser le noyau sur le signal et à calculer le produit scalaire entre le noyau et la partie du signal qu&#039;il recouvre.</p>
+<figure><img src="images/sig_conv.png"  align="center" width="400px" alt="Convolution signal 1D" /><figcaption><p><strong>Figure 3</strong> : Exemple de l&#039;application d&#039;un filtre de convolution sur un signal 1D.</p></figcaption></figure>
+<p>Dans l&#039;exemple ci-dessus : soit le noyau \(a = [1, 2, 1]\) aligné avec les valeurs \(b = [4, 1, 0]\) du signal. On applique la formule \( \sum_{i=0}^{N} a_i*b_i\), le résultat est donc : \(4*1 + 1*2 + 0*1 = 6\). </p>
+<p><em>Padding</em> - Comme on peut le voir sur la figure, le signal convolué est de taille inférieure à celle du signal d&#039;origine. Cela est dû à la manière dont le filtre est appliqué, en glissant sur le signal et en ne produisant une sortie que lorsque le filtre est complètement superposé au signal. Pour compenser cette réduction de taille, il est courant d&#039;utiliser un remplissage (padding) qui ajoute des zéros autour du signal d&#039;origine avant d&#039;appliquer la convolution.</p>
+<p><em>Stride</em> - Le pas (stride) est un autre paramètre important dans la convolution. Il détermine de combien de positions le filtre se déplace à chaque étape. Un stride de 1 signifie que le filtre se déplace d&#039;une position à la fois, tandis qu&#039;un stride de 2 signifie qu&#039;il saute une position entre chaque application. Dans la figure 3, le stride est fixé à 1.</p>
+<p>Pour convoluer une image, il suffit de reproduire l&#039;opération en 2D. Le noyau est alors une matrice, le padding peut s&#039;appliquer tout autour de l&#039;image, et le stride est en deux dimensions (pas horizontal et vertical).  </p>
+<figure><img src="images/conv_img.gif"  align="center" width="300px" alt="Convolution image 2D" /><figcaption><p><strong>Figure 4</strong> : Exemple de convolution d&#039;une image. L&#039;image est représentée par des carrés bleus. Autour de celle-ci, les carrés en pointillés représente le remplissage (padding), c&#039;est-à-dire l&#039;ajout de pixels fictifs tout autour de l&#039;image, et dont la valeur est nulle. Le filtre de convolution est représenté en gris et superposé à l&#039;image. Celui-ci glisse sur l&#039;image par pas de 2 verticalement et horizontalement (<em>stride=(2,2)</em>). Le signal convolué est représenté en vert.</p></figcaption></figure>
+<p>En résumé, une convolution est déterminée par :</p>
+<ul><li class="dash"><em>kernel</em> et <em>kernel_size</em> : Le noyau de convolution (i.e., sa taille et ses valeurs)</li>
+<li class="dash"><em>stride</em> : Le pas de l&#039;application du filtre (verticalement et horizontalement)</li>
+<li class="dash"><em>padding</em> : Le remplissage appliqué au signal d&#039;origine</li>
+</ul>
+
+<p>La taille du signal convolué est déterminée par celle de l&#039;image d&#039;origine et de ces trois paramètres.</p>
+<p>En Machine Learning, les convolutions sont notamment utilisées dans les réseaux de neurones convolutifs (CNN pour Convolution Neural Network). Celles-ci permettent de détecter des motifs (contours) et extraire des caractéristiques localement dans l&#039;image (un pixel étant traité avec ses voisins). Ces réseaux sont particulièrement efficaces pour la classification d&#039;images, la détection d&#039;objets et la segmentation d&#039;images.</p>
+</div><div class="slide ">
+<a id="title.1.5"></a><h2>🏋️ Travaux Pratiques</h2>
+<div class="toc"><ul><li><a href="TP_chap4.html#title.1">Exercice 0 : Mise en place</a></li><li><a href="TP_chap4.html#title.2">Exercice 1 : Fichier Image</a></li><li><a href="TP_chap4.html#title.3">Exercice 2 : Traitement d&#039;une image</a></li><li><a href="TP_chap4.html#title.4">Exercice 3 : Traitement d&#039;un batch d&#039;images</a></li></ul></div>
+</div>
+<nav><ul class="pagination justify-content-center"><li class="page-item"><a class="page-link" href="chap2.html">&larr; Chapitre 2 - Introduction </a></li><li class="page-item"><a class="page-link" href="index.html"><i class="bi bi-folder2"></i> Introduction aux fondamentaux de l&#039;apprentissage supervisé et du Deep Learning</a></li></ul></nav>
+
+</div> <!-- /contents -->
+</div> <!-- /core -->
+
+</body>
+</html>

@@ -35,14 +35,16 @@
         0 => 'chap0',
         1 => 'chap1',
         2 => 'chap2',
+        3 => 'chap4',
       ),
     ),
-    'ctime' => 1755798448,
+    'ctime' => 1756298865,
     'depends' => 
     array (
       0 => 'chap0',
       1 => 'chap1',
       2 => 'chap2',
+      3 => 'chap4',
     ),
   ),
   'chap0' => 
@@ -266,7 +268,7 @@
     'tocs' => 
     array (
     ),
-    'ctime' => 1755617167,
+    'ctime' => 1756112341,
     'depends' => 
     array (
     ),
@@ -637,7 +639,7 @@
         0 => 'TP_chap1',
       ),
     ),
-    'ctime' => 1755807490,
+    'ctime' => 1756112341,
     'depends' => 
     array (
       0 => 'TP_chap1',
@@ -683,9 +685,73 @@
     'tocs' => 
     array (
     ),
-    'ctime' => 1755802120,
+    'ctime' => 1756112341,
     'depends' => 
     array (
+    ),
+    'parent' => 'index',
+  ),
+  'chap4' => 
+  array (
+    'file' => 'chap4',
+    'url' => 'chap4.html',
+    'title' => 'Chapitre 4 - Manipulation d&#039;images',
+    'titles' => 
+    array (
+      0 => 
+      array (
+        0 => 'Chapitre 4 - Manipulation d&#039;images',
+        1 => 
+        array (
+          0 => 
+          array (
+            0 => '🎯 Objectifs du Chapitre',
+            1 => 
+            array (
+            ),
+          ),
+          1 => 
+          array (
+            0 => '📖 1. Qu&#039;est-ce qu&#039;une image ?',
+            1 => 
+            array (
+            ),
+          ),
+          2 => 
+          array (
+            0 => '📖 2. Le slicing en Python',
+            1 => 
+            array (
+            ),
+          ),
+          3 => 
+          array (
+            0 => '📖 3. Convolution',
+            1 => 
+            array (
+            ),
+          ),
+          4 => 
+          array (
+            0 => '🏋️ Travaux Pratiques',
+            1 => 
+            array (
+            ),
+          ),
+        ),
+      ),
+    ),
+    'tocs' => 
+    array (
+      0 => 
+      array (
+        0 => 'TP_chap4',
+      ),
+    ),
+    'ctime' => 1756823632,
+    'depends' => 
+    array (
+      0 => 'TP_chap4',
     ),
     'parent' => 'index',
   ),
@@ -763,10 +829,55 @@
     'tocs' => 
     array (
     ),
-    'ctime' => 1755873000,
+    'ctime' => 1756112341,
     'depends' => 
     array (
     ),
     'parent' => 'chap1',
+  ),
+  'TP_chap4' => 
+  array (
+    'file' => 'TP_chap4',
+    'url' => 'TP_chap4.html',
+    'title' => 'Exercice 0 : Mise en place',
+    'titles' => 
+    array (
+      0 => 
+      array (
+        0 => 'Exercice 0 : Mise en place',
+        1 => 
+        array (
+        ),
+      ),
+      1 => 
+      array (
+        0 => 'Exercice 1 : Fichier Image',
+        1 => 
+        array (
+        ),
+      ),
+      2 => 
+      array (
+        0 => 'Exercice 2 : Traitement d&#039;une image',
+        1 => 
+        array (
+        ),
+      ),
+      3 => 
+      array (
+        0 => 'Exercice 3 : Traitement d&#039;un batch d&#039;images',
+        1 => 
+        array (
+        ),
+      ),
+    ),
+    'tocs' => 
+    array (
+    ),
+    'ctime' => 1756824967,
+    'depends' => 
+    array (
+    ),
+    'parent' => 'chap4',
   ),
 );
