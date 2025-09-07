@@ -667,7 +667,11 @@
         0 => 'TP_chap1',
       ),
     ),
+<<<<<<< HEAD
     'ctime' => 1756825179,
+=======
+    'ctime' => 1757262764,
+>>>>>>> 5ac2da9 (typos correction)
     'depends' => 
     array (
       0 => 'TP_chap1',

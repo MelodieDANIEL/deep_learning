@@ -151,8 +151,14 @@
 <li class="dash">On peut avoir des tenseurs 3D, 4D, etc.</li>
 </ul>
 
+<<<<<<< HEAD
 <p>Les tenseurs à haute dimensions sont très utilisés en deep learning (par exemple pour les images ou les vidéos). Nous allons voir comment créer et manipuler des tenseurs dans PyTorch. Vous pouvez copier-coller les exemples de code ci-dessous dans un notebook Jupyter pour les tester et voir les affichages. Pour utiliserles fonctions de PyTorch, il faut d&#039;abord l&#039;importer :</p>
+=======
+<p>Les tenseurs à haute dimension sont très utilisés en deep learning (par exemple pour les images ou les vidéos). Nous allons voir comment créer et manipuler des tenseurs dans PyTorch. Pour utiliser les fonctions de PyTorch, il faut d&#039;abord l&#039;importer :</p>
+>>>>>>> 5ac2da9 (typos correction)
 <pre><code class="python hljs">import torch</code></pre>
+<div class="alert alert-info"><p>Vous devez copier-coller les exemples de code ci-dessous dans un notebook Jupyter pour les tester et voir les affichages.</p>
+</div>
 </div><div class="slide ">
 <a id="title.1.4"></a><h2>📖 3. Création de tenseurs</h2>
 <p>Il existe plusieurs manières de créer un tenseur en PyTorch.</p>
@@ -657,11 +663,11 @@ $$a_{new} = 0 - 0.1 * (-16) = 1.6$$
 <p>PyTorch fournit le module <code>torch.optim</code> qui implémente plusieurs algorithmes d’optimisation. Dans PyTorch, l’algorithme de descente de gradient est appelé SGD (Stochastic Gradient Descent) et peut-être importé via <code>torch.optim.SGD</code> :</p>
 <pre><code class="python hljs">import torch.optim as optim</code></pre>
 <p>On reprend le modèle simple :</p>
-<ul><li class="dash">Modèle : f(x) = a * x</li>
-<li class="dash">Objectif : trouver a tel que f(x) ≈ y</li>
-<li class="dash">Jeu de données : x = [1, 2, 3, 4], y = [2, 4, 6, 8]</li>
-<li class="dash">Paramètre initial : a = 0</li>
-<li class="dash">Taux d&#039;apprentissage : lr = 0.1</li>
+<ul><li class="dash">Modèle : \(f(x) = ax\)</li>
+<li class="dash">Objectif : trouver \(a\) tel que \(f(x) ≈ y\)</li>
+<li class="dash">Jeu de données : \(x = [1, 2, 3, 4], y = [2, 4, 6, 8]\)</li>
+<li class="dash">Paramètre initial : \(a = 0\)</li>
+<li class="dash">Taux d&#039;apprentissage : \(\eta = lr = 0.1\)</li>
 </ul>
 
 </div><div class="slide ">
@@ -697,7 +703,7 @@ for i in range(10):
 <ul><li class="dash"><code>optimizer.zero_grad()</code> : remet à zéro les gradients calculés lors de la dernière itération.
    Sinon, PyTorch additionne les gradients à chaque <code>backward()</code>, ce qui fausserait les calculs.</li>
 <li class="dash"><code>optimizer.step()</code> : applique la mise à jour des paramètres selon la règle de la descente de gradient :
-   \(\theta_new = \theta_old - lr * gradient\).</li>
+   \(a_{new} = a_{old} - lr * \frac{\partial loss}{\partial a}\).</li>
 </ul>
 
 </div>
@@ -718,17 +724,17 @@ for i in range(10):
 <p>La mise à jour des paramètres est alors :</p>
 $$\theta_{\text{new}} = \theta_{\text{old}} - \eta \cdot \frac{\hat{m}_t}{\sqrt{\hat{v}_t} + \epsilon}$$
 <p>💡 Interprétation :</p>
-<ul><li class="dash">\(m_t\) capture la direction moyenne des gradients (évite les oscillations),</li>
-<li class="dash">\(v_t\) ajuste le pas selon la variance des gradients (pas plus grand si le gradient est bruité),</li>
+<ul><li class="dash">\(m_t\) capture la direction moyenne des gradients (ce qui évite les oscillations),</li>
+<li class="dash">\(v_t\) ajuste le pas selon la variance des gradients (pour qu&#039;il ne soitpas plus grand si le gradient est bruité),</li>
 <li class="dash">\(\epsilon\) empêche la division par zéro et</li>
-<li class="dash">La correction de biais \(\hat{m}_t, \hat{v}_t\) est importante surtout au début pour ne pas sous-estimer les moments.</li>
+<li class="dash">la correction de biais \(\hat{m}_t, \hat{v}_t\) est importante surtout au début pour ne pas sous-estimer les moments.</li>
 </ul>
 
 </div><div class="slide ">
 <a id="title.1.21.2"></a><h3>20.2. Adam vs. SGD</h3>
 <blockquote><p>Différences entre Adam et la descente de gradient classique (SGD) :</p>
 <ol><li class=""><strong>SGD</strong> applique la même règle de mise à jour pour tous les paramètres à chaque itération :
-      \theta_new = \theta_old - lr * gradient</li>
+      \(\theta_{new} = \theta_{old} - lr * \frac{\partial L}{\partial \theta}\).</li>
 <li class=""><strong>Adam</strong> adapte le taux d&#039;apprentissage pour chaque paramètre individuellement,
       en utilisant des moyennes mobiles des gradients et des carrés des gradients. <br />      Cela permet souvent une convergence plus rapide et plus stable.</li>
 <li class="">La syntaxe PyTorch reste très similaire : on utilise toujours <code>optimizer.zero_grad()</code>, <code>loss.backward()</code> et <code>optimizer.step()</code>. On peut reprendre le même modèle simple que précédemment à titre d&#039;exemple.</li>
