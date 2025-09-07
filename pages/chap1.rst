@@ -63,10 +63,14 @@ Les **tenseurs** sont la structure de base de PyTorch. Ce sont des tableaux mult
 - Une matrice est un tenseur 2D.  
 - On peut avoir des tenseurs 3D, 4D, etc.   
 
-Les tenseurs à haute dimension sont très utilisés en deep learning (par exemple pour les images ou les vidéos). Nous allons voir comment créer et manipuler des tenseurs dans PyTorch. Vous pouvez copier-coller les exemples de code ci-dessous dans un notebook Jupyter pour les tester et voir les affichages. Pour utiliserles fonctions de PyTorch, il faut d'abord l'importer :
+Les tenseurs à haute dimension sont très utilisés en deep learning (par exemple pour les images ou les vidéos). Nous allons voir comment créer et manipuler des tenseurs dans PyTorch. Pour utiliser les fonctions de PyTorch, il faut d'abord l'importer :
 .. code-block:: python
 
    import torch
+
+.. note::
+
+   Vous devez copier-coller les exemples de code ci-dessous dans un notebook Jupyter pour les tester et voir les affichages.
 
 .. slide::
     
@@ -887,11 +891,11 @@ PyTorch fournit le module ``torch.optim`` qui implémente plusieurs algorithmes 
 
 On reprend le modèle simple :
 
-- Modèle : f(x) = a * x
-- Objectif : trouver a tel que f(x) ≈ y
-- Jeu de données : x = [1, 2, 3, 4], y = [2, 4, 6, 8]
-- Paramètre initial : a = 0
-- Taux d'apprentissage : lr = 0.1
+- Modèle : $$f(x) = ax$$
+- Objectif : trouver $$a$$ tel que $$f(x) ≈ y$$
+- Jeu de données : $$x = [1, 2, 3, 4], y = [2, 4, 6, 8]$$
+- Paramètre initial : $$a = 0$$
+- Taux d'apprentissage : $$\eta = lr = 0.1$$
 
 .. slide::
 .. code-block:: python
@@ -932,7 +936,7 @@ On reprend le modèle simple :
          Sinon, PyTorch additionne les gradients à chaque ``backward()``, ce qui fausserait les calculs.
          
          - ``optimizer.step()`` : applique la mise à jour des paramètres selon la règle de la descente de gradient :  
-         $$\theta_new = \theta_old - lr * gradient$$.
+         $$a_{new} = a_{old} - lr * \frac{\partial loss}{\partial a}$$.
          
 
 Dans cet exemple, SGD converge très vite car le problème est simple.
@@ -961,10 +965,10 @@ La mise à jour des paramètres est alors :
 
 💡 Interprétation :
 
-- $$m_t$$ capture la direction moyenne des gradients (évite les oscillations),  
-- $$v_t$$ ajuste le pas selon la variance des gradients (pas plus grand si le gradient est bruité),  
+- $$m_t$$ capture la direction moyenne des gradients (ce qui évite les oscillations),  
+- $$v_t$$ ajuste le pas selon la variance des gradients (pour qu'il ne soitpas plus grand si le gradient est bruité),  
 - $$\epsilon$$ empêche la division par zéro et
-- La correction de biais $$\hat{m}_t, \hat{v}_t$$ est importante surtout au début pour ne pas sous-estimer les moments.
+- la correction de biais $$\hat{m}_t, \hat{v}_t$$ est importante surtout au début pour ne pas sous-estimer les moments.
 
 .. slide::
 20.2. Adam vs. SGD
@@ -972,7 +976,7 @@ La mise à jour des paramètres est alors :
  Différences entre Adam et la descente de gradient classique (SGD) :
 
     1. **SGD** applique la même règle de mise à jour pour tous les paramètres à chaque itération :  
-       \theta_new = \theta_old - lr * gradient
+       $$\theta_{new} = \theta_{old} - lr * \frac{\partial L}{\partial \theta}$$.
        
     2. **Adam** adapte le taux d'apprentissage pour chaque paramètre individuellement,  
        en utilisant des moyennes mobiles des gradients et des carrés des gradients.  
