@@ -34,17 +34,19 @@
       array (
         0 => 'chap0',
         1 => 'chap1',
-        2 => 'chap2',
-        3 => 'chap4',
+        2 => 'chap1_abs',
+        3 => 'chap2',
+        4 => 'chap4',
       ),
     ),
-    'ctime' => 1756298865,
+    'ctime' => 1757265355,
     'depends' => 
     array (
       0 => 'chap0',
       1 => 'chap1',
-      2 => 'chap2',
-      3 => 'chap4',
+      2 => 'chap1_abs',
+      3 => 'chap2',
+      4 => 'chap4',
     ),
   ),
   'chap0' => 
@@ -268,7 +270,7 @@
     'tocs' => 
     array (
     ),
-    'ctime' => 1756825179,
+    'ctime' => 1756818554,
     'depends' => 
     array (
     ),
@@ -667,15 +669,7 @@
         0 => 'TP_chap1',
       ),
     ),
-<<<<<<< HEAD
-<<<<<<< HEAD
-    'ctime' => 1756825179,
-=======
-    'ctime' => 1757262764,
->>>>>>> 5ac2da9 (typos correction)
-=======
-    'ctime' => 1757262764,
->>>>>>> 5ac2da91f83b535ff2ca360afc20f526f790385c
+    'ctime' => 1757263464,
     'depends' => 
     array (
       0 => 'TP_chap1',
@@ -1012,7 +1006,7 @@
         0 => 'TP_chap2',
       ),
     ),
-    'ctime' => 1756825179,
+    'ctime' => 1757268163,
     'depends' => 
     array (
       0 => 'TP_chap2',
@@ -1076,7 +1070,7 @@
         0 => 'TP_chap4',
       ),
     ),
-    'ctime' => 1756823632,
+    'ctime' => 1757263463,
     'depends' => 
     array (
       0 => 'TP_chap4',
@@ -1157,7 +1151,7 @@
     'tocs' => 
     array (
     ),
-    'ctime' => 1756825179,
+    'ctime' => 1756227553,
     'depends' => 
     array (
     ),
@@ -1223,7 +1217,7 @@
     'tocs' => 
     array (
     ),
-    'ctime' => 1756825179,
+    'ctime' => 1756819237,
     'depends' => 
     array (
     ),
@@ -1268,10 +1262,83 @@
     'tocs' => 
     array (
     ),
-    'ctime' => 1756824967,
+    'ctime' => 1757263463,
     'depends' => 
     array (
     ),
     'parent' => 'chap4',
+  ),
+  'chap1_abs' => 
+  array (
+    'file' => 'chap1_abs',
+    'url' => 'chap1_abs.html',
+    'title' => 'Résumé des concepts clés du chapitre 1',
+    'titles' => 
+    array (
+      0 => 
+      array (
+        0 => 'Résumé des concepts clés du chapitre 1',
+        1 => 
+        array (
+          0 => 
+          array (
+            0 => '📖 1. Objectif de l’apprentissage',
+            1 => 
+            array (
+            ),
+          ),
+          1 => 
+          array (
+            0 => '📖 2. Tenseurs',
+            1 => 
+            array (
+            ),
+          ),
+          2 => 
+          array (
+            0 => '📖 3. Fonction de perte',
+            1 => 
+            array (
+            ),
+          ),
+          3 => 
+          array (
+            0 => '📖 4. Rétropropagation et gradients',
+            1 => 
+            array (
+            ),
+          ),
+          4 => 
+          array (
+            0 => '📖 5. Autograd',
+            1 => 
+            array (
+            ),
+          ),
+          5 => 
+          array (
+            0 => '📖 6. Optimisation',
+            1 => 
+            array (
+            ),
+          ),
+          6 => 
+          array (
+            0 => '📖 7. Boucle d’entraînement',
+            1 => 
+            array (
+            ),
+          ),
+        ),
+      ),
+    ),
+    'tocs' => 
+    array (
+    ),
+    'ctime' => 1757268186,
+    'depends' => 
+    array (
+    ),
+    'parent' => 'index',
   ),
 );

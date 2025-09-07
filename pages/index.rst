@@ -25,6 +25,7 @@ Sommaire
 
     chap0
     chap1
+    chap1_abs
     chap2
     chap4
     

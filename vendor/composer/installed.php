@@ -5,7 +5,7 @@
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => 'f0820d2453a8bd6b9193d99e98740172fd063490',
+        'reference' => 'aca0d6ba79362826ece3e679f9e7b44ffd124a6d',
         'name' => 'gregwar/slidey-skeleton',
         'dev' => true,
     ),
@@ -38,7 +38,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
-            'reference' => 'f0820d2453a8bd6b9193d99e98740172fd063490',
+            'reference' => 'aca0d6ba79362826ece3e679f9e7b44ffd124a6d',
             'dev_requirement' => false,
         ),
         'symfony/polyfill-mbstring' => array(
