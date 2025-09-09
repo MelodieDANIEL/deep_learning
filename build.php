@@ -15,7 +15,7 @@ $slidey = new Gregwar\Slidey\Slidey;
 $slidey->addCss('css/style.css');
 
 // Sets the title prefix
-$slidey->setTitle('Intro Python');
+$slidey->setTitle('Deep Learning');
 
 /**
  * Adding custom directories
