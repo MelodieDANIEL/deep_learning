@@ -271,14 +271,43 @@ PyTorch supporte de nombreuses opérations sur les tenseurs :
 📖 7. Tenseurs sur GPU
 ------------------------
 
-Pour profiter de l’accélération GPU, il suffit de déplacer un tenseur sur le device CUDA :
+Pour profiter de l’accélération GPU, il suffit de déplacer un tenseur sur le device CUDA. Pour cela, on a 3 options :
 
+7.1. Placer un tenseur directement sur le GPU lors de sa création
+~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+   if torch.cuda.is_available():
+       device = torch.device("cuda")
+       tenseur_gpu = torch.zeros(2, 3, device=device)
+       print("Tenseur sur GPU :", tenseur_gpu)
+   else:
+       print("Pas de GPU disponible, utilisation du CPU.")
+
+.. slide::
+7.2. Déplacer un tenseur existant sur le GPU avec ``.to(device)``
+~~~~~~~~~~~~~~~~~~~~
 .. code-block:: python
 
    if torch.cuda.is_available():
        device = torch.device("cuda")
        x_gpu = x.to(device)
        print("Tenseur sur GPU :", x_gpu)
+   else:
+       print("Pas de GPU disponible, utilisation du CPU.")
+
+.. slide::
+7.3. Forcer la création de tous les tenseurs sur le GPU
+~~~~~~~~~~~~~~~~~~~~
+
+... code-block:: python
+
+   if torch.cuda.is_available():
+       device = torch.device("cuda")
+       torch.set_default_tensor(device)
+       x_defaut_gpu = torch.zeros(2, 3)  # sera créé sur le GPU par défaut
+       print("Tenseur par défaut sur GPU :", x_defaut_gpu)
    else:
        print("Pas de GPU disponible, utilisation du CPU.")
 
