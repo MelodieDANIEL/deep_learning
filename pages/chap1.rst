@@ -305,7 +305,7 @@ Pour profiter de l’accélération GPU, il suffit de déplacer un tenseur sur l
 
    if torch.cuda.is_available():
        device = torch.device("cuda")
-       torch.set_default_tensor(device)
+       torch.set_default_device(device)
        x_defaut_gpu = torch.zeros(2, 3)  # sera créé sur le GPU par défaut
        print("Tenseur par défaut sur GPU :", x_defaut_gpu)
    else:
