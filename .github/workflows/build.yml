@@ -1,0 +1,43 @@
+name: Slidey build & GitHub pages deploy
+
+# Triggering on push and workflow dispatch
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy_pages:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:
+      # Checkout, configure boilerplate
+      # cf https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+      
+      # Building
+      - name: Installing apt packages
+        run: sudo apt-get install -y php build-essential
+      - name: Getting composer
+        run: wget https://getcomposer.org/composer.phar
+      - name: Installing composer dependencies
+        run: php composer.phar install
+      - name: Building
+        run: make
+
+      # Deploying to GitHub pages
+      - name: Upload Artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          # upload entire directory
+          path: './web/'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
