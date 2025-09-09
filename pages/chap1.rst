@@ -301,7 +301,7 @@ Pour profiter de l’accélération GPU, il suffit de déplacer un tenseur sur l
 7.3. Forcer la création de tous les tenseurs sur le GPU
 ~~~~~~~~~~~~~~~~~~~~
 
-... code-block:: python
+.. code-block:: python
 
    if torch.cuda.is_available():
        device = torch.device("cuda")
