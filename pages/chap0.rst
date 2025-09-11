@@ -67,8 +67,8 @@ Pour créer un environnement virtuel, vous pouvez utiliser la commande suivante 
 
 .. code-block:: bash
 
-   python -m venv nom_de_l_environnement
-où ``nom_de_l_environnement`` est le nom que vous souhaitez donner à votre environnement virtuel.
+   python -m venv nom_de_l_environnement --system-site-packages
+où ``nom_de_l_environnement`` est le nom que vous souhaitez donner à votre environnement virtuel et ``--system-site-packages`` permet d'accéder aux paquets installés sur votre système global (utile pour réutiliser des bibliothèques déjà installées comme ``numpy`` ou ``matplotlib``).
 
 Placez-vous dans le dossier de travail de votre projet (par exemple ``cours_dl/``), puis créez un environnement virtuel avec :
 
@@ -107,9 +107,25 @@ Pour désactiver l'environnement virtuel, vous pouvez utiliser la commande :
 
 📖 2. Installation de PyTorch
 ----------------------
+Une fois l’environnement virtuel activé, vous pouvez installer PyTorch et les bibliothèques associées.  Mais avant d’installer PyTorch, faisons un petit point sur ce que la bibliothèque apporte. PyTorch est une bibliothèque Python très utilisée en **deep learning**.  Elle permet de :  
 
-Une fois l’environnement virtuel activé, vous pouvez installer PyTorch et les bibliothèques associées. 
+- créer et entraîner facilement des réseaux de neurones,  
+- utiliser le GPU (quand il est disponible) pour accélérer les calculs.  
 
+👉 Dans ce cours, PyTorch sera notre outil principal pour manipuler des données et entraîner des modèles.
+
+.. note::
+
+   💡 **CPU, GPU et CUDA en deux mots**
+
+   - Un **CPU** (processeur classique) exécute bien des calculs généraux, mais il est limité pour des calculs massifs.  
+   - Un **GPU** (Graphics Processing Unit), initialement conçu pour l’affichage graphique, est capable de réaliser **des milliers de calculs en parallèle** → idéal pour l’entraînement des réseaux de neurones.  
+   - **CUDA** est une bibliothèque développée par NVIDIA qui permet à PyTorch de communiquer avec le GPU pour accélérer les calculs.  
+
+   👉 Pas d’inquiétude si vous n’avez pas de GPU : PyTorch fonctionne aussi très bien sur CPU, simplement plus lentement.
+
+
+.. slide::
 
 2.1. Choisir la version de PyTorch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -162,9 +178,16 @@ Vous pouvez toujours utiliser PyTorch sur CPU, mais le temps d'entraînement ser
 2.4. Installer les pilotes NVIDIA et CUDA
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Pour utiliser PyTorch avec un GPU, il ne suffit pas d’installer la bibliothèque ``torch``.  
-Votre système doit aussi disposer des pilotes NVIDIA et de CUDA/cuDNN, qui permettent à PyTorch de dialoguer avec la carte graphique.
+Pour utiliser PyTorch avec un GPU, il ne suffit pas d’installer la bibliothèque ``torch``. Votre système doit aussi disposer des pilotes NVIDIA et de CUDA/cuDNN, qui permettent à PyTorch de dialoguer avec la carte graphique.
 
+.. note::
+
+   ⚠️ **Remarque importante pour les PC de l’IUT**  
+
+   - Sur les ordinateurs de l’IUT, **cette étape n’est pas à faire** : les pilotes NVIDIA et CUDA sont déjà installés.  
+   - Cette partie est uniquement utile si vous voulez installer PyTorch avec GPU **sur votre propre ordinateur personnel** équipé d’une carte graphique NVIDIA compatible.  
+
+.. slide::
 2.4.1. Vérifier si les pilotes sont installés
 ~~~~~~~~~~~~~~~~~~~~~~~
 Avant d'installer quoi que ce soit, vérifiez si les pilotes NVIDIA sont déjà installés sur votre système. Vous pouvez utiliser la commande suivante dans un terminal :
@@ -258,14 +281,41 @@ Une fois l’installation terminée, relancez Python et vérifiez :
    print("CUDA disponible ?  :", torch.cuda.is_available())
 Si ``torch.cuda.is_available()`` renvoie ``True``, PyTorch est prêt à utiliser le GPU.
 
+.. slide::
 2.4.6. Erreur ``CUDA_VISIBLE_DEVICES``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Si vous obtenez l'erreur suivante "CUDA initialization: CUDA unknown error - this may be due to an incorrectly set up environment, e.g. changing env variable CUDA_VISIBLE_DEVICES after program start. Setting the available devices to be zero., etc."" après une mise en veille, il faut taper dans un terminal les commandes suivantes pour résoudre le problème : 
+Si vous obtenez l'erreur suivante ``"CUDA initialization: CUDA unknown error - this may be due to an incorrectly set up environment, e.g. changing env variable CUDA_VISIBLE_DEVICES after program start. Setting the available devices to be zero., etc."`` après une mise en veille, il faut taper dans un terminal les commandes suivantes pour résoudre le problème : 
 
 .. code-block:: bash
    sudo rmmod nvidia_uvm
    sudo modprobe nvidia_uvm
+
+.. slide::
+2.5. Surveiller l’utilisation du GPU avec ``nvtop``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Lorsque l’on entraîne un modèle de deep learning sur GPU, il est souvent utile de **visualiser en temps réel** l’utilisation de la carte graphique (mémoire, charge de calcul, processus en cours).
+
+Pour cela, vous pouvez installer l’outil ``nvtop`` :
+
+.. code-block:: bash
+
+   sudo apt install nvtop
+
+Ensuite, lancez la commande :
+
+.. code-block:: bash
+
+   nvtop
+
+Vous verrez une interface en temps réel indiquant :  
+
+- l’occupation de la mémoire GPU,  
+- l’utilisation du GPU par processus,  
+- la charge globale.  
+
+👉 C’est l’équivalent de la commande ``top`` mais pour le GPU. Cette commande est très utile pour vérifier que **PyTorch utilise bien votre carte graphique** lors des entraînements.
 
 
 .. slide::

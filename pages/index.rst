@@ -18,13 +18,31 @@ Présentation
 
 .. slide::
 
+Remise
+-------
+
+Les remises du code sont à faire sur la plateforme Moodle de l'IUT : `https://moodle.u-bordeaux.fr/course/view.php?id=23000 <https://moodle.u-bordeaux.fr/course/view.php?id=23000>`_.
+
+.. slide::
+Difficulté
+-----------
+
+Les exercices de TP  sont classés par niveau de difficulté :
+.. discoverList::
+    * Facile : 🍀
+    * Moyen : ⚖️
+    * Difficile : 🌶️
+
+
+.. slide::
 Sommaire
 -------
 
 .. toctree::
 
     chap0
-    chap1
+    chap1_partie1
+    chap1_partie2
     chap1_abs
     
 
