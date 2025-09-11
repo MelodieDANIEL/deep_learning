@@ -487,8 +487,8 @@ Puis, vous pouvez l'importer dans votre code avec :
         1. Créer les paramètres : $$a$$ et $$b$$ sous forme de tenseurs dérivables.
         2. Initialiser les paramètres : $$a$$ et $$b$$ à zéro.
         3. Créer un optimiseur Adam (``torch.optim.Adam``) avec un taux d'apprentissage (learning rate) de 1e-3.
-        4. Utiliser une fonction de perte en codant l'équation de la MSE ($$loss = torch.sum((y_pred - y_true) ** 2)$$).
-        5. Implémenter une boucle d'entraînement (par exemple 10000 itérations) avec l'optimiseur ADAM.
+        4. Utiliser une fonction de perte en codant l'équation de la MSE ($$loss = $$ $$torch.sum((y_{\text{pred}} - y_{\text{true}}) ** \text{ } 2)$$ $$/ y_{\text{true}}.shape[0])$$.
+        5. Implémenter une boucle d'entraînement (par exemple 100000 itérations) avec l'optimiseur ADAM.
         6. À chaque itération :
             - calculer les prédictions,
             - calculer la perte,
