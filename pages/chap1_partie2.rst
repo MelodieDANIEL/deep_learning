@@ -447,18 +447,25 @@ où : $$a$$ et $$b$$ sont des paramètres appris automatiquement en minimisant l
 
 **Consigne :** Écrire un programme qui ajuste les paramètres $$a$$ et $$b$$ de la droite aux données fournies en utilisant  PyTorch.
 
+.. step::
     1) Dans un premier temps, vous pouvez faire une boucle de 10000 itérations et coder vous-même la fonction de perte.
 
+.. step::
     2) Affichez les paramètres appris $$a$$ et $$b$$.
 
+.. step::
     3) Ensuite, trouvez un moyen plus intelligent d'arrêter l'entraînement de telle sorte que le modèle converge avec le minimum d'itérations.
 
+.. step::
     4) Affichez le nombre d'itérations nécessaires pour converger.
 
+.. step::
     5) Tracez les données réelles et les données prédites pour comparer visuellement le résultat.
 
+.. step::
     6) Utilisez la fonction de perte MSE fournie par PyTorch et affichez les paramètres appris $$a$$ et $$b$$.
 
+.. step::
     7) Vérifiez que le résultat des paramètres et le tracé sont similaires à ceux obtenus avec la boucle d'entraînement manuelle.
 
 
@@ -510,15 +517,30 @@ L'objectif est le même que celui de l'exercice précédent (faire de la régres
 
 **Consignes :**  Implémenter une boucle d'entraînement pour ajuster les paramètres d'une droite aux données fournies dans l'exercice précédent en utilisant une fonction de perte de type valeur absolue et en réutilisant l'implémentation de l'exercice précédent.
 
+.. step:: 
+ 
+    1) Réutilisez la boucle d'entraînement de l’exercice précédent qui s'arrête au bout de 2500 itérations et qui utilise un learning rate de 0.01.  
 
-1) Réutilisez la boucle d'entraînement de l’exercice précédent qui s'arrête au bout de 2500 itérations et qui utilise un learning rate de 0.01.  
-2) Remplacez la fonction de perte MSE par une fonction de perte de type MAE. Il faudra chercher dans la documentation comment l'implémenter dans PyTorch.  
-3) Testez avec l’optimiseur SGD puis avec l’optimiseur Adam.  
-4) Pour chaque optimiseur, affichez les paramètres appris $$a$$ et $$b$$.
-5) Tracez les données réelles et les données prédites pour comparer visuellement les résultats.  
-6) Comparez les deux méthodes : que constatez-vous en termes de stabilité et de vitesse de convergence ?  
-7) Expliquez quel optimiseur est meilleur et pourquoi?
-8) Essayez de modifier le taux d'apprentissage (learning rate) pour voir son impact sur la convergence ainsi que le nombre d'itérations nécessaires.
+.. step:: 
+    2) Remplacez la fonction de perte MSE par une fonction de perte de type MAE. Il faudra chercher dans la documentation comment l'implémenter dans PyTorch.  
+   
+.. step::    
+    3) Testez avec l’optimiseur SGD puis avec l’optimiseur Adam.  
+
+.. step:: 
+    4) Pour chaque optimiseur, affichez les paramètres appris $$a$$ et $$b$$.
+
+.. step::
+    5) Tracez les données réelles et les données prédites pour comparer visuellement les résultats.  
+
+.. step::
+    6) Comparez les deux méthodes : que constatez-vous en termes de stabilité et de vitesse de convergence ?  
+
+.. step::
+    7) Expliquez quel optimiseur est meilleur et pourquoi?
+
+.. step::
+    8) Essayez de modifier le taux d'apprentissage (learning rate) pour voir son impact sur la convergence ainsi que le nombre d'itérations nécessaires.
 
 **Astuce :**
 .. spoiler::
