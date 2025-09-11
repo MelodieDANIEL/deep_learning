@@ -477,16 +477,18 @@ Puis, vous pouvez l'importer dans votre code avec :
 **Astuce :**
 .. spoiler::
     .. discoverList::
-        1. Initialiser les paramètres : $$a$$ et $$b$$ à zéro.
-        2. Utiliser une fonction de perte en codant l'équation de la MSE (loss = torch.sum((y_pred - y_true) ** 2)).
-        3. Implémenter une boucle d'entraînement (par exemple 10000 itérations) avec l'optimiseur ADAM ``torch.optim.ADAM``.
-        4. À chaque itération :
+        1. Créer les paramètres : $$a$$ et $$b$$ sous forme de tenseurs dérivables.
+        2. Initialiser les paramètres : $$a$$ et $$b$$ à zéro.
+        3. Créer un optimiseur Adam (``torch.optim.Adam``) avec un taux d'apprentissage (learning rate) de 1e-3.
+        4. Utiliser une fonction de perte en codant l'équation de la MSE ($$loss = torch.sum((y_pred - y_true) ** 2)$$).
+        5. Implémenter une boucle d'entraînement (par exemple 10000 itérations) avec l'optimiseur ADAM.
+        6. À chaque itération :
             - calculer les prédictions,
             - calculer la perte,
             - effectuer la rétropropagation,
             - mettre à jour les paramètres : $$a$$ et $$b$$.
 
-        5. Il faut arrêter l'entraînement lorsque la perte est suffisamment faible (par exemple, inférieure à 0.01)
+        7. Il faut arrêter l'entraînement lorsque la perte est suffisamment faible (par exemple, inférieure à 0.01)
 
 **Résultat attendu :** Vous devez obtenir un graphique où :  
     - les points bleus correspondent aux données réelles (``y_true``),  
@@ -515,7 +517,8 @@ L'objectif est le même que celui de l'exercice précédent (faire de la régres
 4) Pour chaque optimiseur, affichez les paramètres appris $$a$$ et $$b$$.
 5) Tracez les données réelles et les données prédites pour comparer visuellement les résultats.  
 6) Comparez les deux méthodes : que constatez-vous en termes de stabilité et de vitesse de convergence ?  
-7) Expliquez quel optimiseur est meilleur et pourquoi?   
+7) Expliquez quel optimiseur est meilleur et pourquoi?
+8) Essayez de modifier le taux d'apprentissage (learning rate) pour voir son impact sur la convergence ainsi que le nombre d'itérations nécessaires.
 
 **Astuce :**
 .. spoiler::
