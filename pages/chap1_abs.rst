@@ -81,6 +81,6 @@ Pour minimiser la perte, on calcule le **gradient de la perte par rapport aux pa
 
 5) Mise à Jour : Mettre à jour les paramètres pour réduire la perte.
 
-6) Répéter les étapes 1 à 5 jusqu’à la convergence du modèle.
+6) Répéter les étapes 2 à 5 jusqu’à la convergence du modèle.
 
 
