@@ -44,6 +44,6 @@ Sommaire
     chap1_partie1
     chap1_partie2
     chap1_abs
-    
-
-
+    chap2_partie1
+    chap2_partie2
+    chap2_abs
