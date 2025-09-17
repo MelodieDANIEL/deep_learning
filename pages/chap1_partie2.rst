@@ -107,10 +107,10 @@ où :
 
     - $$L$$ est la fonction de perte,
     - $$n$$ est le nombre de classes,
-    - $$y_i$$ est la valeur attendue (target) pour la classe $$i$$ ((souvent codée en *one-hot encoding*, c'est-à-dire un vecteur avec un 1 pour la bonne classe et 0 pour les autres),
+    - $$y_i$$ est la valeur attendue (target) pour la classe $$i$$ (souvent codée en *one-hot encoding*, c'est-à-dire un vecteur avec un 1 pour la bonne classe et 0 pour les autres),
     - $$\hat{y}_i$$ est la probabilité prédite par le modèle pour la classe $$i$$.
 
-La fonction enropie croisée mesure la distance entre la distribution de probabilité prédite par le modèle et la distribution de probabilité réelle (la vraie classe).
+La fonction d'entropie croisée mesure la distance entre la distribution de probabilité prédite par le modèle et la distribution de probabilité réelle (la vraie classe).
 La présence de la somme permet de prendre en compte toutes les classes.   Mais, dans le cas du *one-hot encoding*, seul le terme correspondant à la vraie classe reste (puisque tous les autres $$y_i$$ valent 0).
 
 .. slide::
@@ -367,7 +367,7 @@ La mise à jour des paramètres est alors :
 💡 Interprétation :
 
 - $$m_t$$ capture la direction moyenne des gradients (ce qui évite les oscillations),  
-- $$v_t$$ ajuste le pas selon la variance des gradients (pour qu'il ne soitpas plus grand si le gradient est bruité),  
+- $$v_t$$ ajuste le pas selon la variance des gradients (pour qu'il ne soit pas plus grand si le gradient est bruité),  
 - $$\epsilon$$ empêche la division par zéro et
 - la correction de biais $$\hat{m}_t, \hat{v}_t$$ est importante surtout au début pour ne pas sous-estimer les moments.
 

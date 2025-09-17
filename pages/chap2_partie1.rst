@@ -67,7 +67,7 @@ Un perceptron possède deux types de **paramètres** : les **poids** et le **bia
 
 Lors de l’entraînement, on souhaite ajuster ces paramètres pour améliorer les prédictions du modèle.  Pour cela, il faut mettre à jour les poids après avoir calculé la loss grâce à la fonction de perte et le gradient grâce à l'optimiseur comme expliqué dans le chapitre précédent.  
 
-Pour rappel, on met à jours les paramètres du modèle grâce à l'équation introduite dans le chapitre précédent. 
+Pour rappel, on met à jour les paramètres du modèle grâce à l'équation introduite dans le chapitre précédent. 
 
 .. math::
 
