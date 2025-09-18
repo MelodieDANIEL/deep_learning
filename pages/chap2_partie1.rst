@@ -424,11 +424,11 @@ Les réseaux de neurones multi-couches (MLP, de l'anglais Multi-Layer Perceptron
 5.1. Définitions
 ~~~~~~~~~~~~~~~~
 
-- **Une couche** d'un MLP se compose d'un ensemble de perceptrons. Chaque perceptron (aussi appelé neurone) reçoit les mêmes entrées et produit une sortie individuelle. La combinaison des sorties de tous les perceptrons forme le vecteur de sortie de la couche.
-
+- **Une couche** d'un MLP se compose d'un ensemble de perceptrons. Chaque perceptron (aussi appelé neurone) reçoit les mêmes entrées et produit une sortie individuelle. La combinaison des sorties de tous les perceptrons forme le vecteur de sortie de la couche. Chaque couche peut être dense (fully connected en anglais). Dans ce cas, la couche relie tous les neurones de la couche précédente à tous les neurones de la couche suivante.
+  
 - Il existe plusieurs types de couches :
   - **La couche d'entrée** reçoit les features du dataset et les transmet à la première couche cachée.
-  - **Les couches cachées** sont situées entre l'entrée et la sortie, elles permettent de modéliser des relations non linéaires entre les variables.
+  - **Les couches cachées** transforment les données grâce à des combinaisons linéaires + fonctions d’activation non-linéaires.
   - **La couche de sortie** produit la sortie finale du réseau (par exemple, une probabilité pour la classification binaire).
 
 .. slide:: 
@@ -478,6 +478,38 @@ Exemple minimal d’un réseau de neurones pour une régression 1D avec un MLP �
 
 .. note:: 
     **Important** : La dimension de sortie d’une couche doit correspondre à la dimension d’entrée de la couche suivante.  
+
+.. slide::
+Vous pouvez visualiser le réseaux de neurones en utilisant le code ci-dessous :
+
+.. code-block:: python
+	import matplotlib.pyplot as plt
+
+	def draw_mlp(layers):
+	    fig, ax = plt.subplots(figsize=(8,4))
+	    ax.axis("off")
+
+	    x_spacing = 2
+	    y_spacing = 1.0
+
+	    for i, n_neurons in enumerate(layers):
+		x = i * x_spacing
+		for j in range(n_neurons):
+		    y = j * y_spacing - (n_neurons-1)/2
+		    circle = plt.Circle((x,y), 0.25, fill=True, color="skyblue", ec="k")
+		    ax.add_artist(circle)
+		    # Connexions avec la couche précédente
+		    if i > 0:
+		        for k in range(layers[i-1]):
+		            y_prev = k * y_spacing - (layers[i-1]-1)/2
+		            ax.plot([x-x_spacing, x], [y_prev, y], "k-", lw=0.5)
+
+	    ax.set_xlim(-1, x_spacing*(len(layers)-1)+1)
+	    ax.set_ylim(-max(layers)/2-1, max(layers)/2+1)
+	    plt.show()
+
+	# Exemple : 1 entrée → 10 neurones cachés → 5 neurones cachés → 1 sortie
+	draw_mlp([1, 10, 5, 1])
 
 
 .. slide:: 
