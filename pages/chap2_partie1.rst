@@ -479,37 +479,38 @@ Exemple minimal d’un réseau de neurones pour une régression 1D avec un MLP �
 .. note:: 
     **Important** : La dimension de sortie d’une couche doit correspondre à la dimension d’entrée de la couche suivante.  
 
-.. slide::
-Vous pouvez visualiser le réseaux de neurones en utilisant le code ci-dessous :
+.. slide:: 
+Vous pouvez visualiser le réseau de neurones en utilisant le code ci-dessous :
 
 .. code-block:: python
-	import matplotlib.pyplot as plt
 
-	def draw_mlp(layers):
-	    fig, ax = plt.subplots(figsize=(8,4))
-	    ax.axis("off")
+    import matplotlib.pyplot as plt
 
-	    x_spacing = 2
-	    y_spacing = 1.0
+    def draw_mlp(layers):
+        fig, ax = plt.subplots(figsize=(8,4))
+        ax.axis("off")
 
-	    for i, n_neurons in enumerate(layers):
-		x = i * x_spacing
-		for j in range(n_neurons):
-		    y = j * y_spacing - (n_neurons-1)/2
-		    circle = plt.Circle((x,y), 0.25, fill=True, color="skyblue", ec="k")
-		    ax.add_artist(circle)
-		    # Connexions avec la couche précédente
-		    if i > 0:
-		        for k in range(layers[i-1]):
-		            y_prev = k * y_spacing - (layers[i-1]-1)/2
-		            ax.plot([x-x_spacing, x], [y_prev, y], "k-", lw=0.5)
+        x_spacing = 2
+        y_spacing = 1.0
 
-	    ax.set_xlim(-1, x_spacing*(len(layers)-1)+1)
-	    ax.set_ylim(-max(layers)/2-1, max(layers)/2+1)
-	    plt.show()
+        for i, n_neurons in enumerate(layers):
+            x = i * x_spacing
+            for j in range(n_neurons):
+                y = j * y_spacing - (n_neurons-1)/2
+                circle = plt.Circle((x,y), 0.25, fill=True, color="skyblue", ec="k")
+                ax.add_artist(circle)
+                # Connexions avec la couche précédente
+                if i > 0:
+                    for k in range(layers[i-1]):
+                        y_prev = k * y_spacing - (layers[i-1]-1)/2
+                        ax.plot([x-x_spacing, x], [y_prev, y], "k-", lw=0.5)
 
-	# Exemple : 1 entrée → 10 neurones cachés → 5 neurones cachés → 1 sortie
-	draw_mlp([1, 10, 5, 1])
+        ax.set_xlim(-1, x_spacing*(len(layers)-1)+1)
+        ax.set_ylim(-max(layers)/2-1, max(layers)/2+1)
+        plt.show()
+
+    # Exemple : 1 entrée → 10 neurones cachés → 5 neurones cachés → 1 sortie
+    draw_mlp([1, 10, 5, 1])
 
 
 .. slide:: 
@@ -745,7 +746,7 @@ On vous donne les données suivantes :
     torch.manual_seed(0)
 
     X = torch.linspace(-3, 3, 100).unsqueeze(1)
-    y_true = torch.sin(X) + 0.1 * torch.randn(X.size())  # fonction sinusoïdale bruitée
+    y_true = torch.sin(2*X) + 0.1 * torch.randn(X.size())  # fonction sinusoïdale bruitée
 
 **Objectif :** Comparer deux modèles pour approximer la fonction :
 
