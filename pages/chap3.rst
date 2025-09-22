@@ -250,6 +250,8 @@ Dans la Figure 6, chaque point correspond à une image. La couleur du point dét
 3.3. Validation croisée
 ~~~~~~~~~~~~~~~~~~~
 
+
+
 .. slide::
 📖 4. Déséquilibrage de classes
 ----------------------

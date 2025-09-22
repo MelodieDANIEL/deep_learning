@@ -432,7 +432,7 @@ Pour qu'un tenseur suive les opérations et calcule les gradients automatiquemen
     x = torch.tensor([2.0, 3.0], requires_grad=True)
     print(x)
 
-Ici, ``x`` est maintenant un tenseur avec suivi des gradients. Toutes les opérations futures sur ce tenseur seront enregistrées pour pouvoir calculer les dérivées automatiquement.
+Ici, ``x`` est un tenseur avec suivi des gradients. Toutes les opérations futures sur ce tenseur seront enregistrées pour pouvoir calculer les dérivées automatiquement.
 
 
 .. slide::
@@ -484,7 +484,7 @@ Quand on visualise le graphe interne avec un outil comme ``torchviz`` :
 
 - Le **bloc jaune avec ()** correspond au tenseur final (ici ``z``).
 - Les **blocs intermédiaires** (``PowBackward0``, ``AddBackward0``, etc.) représentent
-  les opérations qui seront différentiées telles que ``PowBackward0`` est l'opération opération inverse associée à ``x**2``, ``MulBackward0`` celle associée à ``3*x``, 
+  les opérations qui seront différentiées telles que ``PowBackward0`` est l'opération inverse associée à ``x**2``, ``MulBackward0`` celle associée à ``3*x``, 
   ``AddBackward0`` combine les deux résultats et représente ``y`` et enfin ``SumBackward0`` correspond au ``y.sum()`` qui est égal à ``z``.
 - Le **bloc ``AccumulateGrad``** correspond à l’endroit où le gradient est stocké
   dans la variable d’entrée (ici ``x.grad``).
@@ -620,7 +620,7 @@ En PyTorch, il est souvent utile de séparer certaines opérations du calcul des
 ~~~~~~~~~~~~~~~~~
 
 - Crée une copie indépendante d’un tenseur.
-- La copie peut continuer à calculer des gradients si `requires_grad=True`.
+- La copie peut continuer à calculer des gradients si ``requires_grad=True``.
 - Utile pour conserver un état avant modification.
 
 .. code-block:: python
@@ -632,7 +632,7 @@ En PyTorch, il est souvent utile de séparer certaines opérations du calcul des
 12.3. ``torch.no_grad()``
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-- Contexte qui empêche toutes les opérations à l’intérieur de calculer des gradients.
+- Contexte qui empêche toutes les opérations à l’intérieur de lui de calculer des gradients.
 - Utile pour l'évaluation du modèle, quand on ne veut pas mettre à jour les paramètres du modèle.
 - Permet d'économiser de la mémoire et d'accélérer les calculs.
 

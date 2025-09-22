@@ -99,7 +99,7 @@ où : $$a$$, $$b$$ et $$c$$ sont des paramètres appris automatiquement en minim
 
 
 **Résultat attendu :**
-Vous devez obtenir des valeurs pour les paramètres proche de :
+Vous devez obtenir des valeurs pour les paramètres proches de :
 
     - MSE -> a = 2.002, b = 2.866, c = 2.464
     - MAE -> a = 1.984, b = 2.997, c = 1.132

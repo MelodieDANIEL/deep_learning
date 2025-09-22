@@ -1,5 +1,5 @@
 .. slide::
-Chapitre 2 — Perceptron multi-couches 
+Chapitre 2 — Perceptron multi-couches (partie 1)
 ===========================================
 
 🎯 Objectifs du Chapitre
@@ -67,7 +67,7 @@ Un perceptron possède deux types de **paramètres** : les **poids** et le **bia
 
 Lors de l’entraînement, on souhaite ajuster ces paramètres pour améliorer les prédictions du modèle.  Pour cela, il faut mettre à jour les poids après avoir calculé la loss grâce à la fonction de perte et le gradient grâce à l'optimiseur comme expliqué dans le chapitre précédent.  
 
-Pour rappel, on met à jours les paramètres du modèle grâce à l'équation introduite dans le chapitre précédent. 
+Pour rappel, on met à jour les paramètres du modèle grâce à l'équation introduite dans le chapitre précédent. 
 
 .. math::
 
@@ -424,11 +424,11 @@ Les réseaux de neurones multi-couches (MLP, de l'anglais Multi-Layer Perceptron
 5.1. Définitions
 ~~~~~~~~~~~~~~~~
 
-- **Une couche** d'un MLP se compose d'un ensemble de perceptrons. Chaque perceptron (aussi appelé neurone) reçoit les mêmes entrées et produit une sortie individuelle. La combinaison des sorties de tous les perceptrons forme le vecteur de sortie de la couche.
-
+- **Une couche** d'un MLP se compose d'un ensemble de perceptrons. Chaque perceptron (aussi appelé neurone) reçoit les mêmes entrées et produit une sortie individuelle. La combinaison des sorties de tous les perceptrons forme le vecteur de sortie de la couche. Chaque couche peut être dense (fully connected en anglais). Dans ce cas, la couche relie tous les neurones de la couche précédente à tous les neurones de la couche suivante.
+  
 - Il existe plusieurs types de couches :
   - **La couche d'entrée** reçoit les features du dataset et les transmet à la première couche cachée.
-  - **Les couches cachées** sont situées entre l'entrée et la sortie, elles permettent de modéliser des relations non linéaires entre les variables.
+  - **Les couches cachées** transforment les données grâce à des combinaisons linéaires + fonctions d’activation non-linéaires.
   - **La couche de sortie** produit la sortie finale du réseau (par exemple, une probabilité pour la classification binaire).
 
 .. slide:: 
@@ -478,6 +478,39 @@ Exemple minimal d’un réseau de neurones pour une régression 1D avec un MLP �
 
 .. note:: 
     **Important** : La dimension de sortie d’une couche doit correspondre à la dimension d’entrée de la couche suivante.  
+
+.. slide:: 
+Vous pouvez visualiser le réseau de neurones en utilisant le code ci-dessous :
+
+.. code-block:: python
+
+    import matplotlib.pyplot as plt
+
+    def draw_mlp(layers):
+        fig, ax = plt.subplots(figsize=(8,4))
+        ax.axis("off")
+
+        x_spacing = 2
+        y_spacing = 1.0
+
+        for i, n_neurons in enumerate(layers):
+            x = i * x_spacing
+            for j in range(n_neurons):
+                y = j * y_spacing - (n_neurons-1)/2
+                circle = plt.Circle((x,y), 0.25, fill=True, color="skyblue", ec="k")
+                ax.add_artist(circle)
+                # Connexions avec la couche précédente
+                if i > 0:
+                    for k in range(layers[i-1]):
+                        y_prev = k * y_spacing - (layers[i-1]-1)/2
+                        ax.plot([x-x_spacing, x], [y_prev, y], "k-", lw=0.5)
+
+        ax.set_xlim(-1, x_spacing*(len(layers)-1)+1)
+        ax.set_ylim(-max(layers)/2-1, max(layers)/2+1)
+        plt.show()
+
+    # Exemple : 1 entrée → 10 neurones cachés → 5 neurones cachés → 1 sortie
+    draw_mlp([1, 10, 5, 1])
 
 
 .. slide:: 
@@ -700,324 +733,70 @@ Les sorties attendues sont $$y_{true} = [1, 121]$$.
 
 .. slide::
 
-📖 6. Broadcasting
-----------------------------
-
-6.1 Qu'est-ce que le broadcasting ?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Le broadcasting est un mécanisme qui permet à PyTorch de faire des opérations entre tenseurs de dimensions différentes sans avoir à écrire de boucles. C'est comme cela qu'est fait l'opération de centrage des données (soustraction de la moyenne) dans la standardisation des données.
-
-💡 Idée principale :
-
-- Si les dimensions des tenseurs sont compatibles, PyTorch réplique automatiquement le tenseur de plus petite dimension pour correspondre à la taille du tenseur le plus grand.
-- Cela permet de vectoriser les calculs et de rendre le code plus simple et rapide.
-
 .. slide::
-6.2 Exemple de broadcasting pour centrer des données
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+🍀 Exercice 1 : Approximations d’une fonction non linéaire
+---------------------------------
+
+Dans cet exercice, vous allez implémenter une boucle d'entraînement simple pour ajuster les paramètres d’un modèle polynômial comme dans le chapitre 1, puis comparer les résultats avec ceux d'un modèle MLP.
+
+On vous donne les données suivantes :
 
 .. code-block:: python
 
-   import torch
+    torch.manual_seed(0)
 
-   # Matrice 3x2
-   X = torch.tensor([[1., 2.],
-                     [3., 4.],
-                     [5., 6.]])
+    X = torch.linspace(-3, 3, 100).unsqueeze(1)
+    y_true = torch.sin(2*X) + 0.1 * torch.randn(X.size())  # fonction sinusoïdale bruitée
 
-   # Moyenne de chaque colonne
-   mean = X.mean(dim=0)  # dimension (2,)
+**Objectif :** Comparer deux modèles pour approximer la fonction :
 
-   # On soustrait la moyenne à chaque ligne
-   X_centered = X - mean  # broadcasting
+1. Polynôme cubique : $$y = f(x) = a x^3 + b x^2 + c x + d$$, où $$a, b, c, d$$ sont des paramètres appris automatiquement en minimisant l’erreur entre les prédictions et les données réelles comme dans le chapitre 1.
 
-   print("X centré :", X_centered)
+2. MLP simple :  
 
-💡 Conclusion : Même si ``mean`` est un vecteur (dimension 2), PyTorch l’applique à toutes les lignes de ``X``. Le tenseur ``mean`` est automatiquement “étendu” pour correspondre à ``X``.  
+    - Implémenté sous forme de classe ``nn.Module``  
+    - 2 couches cachées de 10 neurones chacune avec ``ReLU`` pour l'activation
+    - Entrée : 1 feature, sortie : 1 prédiction
 
-✅ Résultat : On peut centrer toutes les lignes d’un coup, sans boucle.
+**Consigne :** Écrire un programme qui :
+.. step:: 
+    1) Ajuste les paramètres du polynôme cubique aux données en utilisant PyTorch.  
 
+.. step::
+    2) Affiche les paramètres appris $$a, b, c, d$$.  
 
+.. step::
+    3) Implémente ensuite un MLP et entraîne-le sur les mêmes données pendant 5000 epochs avec un learning rate de 0.01. 
 
-.. slide::
-📖 7. Observer la loss et déterminer le nombre d’epochs
-------------------------------------------------------
-Lorsqu’on entraîne un modèle, il est essentiel de suivre l’évolution de la loss pour savoir si le modèle apprend correctement et converge vers une solution. Dans l’exemple précédent, nous avons comparé l’impact de la standardisation sur les prédictions finales. Nous allons maintenant observer l’évolution de la loss pendant l’entraînement pour mieux comprendre la convergence et déterminer un nombre d’epochs approprié. Nous allons continuer à utiliser les données suivantes pour entraîner le modèle :
+.. step::     
+    4) Compare visuellement les deux modèles avec les données réelles sur un même graphique. 
 
-.. code-block:: python
+.. step::    
+    5) Que remarquez-vous sur les performances des deux modèles ?
 
-   # Données d'entraînement
-   X = torch.tensor([[0.],[10.],[20.],[30.],[40.],[50.]])
-   y = 2*X + 1
+.. step::
+    6) Que se passe-t-il si vous augmentez le nombre de degrés du polynôme ?
 
-7.1. Suivi de la loss
-~~~~~~~~~~~~~~~~~~~~~
+**Astuce :**
+.. spoiler::
+    .. discoverList::
+        1. Initialisez les paramètres du polynôme avec ``torch.randn(1, requires_grad=True)``.  
+        2. Utilisez ``nn.MSELoss()`` comme fonction de perte pour les deux modèles.  
+        3. Pour le MLP, créez une classe héritant de ``nn.Module`` et définissez ``forward``.  
+        4. Utilisez ``optimizer.zero_grad()``, ``loss.backward()``, ``optimizer.step()`` à chaque itération.  
+        5. On voit que le MLP parvient à mieux s'adapter aux données, car il peut capturer des relations non linéaires plus complexes.
 
-Pour suivre la loss pour le modèle avec et sans standardisation il faut d'abord créer deux listes pour stocker les valeurs de la loss à chaque epoch. Pour cela, il suffit d'ajouter le code suivant avant la classe de création du modèle : 
+**Résultat attendu :** Vous devez obtenir un graphique similaire à celui ci-dessous où :  
 
-.. code-block:: python
+- les points bleus correspondent aux données réelles (``y_true``)  
+- la courbe rouge correspond au polynôme cubique  
+- la courbe verte correspond au MLP  
 
-    ...
+.. image:: images/chap2_exo_1_resultat.png
+    :alt: Résultat Exercice 1
+    :align: center
 
-    # Listes pour stocker l'évolution de la loss
-    losses_no_std = []
-    losses_std = []
 
-    ...
 
-
-.. slide::
-Ensuite, pendant l’entraînement, on ajoute la valeur de la loss dans les listes à chaque epoch. Cela se fait comme suit : 
-
-.. code-block:: python
-
-    ...
-
-    # Sans standardisation
-    pred_no_std = model_no_std(X)
-    
-    ...
-
-    optimizer_no_std.step()
-    losses_no_std.append(loss_no_std.item()) # Ligne à ajouter
-
-    # Avec standardisation
-    pred_std = model_std(X_stdized)
-    
-    ...
-
-    optimizer_std.step()
-    losses_std.append(loss_std.item()) # Ligne à ajouter
-
-    ...
-
-.. slide::
-Enfin on ajoute les lignes de code suivantes pour tracer les loss à la fin du code : 
-
-.. code-block:: python
-
-    ...
-
-    # Visualisation de la loss
-    plt.plot(losses_no_std, label='Sans standardisation')
-    plt.plot(losses_std, label='Avec standardisation')
-    plt.xlabel('Epoch')
-    plt.ylabel('Loss MSE')
-    plt.title("Évolution de la loss pendant l'entraînement")
-    plt.legend()
-    plt.show()
-
-
-.. slide::
-7.2. Interprétation du résultat
-~~~~~~~~~~~~~~~~~~
-
-- **Convergence** :  
-  - Si la loss diminue et se stabilise autour d’une valeur faible, le modèle converge.  
-  - Si la loss reste très élevée ou diverge, le modèle ne converge pas correctement.
-
-- **Choix du nombre d’epochs** :  
-  - En regardant le graphique, on peut déterminer à partir de quel epoch la loss se stabilise.  
-  - Cela permet de choisir un nombre d’epochs suffisant sans sur-entraîner inutilement le modèle.
-  - Dans cet exemple, on découvre que pour le modèle qui s'entraîne avec standardisation, la loss se stabilise à 0 autour de 500 epochs. Vous pouvez réduire le nombre d'epochs et vérifier que 500 epochs suffisent.
-
-.. note::
-    **Remarque** : Si vous relancer l'entraînement, le graphique de la loss peut varier à cause de l'initialisation aléatoire des poids sauf si vous utilisez un ``seed`` fixe.
-
-.. slide::
-7.3. Early Stopping
-~~~~~~~~~~~~~~~~~~~~
-
-Pour éviter de trop entraîner le modèle, on peut surveiller la loss et arrêter l’entraînement lorsque la perte ne diminue plus. Cela s’appelle l’early stopping. On peut automatiser le processus avec PyTorch. Tout d'abord, il faut remettre le nombre d'epoch à 5000. Ensuite il faut créer les variables suivantes et les ajouter avant la classe qui construit le modèle :
-
-.. code-block:: python
-
-    ...
-
-    # Paramètres pour l'early stopping
-    patience = 50       # nombre d'epochs sans amélioration avant arrêt
-    best_loss_std = float('inf') # meilleure loss observée pour le modèle avec standardisation (initialisée à l'infini pour que la première amélioration soit toujours acceptée)
-    counter_std = 0 # compteur d'epochs sans amélioration
-
-    patience_no_std = 50
-    best_loss_no_std = float('inf')    
-    counter_no_std = 0
-
-    ...
-
-.. slide::
-Ensuite, il faut ajouter le code suivant à la fin de chaque boucle d'entraînement pour vérifier si la loss s'est améliorée ou non. Si elle ne s'améliore pas pendant un certain nombre d'epochs (défini par ``patience``), l'entraînement s'arrête automatiquement. Voici le code à ajouter :
-
-.. code-block:: python
-
-    ...
-
-    # Sans standardisation
-
-    ...
-
-
-    losses_no_std.append(loss_no_std.item())
-
-    # Early stopping pour le modèle sans standardisation (code à ajouter)
-    if loss_no_std.item() < best_loss_no_std:
-        best_loss_no_std = loss_no_std.item()
-        counter_no_std = 0
-    else:
-        counter_no_std += 1
-    if counter_no_std >= patience_no_std:
-        print(f"Arrêt anticipé (sans std) à l'epoch {epoch}, loss = {best_loss_no_std:.4f}")
-        break
-
-    # Avec standardisation
-   
-    ...
-
-    losses_std.append(loss_std.item())
-
-    # Early stopping pour le modèle standardisé (code à ajouter)
-    if loss_std.item() < best_loss_std:
-        best_loss_std = loss_std.item()
-        counter_std = 0
-    else:
-        counter_std += 1
-    if counter_std >= patience:
-        print(f"Arrêt anticipé (avec std) à l'epoch {epoch}, loss = {best_loss_std:.4f}")
-        break
-
-    ...
-
-.. slide::
-
-💡 **Remarque** :  
-
-- Cette méthode simple permet de déterminer un nombre d’epochs approprié automatiquement.  
-- Pour cet exemple, le modèle sans standardisation des données ne converge jamais avec une loss $$\approx 0$$ tandis que le modèle avec standardisation des données converge à partir d'environ 200 epochs.
-- Dans la pratique, on combine souvent early stopping avec un jeu de validation pour éviter le surapprentissage.
-
-.. slide::
-📖 8. Observer le modèle avec ``torch-summary`` et la performance des gradients avec autograd profiler
--------------------
-
-Il existe plusieurs outils PyTorch qui permettent d'inspecter et de profiler les modèles. Le but étant de parvenir à identifier les goulots d'étranglement et à optimiser les performances. Parmi eux, on trouve :
-
-- ``torchsummary`` : pour visualiser la structure du modèle et le nombre de paramètres par couche.
-- ``torch.autograd.profiler`` : pour profiler le calcul des gradients et identifier les opérations coûteuses.
-
-8.1. Utiliser ``torchsummary``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-``torchsummary`` permet de visualiser la structure du modèle et le nombre de paramètres par couche avant l'entraînement. Pour l'utiliser, il faut d'abord l'installer :
-
-.. code-block:: bash
-
-    pip install torch-summary
-
-Ensuite, juste après la définition de votre modèle, vous pouvez faire un résumé du modèle :
-
-.. code-block:: python
-
-    from torchsummary import summary
-
-    # Modèle standardisé défini précédemment
-    # Créer une copie sur CPU pour torchsummary
-    model_std_cpu = MLP().to("cpu")
-
-    # Résumé du modèle
-    # input_size correspond aux dimensions d'un échantillon (hors batch)
-    # Ici, chaque échantillon a 1 feature (scalaire)
-    summary(model_std_cpu, input_size=(1,), device="cpu")
-
-.. slide::
-Explications :
-
-- ``input_size`` : dimensions d’un échantillon (hors batch).  
-  Dans notre exemple, chaque échantillon est un scalaire (1 feature), donc ``input_size=(1,)``.  
-- ``device`` : est égal à ``"cpu"`` pour éviter tout conflit CUDA si le modèle ou PyTorch envoie certains tenseurs sur GPU.  
-
-- Résultat : pour chaque couche, on voit :
-
-  - le type de couche (Linear, ReLU…)
-  - la taille des tenseurs intermédiaires
-  - le nombre de paramètres
-  - le nombre de paramètres entraînables
-
-
-
-.. slide::
-8.2. Rôle du profiler
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Pour encore plus améliorer la performance de votre modèle, PyTorch fournit ``torch.autograd.profiler.profile`` pour profiler le calcul des gradients ce qui permet de :
-
-- Mesurer le temps et la mémoire consommés par chaque opération.
-- Identifier les goulots d'étranglement dans le réseau.
-- Optimiser et débugger les modèles complexes.
-
-
-.. slide::
-8.3. Exemple d'utilisation du profiler pour l'exemple de régression
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Pour tester le profiler, il suffit d'ajouter le code suivant juste après le code de ``torchsummary`` :
-
-.. code-block:: python
-
-    ...
-
-    # torch.autograd.profiler est utilisé dans ce chapitre pour la simplicité
-    # Pour des usages avancés (timeline, TensorBoard), on peut utiliser torch.profiler
-    import torch.autograd.profiler as profiler
-
-    # Faire un profiling sur une seule passe avant la boucle d'entraînement
-    with profiler.profile(use_cuda=True, profile_memory=True) as prof_dummy:
-        # Forward + backward sur le modèle standardisé
-        pred_std = model_std(X_stdized)
-        loss_std = ((pred_std - y)**2).mean()
-        optimizer_std.zero_grad()
-        loss_std.backward()
-
-    # Afficher le profil CPU (temps d'exécution)
-    print("Profil CPU pour le modèle standardisé (une seule passe avant entraînement) :")
-    print(prof_dummy.key_averages().table(sort_by="cpu_time_total"))
-
-    # Afficher le profil GPU (mémoire consommée)
-    print(prof_dummy.key_averages().table(sort_by="self_cuda_memory_usage", row_limit=10))
-
-    ...
-
-.. slide::
-**Conclusion** : 
-
-    - On peut profiler à la fois le **temps CPU** et la **mémoire GPU**.
-    - On utilise :
-        - ``cpu_time_total`` pour identifier les opérations coûteuses en calcul,
-        - ``self_cuda_memory_usage`` pour repérer celles qui consomment le plus de mémoire GPU.
-    - Le profiler ralentit fortement l'exécution : il ne doit pas être utilisé pendant tout l’entraînement, mais seulement ponctuellement pour analyser ou optimiser.
-
-    - Chaque opération exécutée sur le CPU par PyTorch y est listée avec :
-        - ``Self CPU %`` : temps passé directement dans l’opération.
-        - ``CPU total %`` : temps total incluant les sous-opérations.
-        - ``# of Calls`` : nombre d’appels à l’opération.
-
-    - Chaque opération exécutée sur le GPU par PyTorch y est listée avec :
-        - ``Self CUDA Memory Usage`` : mémoire GPU utilisée directement par l’opération.
-        - ``CUDA Memory Usage`` : mémoire totale incluant les sous-opérations.
-        - ``# of Calls`` : nombre d’appels à l’opération.
-
-    - Les **couches linéaires** (``aten::linear``) prennent la majeure partie du temps : multiplication matricielle + bias.
-    - Les **activations** (``ReLU``, ``Tanh``) et les calculs de **loss** (``mean``, ``pow``) consomment moins de temps mais sont nécessaires pour propager les gradients.
-    - Les opérations comme ``detach`` ou ``clone`` apparaissent lorsqu’on fait des copies ou qu’on détache un tenseur du graphe pour ne pas calculer de gradient dessus.
-    - Ce profilage permet de **visualiser les goulots d’étranglement** et d’optimiser l’entraînement si nécessaire.
-
-    - Pour un petit MLP, le plus coûteux est le calcul des couches linéaires et du backward. Sur des modèles plus grands ou avec GPU, ces informations sont cruciales pour comprendre et améliorer les performances.
-
-
-.. slide::
-🏋️ Travaux Pratiques 2
---------------------
-
-.. toctree::
-
-    TP_chap2
 
 

@@ -142,7 +142,7 @@ Cela installera :
 
 - **torch** : la bibliothèque principale de PyTorch,
 - **torchvision** : des outils pour manipuler des images, modèles pré-entraînés, etc.,
-- **torchaudio** : pour les données audio (utile pour d'autres projets).
+- **torchaudio** : pour les données audios (utile pour d'autres projets).
 
 .. slide::
 2.2. Lister les paquets installés
@@ -172,13 +172,13 @@ Vous pouvez maintenant tester l’installation de PyTorch avec ce petit script P
 - Si l'import fonctionne sans erreur, PyTorch est installé correctement.
 - Si ``torch.cuda.is_available()`` renvoie ``False``, cela signifie que votre machine n’a pas de GPU compatible CUDA ou qu'elle n'a probablement pas accès au GPU car les pilotes CUDA/cuDNN ne sont pas correctement installés.
 
-Vous pouvez toujours utiliser PyTorch sur CPU, mais le temps d'entraînement sera plus long notamment pour les modèles complexes performances seront moindres pour les tâches lourdes.
+Vous pouvez toujours utiliser PyTorch sur CPU, mais le temps d'entraînement sera plus long notamment pour les modèles complexes.
 
 .. slide::
 2.4. Installer les pilotes NVIDIA et CUDA
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Pour utiliser PyTorch avec un GPU, il ne suffit pas d’installer la bibliothèque ``torch``. Votre système doit aussi disposer des pilotes NVIDIA et de CUDA/cuDNN, qui permettent à PyTorch de dialoguer avec la carte graphique.
+Pour utiliser PyTorch avec un GPU, il ne suffit pas d’installer la bibliothèque ``torch``. Votre système doit aussi disposer des pilotes NVIDIA et de CUDA/cuDNN qui permettent à PyTorch de dialoguer avec la carte graphique.
 
 .. note::
 
@@ -348,7 +348,7 @@ Pour démarrer Jupyter Notebook dans le dossier courant, assurez-vous d'avoir ac
 
    jupyter notebook
 
-- Un navigateur web s’ouvrira automatiquement avec l’interface de Jupyter illustrée par la figure ci-dessus.  
+- Un navigateur web s’ouvrira automatiquement avec l’interface de Jupyter illustrée par la figure ci-dessous.  
 - Si le navigateur ne s’ouvre pas, copiez-collez l’URL affichée dans le terminal dans votre navigateur préféré.
 
 
