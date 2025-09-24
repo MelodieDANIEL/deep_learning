@@ -390,11 +390,24 @@ Dans un problème de classification multi-label, chaque donnée peut être assoc
 - **Sortie binaire par classe** : On peut entraîner un classificateur binaire distinct pour chaque classe. Chaque classificateur prédit la présence ou l'absence de la classe correspondante. S'il y a $$K$$ classes, la sortie est alors de taille $$(K, 2)$$, où chaque ligne correspond à une classe et contient deux valeurs, la probabilité d'appartenance à la classe et probabilité de non-appartenance. C'est sur cette dernière dimension que l'on applique la fonction *softmax*. Cette approche est simple à mettre en œuvre, mais elle ne capture pas les dépendances entre les classes.
 - **Sortie multi-label** : On peut utiliser une seule couche de sortie pour prédire la probabilité de chaque classe. Cela permet de capturer les dépendances entre les classes car le modèle peut apprendre à reconnaître des combinaisons de classes. La sortie est alors de taille $$(K)$$, où chaque élément correspond à la probabilité d'appartenance à une classe. On applique alors une fonction **sigmoïde** (et non pas *softmax*) sur la sortie pour obtenir des probabilités indépendantes pour chaque classe. Pour sélectionner les classes prédites, on applique un seuil de confiance (par exemple, 0.5) : si la probabilité d'une classe est supérieure à ce seuil, l'observation est classée dans cette classe.
 
+.. math::
+   sigmoid(z)_i = \frac{1}{1 + e^{-z_i}}
+où $$z$$ est le tenseur de sortie du modèle, et $$z_i$$ est le score brut (*logit*) pour la classe $$i$$ dans ce tenseur.
+
 .. slide::
 5.1. Classification hiérarchique
 ~~~~~~~~~~~~~~~~~~~
 
 Dans un problème de classification hiérarchique, les classes sont organisées en une structure arborescente où certaines classes sont des sous-classes d'autres. Par exemple, dans la classification d'images, une image peut être classée comme "animal", puis comme "mammifère", puis comme "chien". Pour traiter ce type de problème, plusieurs approches peuvent être utilisées :
+
 - **Sortie multi-niveau** : On peut utiliser une seule couche de sortie pour prédire la probabilité de chaque classe à chaque niveau de la hiérarchie. La sortie est alors de taille $$(K_1 + K_2 + ... + K_n)$$, où $$K_i$$ est le nombre de classes au niveau $$i$$ de la hiérarchie. On applique une fonction *softmax* sur chaque sous-ensemble de la sortie correspondant à un niveau de la hiérarchie pour obtenir des probabilités pour chaque niveau. Pour sélectionner les classes prédites, on choisit la classe avec la probabilité la plus élevée à chaque niveau.
 - **Plusieurs sorties** : On peut utiliser plusieurs couches de sortie, une pour chaque niveau de la hiérarchie. Chaque couche prédit la probabilité des classes à son niveau respectif. Cette approche est plus simple à mettre en œuvre que les modèles hiérarchiques, mais elle ne capture pas les relations entre les classes.
 - **Modèles hiérarchiques** : On peut entraîner un modèle pour chaque niveau de la hiérarchie. Par exemple, un modèle pour classer les images en "animal" ou "non-animal", puis un autre modèle pour classer les "animaux" en "mammifères" ou "non-mammifères", et ainsi de suite. Cette approche permet de capturer les relations entre les classes, mais elle peut être complexe à mettre en œuvre.
+
+.. slide::
+🏋️ Travaux Pratiques
+--------------------
+
+.. toctree::
+
+    TP_chap3
