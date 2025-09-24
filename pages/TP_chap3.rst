@@ -12,6 +12,8 @@ Créer un notebook Jupyter et importer les bibliothèques nécessaires. Assurez-
 - pandas
 - torch
 
+Les exercices suivants sont à réaliser dans un (ou plusieurs) notebook(s) Jupyter.
+
 .. slide::
 Exercice 1 : Classification multi-classes - Iris
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
