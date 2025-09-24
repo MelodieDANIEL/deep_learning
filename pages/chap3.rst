@@ -1,7 +1,7 @@
 
 .. slide::
 
-Chapitre 4 - Classification
+Chapitre 3 - Classification
 ================
 
 🎯 Objectifs du Chapitre
@@ -247,23 +247,154 @@ La projection en 2D, réalisée avec des algorithmes comme t-SNE (t-Distributed 
 Dans la Figure 6, chaque point correspond à une image. La couleur du point détermine la classe réelle de l'image (vérité terrain). On peut ainsi observer des groupes de données bien séparés des autres, ainsi que des groupes qui ont tendance à se mélanger (par exemple "Chien" et "Chat"). Grâce à cette visualisation, on peut identifier les classes les mieux discriminées ainsi que les erreurs de classification.
 
 .. slide::
-3.3. Validation croisée
+📖 4. Jeux de données
+----------------------
+Dans tout apprentissage, supervisé ou non, la qualité et la quantité des données jouent un rôle crucial dans la performance du modèle. En classification, plusieurs défis spécifiques liés aux jeux de données peuvent influencer les résultats.
+
+.. slide::
+4.1. Généralisation et Validation
+~~~~~~~~~~~~~~~~~~~
+Bien qu'un modèle d'apprentissage puisse atteindre de bonnes performances sur son jeu d'entraînement, il est essentiel de s'assurer qu'il possède également une bonne capacité à **généraliser** son apprentissage à de nouvelles données.
+On distingue alors les données *In distribution* (que le modèle a déjà vues pendant son entraînement) des données *Out of distribution* (que le modèle n'a jamais vues auparavant). Un bon modèle de classification doit être capable de bien performer sur les deux types de données.
+Par exemple dans le cas d'une voiture autonome, il faut s'assurer qu'un modèle entraîné à reconnaître des piétons dans une ville en été, sera également capable de les reconnaître en hiver, de nuit, ou dans une autre ville.
+
+La validation croisée est une technique utilisée pour évaluer la capacité de généralisation d'un modèle d'apprentissage. Elle consiste à diviser le jeu de données en plusieurs sous-ensembles (ou "folds"), puis à entraîner et évaluer le modèle plusieurs fois, en utilisant un fold différent pour l'évaluation à chaque itération.
+
+Cette approche permet de s'assurer que le modèle est capable de généraliser son apprentissage à de nouvelles données, en le testant sur des exemples qu'il n'a pas vus pendant l'entraînement. Cela aide à détecter les problèmes de surapprentissage (overfitting) et à ajuster les hyperparamètres du modèle pour améliorer sa performance sur des données non vues.
+
+.. slide::
+4.1.1. K-fold, Leave-K-Out (LKO), Leave-One-Out (LOO)
 ~~~~~~~~~~~~~~~~~~~
 
+Une première famille de méthodes de validation est appelée **validation croisée** (cross-validation). Elle consiste à diviser le jeu de données en plusieurs sous-ensembles, puis à entraîner et évaluer le modèle plusieurs fois, en utilisant un sous-ensemble différent pour l'évaluation à chaque itération. Voici les principales variantes :
+
+**K-Fold** : Le jeu de données est divisé en K sous-ensembles ("folds"). À chaque itération, un fold sert de jeu de test et les K-1 autres de jeu d'entraînement. On répète l'opération K fois, chaque fold étant utilisé une fois comme test.
+
+**Leave-K-Out (LKO)** : À chaque itération, K exemples sont retirés du jeu de données pour servir de test, et le reste sert à l'entraînement. On répète l'opération en changeant les K exemples testés à chaque fois.
+
+**Leave-One-Out (LOO)** : Cas particulier du LKO où K=1. Chaque exemple du jeu de données est utilisé une fois comme test, les autres servant à l'entraînement, ce qui donne autant d'itérations que d'exemples.
+
+Ces méthodes sont notamment utilisées en Machine Learning, avec de petits modèles et faibles volumes de données. Cependant, elles sont rarement utilisées en Deep Learning, où les modèles sont plus complexes et les volumes de données plus importants. En effet, ces méthodes peuvent être très coûteuses en temps de calcul, car elles nécessitent d'entraîner le modèle plusieurs fois.
+
+En Deep Learning, on préfèrera plus souvent utiliser une validation Hold-Out.
+
+.. slide::
+4.1.2. Hold-Out
+~~~~~~~~~~~~~~~~~~~
+
+La validation Hold-Out est une méthode simple et largement utilisée pour évaluer la performance d'un modèle d'apprentissage. Elle consiste à diviser le jeu de données en deux à troies parties distinctes : 
+
+- Un ensemble d'**entraînement** (train set) : utilisé pour entraîner le modèle.
+- Un ensemble de **validation** (validation set) : utilisé pour ajuster les hyperparamètres du modèle et prévenir le surapprentissage.
+- Un ensemble de **test** (test set) : utilisé pour évaluer la performance finale du modèle.
+
+A chaque époque, un modèle est entraîné (i.e., calcul de la loss et backpropagation) sur les données du *train set*. 
+
+A la fin de chaque époque, le modèle est évalué (i.e., calcul de la loss et des métriques, **sans backpropagation**) sur les données du *validation set*. Le modèle n'ayant jamais vu ces données, on peut ainsi estimer sa capacité à généraliser son apprentissage. 
+
+Enfin, une fois l'entraînement terminé, le modèle est évalué une dernière fois sur les données du *test set* pour obtenir une mesure finale de sa performance. Lorsque l'on conçoit plusieurs variantes de modèle d'apprentissage pour résoudre une tâche, c'est sur les performances sur le *test set* que l'on se base pour choisir le meilleur modèle.
+
+En PyTorch, cela se traduit par la création de trois DataLoaders distincts, un pour chaque ensemble de données, et le chainage des phases dans la boucle d'entrainement 
+
+.. code-block:: python
+   # Prepare train data
+    train_dataset = ...
+    train_loader = ...
+
+    # Prepare validation data
+    val_dataset = ...
+    val_loader = ...
+
+    # Prepare test data
+    test_dataset = ...
+    test_loader = ...
+
+    # Define the model
+    model = ...
+    optimizer = ...
+    loss_fn = ...
+
+    # Train
+    for epoch in range(n_epochs):
+        model.train() #! Important !
+        for i_batch, batch in enumerate(train_loader):
+            inputs, groundtruthes = batch
+            optimizer.zero_grad()  #! Important !
+            pred = model(inputs)
+            loss = loss_fn(pred, groundtruthes)
+            loss.backward() #! Backpropagation !
+            optimizer.step() 
+    
+        # Validation
+        model.eval()  #! Important !
+        with torch.no_grad(): # Don't compute the gradient (we won't backpropagate anyway)
+            for vi_batch, batch in enumerate(val_loader):
+                inputs, groundtruthes = batch
+                pred = model(inputs)
+                loss = loss_fn(pred, groundtruthes)
+                compute_metrics(pred, groundtruthes)
+    # End of train
+    
+    # Test
+    model.eval() #! Important !
+    with torch.no_grad(): # Don't compute the gradient (we won't backpropagate anyway)
+        for i, batch in enumerate(test_loader):
+            inputs, groundtruthes = batch
+            pred = model(inputs)
+            loss = loss_fn(pred, groundtruthes)
+            compute_metrics(pred, groundtruthes)
 
 
 .. slide::
-📖 4. Déséquilibrage de classes
-----------------------
+4.2. Déséquilibrage des classes
+~~~~~~~~~~~~~~~~~~~
+
+Dans un problème de classification, il peut arriver que certaines classes soient beaucoup plus représentées que d'autres dans le jeu de données. Par exemple, dans un jeu de données médical, il peut y avoir beaucoup plus de patients en bonne santé que de patients atteints d'une maladie rare. Ce déséquilibre peut poser plusieurs problèmes lors de l'entraînement d'un modèle de classification :
+
+- Le modèle peut être biaisé en faveur des classes majoritaires, car il verra plus souvent ces exemples pendant l'entraînement.
+- Les métriques d'évaluation peuvent être trompeuses, car un modèle qui prédit toujours la classe majoritaire peut obtenir une haute exactitude, mais ne sera pas utile pour détecter les classes minoritaires.
+
+Pour gérer le déséquilibre des classes, plusieurs techniques peuvent être utilisées :
+
+- **Rééchantillonnage** : On peut suréchantillonner les classes minoritaires (en dupliquant des exemples ou en générant de nouveaux exemples synthétiques) ou sous-échantillonner les classes majoritaires (en supprimant des exemples) pour équilibrer le jeu de données.
+- **Pondération des classes** : On peut attribuer des poids plus élevés aux classes minoritaires dans la fonction de coût, de sorte que les erreurs sur ces classes aient un impact plus important lors de l'entraînement.
+- **Utilisation de métriques adaptées** : On peut utiliser des métriques d'évaluation qui tiennent compte du déséquilibre des classes, comme le F1-score.
+
+.. slide::
+4.3. Augmentation des données
+~~~~~~~~~~~~~~~~~~~
+
+L'augmentation des données est une technique utilisée pour augmenter la taille et la diversité d'un jeu de données en appliquant des transformations aux exemples existants. En classification, l'augmentation des données peut aider à améliorer la performance du modèle en lui fournissant plus d'exemples variés à apprendre, ce qui peut réduire le surapprentissage et améliorer la capacité de généralisation.
+
+Les techniques courantes d'augmentation des données incluent :
+
+- **Transformations géométriques** : rotation, translation, mise à l'échelle, retournement horizontal/vertical.
+- **Transformations du domaine de valeur** : ajustement du domaine de valeurs numériques des caractéristiques d'une donnée pour enrichir la diversité des exemples.
+- **Bruit** : ajout de bruit aléatoire aux données.
+- **Cutout** : suppression aléatoire de parties d'une donnée.
+
+Ces techniques peuvent être appliquées de manière aléatoire pendant l'entraînement, de sorte que chaque époque voit une version légèrement différente des données. Cela permet au modèle d'apprendre des caractéristiques de mieux généraliser à de nouvelles données et d'être plus robustes aux petites variations d'environnement communes lors de la mise en production.
 
 .. slide::
 📖 5. Classification avancée
 ----------------------
 
+Jusqu'à présent, nous avons principalement abordé les problèmes de classification binaire (une classe vraie parmi deux) et multi-classes (une classe vraie parmi plusieurs). Cependant, il existe d'autres types de problèmes de classification qui présentent des défis supplémentaires.
+
 .. slide::
 5.1. Classification multi-label
 ~~~~~~~~~~~~~~~~~~~
 
+Dans un problème de classification multi-label, chaque donnée peut être associée à plusieurs classes simultanément. Par exemple, dans la classification d'images, une image peut contenir à la fois un chat et un chien. Pour traiter ce type de problème, plusieurs approches peuvent être utilisées :
+
+- **Sortie binaire par classe** : On peut entraîner un classificateur binaire distinct pour chaque classe. Chaque classificateur prédit la présence ou l'absence de la classe correspondante. S'il y a $$K$$ classes, la sortie est alors de taille $$(K, 2)$$, où chaque ligne correspond à une classe et contient deux valeurs, la probabilité d'appartenance à la classe et probabilité de non-appartenance. C'est sur cette dernière dimension que l'on applique la fonction *softmax*. Cette approche est simple à mettre en œuvre, mais elle ne capture pas les dépendances entre les classes.
+- **Sortie multi-label** : On peut utiliser une seule couche de sortie pour prédire la probabilité de chaque classe. Cela permet de capturer les dépendances entre les classes car le modèle peut apprendre à reconnaître des combinaisons de classes. La sortie est alors de taille $$(K)$$, où chaque élément correspond à la probabilité d'appartenance à une classe. On applique alors une fonction **sigmoïde** (et non pas *softmax*) sur la sortie pour obtenir des probabilités indépendantes pour chaque classe. Pour sélectionner les classes prédites, on applique un seuil de confiance (par exemple, 0.5) : si la probabilité d'une classe est supérieure à ce seuil, l'observation est classée dans cette classe.
+
 .. slide::
 5.1. Classification hiérarchique
 ~~~~~~~~~~~~~~~~~~~
+
+Dans un problème de classification hiérarchique, les classes sont organisées en une structure arborescente où certaines classes sont des sous-classes d'autres. Par exemple, dans la classification d'images, une image peut être classée comme "animal", puis comme "mammifère", puis comme "chien". Pour traiter ce type de problème, plusieurs approches peuvent être utilisées :
+- **Sortie multi-niveau** : On peut utiliser une seule couche de sortie pour prédire la probabilité de chaque classe à chaque niveau de la hiérarchie. La sortie est alors de taille $$(K_1 + K_2 + ... + K_n)$$, où $$K_i$$ est le nombre de classes au niveau $$i$$ de la hiérarchie. On applique une fonction *softmax* sur chaque sous-ensemble de la sortie correspondant à un niveau de la hiérarchie pour obtenir des probabilités pour chaque niveau. Pour sélectionner les classes prédites, on choisit la classe avec la probabilité la plus élevée à chaque niveau.
+- **Plusieurs sorties** : On peut utiliser plusieurs couches de sortie, une pour chaque niveau de la hiérarchie. Chaque couche prédit la probabilité des classes à son niveau respectif. Cette approche est plus simple à mettre en œuvre que les modèles hiérarchiques, mais elle ne capture pas les relations entre les classes.
+- **Modèles hiérarchiques** : On peut entraîner un modèle pour chaque niveau de la hiérarchie. Par exemple, un modèle pour classer les images en "animal" ou "non-animal", puis un autre modèle pour classer les "animaux" en "mammifères" ou "non-mammifères", et ainsi de suite. Cette approche permet de capturer les relations entre les classes, mais elle peut être complexe à mettre en œuvre.
