@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 .. slide::
 Résumé des concepts clés du chapitre 1
 ======================================
@@ -98,6 +97,6 @@ Pour minimiser la perte, on calcule le **gradient de la perte par rapport aux pa
 
 - Dans le cas où le tenseur a été créé avec ``requires_grad=True``, vous devez utiliser ``tensor.detach().cpu().numpy()`` pour éviter les erreurs liées au suivi des gradients.
 
-👉 Retenez : **Numpy = CPU, Torch = CPU/GPU, Matplotlib = Numpy**.  
+👉 À retenir : **Numpy = CPU, Torch = CPU/GPU, Matplotlib = Numpy**.  
 
 
