@@ -1,3 +1,6 @@
+🏋️ Travaux Pratiques 4
+=========================
+
 .. slide::
 Exercice 0 : Mise en place
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -62,6 +65,7 @@ Exercice 2 : Traitement d'une image
 
 
 6) Redimmensionnez chaque patch en 64x64 pixels
+
 7) Reconstituez et affichez l'image a partir des patches redimensionnés
 
 .. figure:: images/tp4/patches_reconstituted.png
@@ -75,12 +79,11 @@ Exercice 2 : Traitement d'une image
    :align: center
    :width: 400px
 
-9) Changer la couleur du ciel bleu en bleu sombre (nuit)
+9) Changer la couleur du ciel bleu en bleu sombre (nuit). Cela équivaut également à annoter automatiquement les pixels du ciels pour cette image.
 
 .. figure:: images/tp4/blue_sky.png
    :align: center
    :width: 400px
-
 
 10) Réduisez la résolution de l'image d'un facteur 20.
 
