@@ -84,3 +84,35 @@ Pour minimiser la perte, on calcule le **gradient de la perte par rapport aux pa
 6) Répéter les étapes 2 à 5 jusqu’à la convergence du modèle.
 
 
+.. slide::
+📖 8. Utilisation de la carte GPU avec les Tenseurs
+----------------------
+
+- En utilisant un GPU, on peut accélérer considérablement les calculs, surtout pour les grands modèles et ensembles de données.
+
+- La commande ``set_default_device(device)`` permet de définir le GPU comme appareil par défaut pour les tenseurs si ``device = "cuda"``.
+
+- Si vous souhaitez transformer un Numpy array qui est sur CPU en tenseur sur le GPU, utilisez ``torch.from_numpy(array).to(device)``.
+
+- Si maintenant vous souhaitez utiliser Matplotlib pour afficher les données contenues dans un tenseur sur le GPU, vous devez d'abord transférer ce tenseur vers le CPU et le transformer en Numpy array avec ``tensor.cpu().numpy()`` avant de le passer à Matplotlib.
+
+- Dans le cas où le tenseur avait été créé avec ``requires_grad=True``, vous devez utiliser ``tensor.detach().cpu().numpy()`` pour éviter les erreurs liées au suivi des gradients. 
+
+👉 Retenez : **Numpy = CPU, Torch = CPU/GPU, Matplotlib = Numpy**.  
+
+
+.. slide::
+📖 8. Utilisation de la carte GPU avec les tenseurs
+---------------------------------------------------
+
+- En utilisant un GPU, on peut accélérer considérablement les calculs, surtout pour les grands modèles et ensembles de données.
+
+- La commande ``set_default_device(device)`` permet de définir le GPU comme appareil par défaut pour les tenseurs, si ``device = "cuda"``.
+
+- Pour transformer un Numpy array situé sur le CPU en tenseur sur le GPU, utilisez ``torch.from_numpy(nom_array).to(device)``.
+
+- Si vous souhaitez utiliser Matplotlib pour afficher les données contenues dans un tenseur sur le GPU, vous devez d’abord transférer ce tenseur vers le CPU et le convertir en Numpy array avec ``tensor.cpu().numpy()`` avant de le passer à Matplotlib.
+
+- Dans le cas où le tenseur a été créé avec ``requires_grad=True``, vous devez utiliser ``tensor.detach().cpu().numpy()`` pour éviter les erreurs liées au suivi des gradients.
+
+👉 Retenez : **Numpy = CPU, Torch = CPU/GPU, Matplotlib = Numpy**.  
