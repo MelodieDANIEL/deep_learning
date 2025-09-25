@@ -11,6 +11,7 @@ Créer un notebook Jupyter et importer les bibliothèques nécessaires. Assurez-
 - sklearn
 - pandas
 - torch
+- wandb (nécessite de se créer un compte sur https://wandb.ai/)
 
 Les exercices suivants sont à réaliser dans un (ou plusieurs) notebook(s) Jupyter.
 
@@ -91,6 +92,8 @@ A chaque époque de l'entraînement :
 Exercice 3 : Classification multi-classes - Handwritten Digits
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+0) Installez et importez la bibliothèque *wandb*, créez un compte sur https://wandb.ai/.
+
 1) Charger le jeu de données Digits depuis sklearn et affichez le sous la forme d'un DataFrame *pandas*.
 
 2) Répondez aux questions suivantes :
@@ -106,7 +109,7 @@ Exercice 3 : Classification multi-classes - Handwritten Digits
 
 4) Créez un MLP à 5 couches pour classer ces données. Faites en sorte que le réseau ait 2 sorties : une pour les logits, et une pour les caractéristiques en sortie de l'avant dernière couche (features embedding). 
 
-5) Entraînez le réseau. 
+5) Entraînez le réseau en utilisant la bibliothèque *wandb* pour le suivi des expériences.
 
 ⚠️ Ce réseau a 2 sorties, on utilise uniquement les logits pour calculer la fonction de coût.
 
