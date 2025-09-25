@@ -47,4 +47,3 @@ Sommaire
     chap2_partie1
     chap2_partie2
     chap2_abs
-    chap3
