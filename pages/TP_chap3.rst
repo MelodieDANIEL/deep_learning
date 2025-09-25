@@ -124,3 +124,13 @@ A chaque époque de l'entraînement :
 7) Utilisez *sklearn.manifold.TSNE* pour réduire les dimensions des features embeddings à 2D. Affichez les points dans un nuage de points 2D en coloriant chaque point selon sa classe.
 
 Analysez le résultat. Cela est-il cohérent avec ce que vous observez dans la matrice de confusion ?
+
+8) Faites varier les hyperparamètres suivants et analysez leur impact sur les performances du modèle :
+
+- Le taux d'apprentissage 
+- La taille des batchs 
+- Le nombre de couches cachées 
+- Le nombre de neurones par couche
+- Le nombre d'époques
+
+Paramétez *wandb* pour suivre ces hyperparamètres, et modifier l'interface web pour afficher leur importance sur les performances du modèle.
