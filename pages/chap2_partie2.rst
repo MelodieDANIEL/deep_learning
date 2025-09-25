@@ -422,7 +422,7 @@ Cet exercise permet d'observer l'overfitting avec un MLP sur des données bruit�
 .. step::
     1) Génère un jeu de données 1D avec ``N=100`` points :  
 
-        - ``X`` uniformément dans $$[-3,3]$$.
+        - ``X`` uniformément dans $$[-3.14,3.14]$$.
         - ``y = sin(X) + bruit`` avec ``bruit = 0.2 * torch.randn_like(y)``.
 
 .. step::
@@ -433,7 +433,7 @@ Cet exercise permet d'observer l'overfitting avec un MLP sur des données bruit�
         - Grand : 2 couches cachées de 50 neurones chacune
 
 .. step::
-    3) Entraîne chaque modèle avec ``MSELoss`` et Adam pendant :  
+    3) Entraîne chaque modèle avec ``MSELoss`` et ``Adam`` pendant :  
 
         - Petit : 2000 epochs  
         - Petit long : 10000 epochs  
@@ -443,7 +443,7 @@ Cet exercise permet d'observer l'overfitting avec un MLP sur des données bruit�
     4) Trace sur le même graphique :  
 
         - Les points de données bruitées  
-        - La fonction vraie `sin(X)`  
+        - La fonction vraie ``sin(X)``  
         - Les prédictions des trois MLP  
 
 .. step::
