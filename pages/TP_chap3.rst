@@ -11,7 +11,9 @@ Créer un notebook Jupyter et importer les bibliothèques nécessaires. Assurez-
 - sklearn
 - pandas
 - torch
-- wandb (nécessite de se créer un compte sur https://wandb.ai/)
+- wandb (nécessite de se créer un compte sur wandb_)
+
+.. _wandb: https://wandb.ai/
 
 Les exercices suivants sont à réaliser dans un (ou plusieurs) notebook(s) Jupyter.
 
@@ -20,6 +22,14 @@ Exercice 1 : Classification multi-classes - Iris
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 1) Charger le jeu de données Iris depuis sklearn et affichez le sous la forme d'un DataFrame *pandas*.
+
+.. code-block:: python
+    import sklearn
+    import pandas as pd
+    iris = sklearn.datasets.load_iris()
+    df = pd.DataFrame(data=iris.data, columns=iris.feature_names)
+    df['target'] = [iris.target_names[i] for i in iris.target]
+    print(df.head())
 
 2) Répondez aux questions suivantes :
   
@@ -33,6 +43,14 @@ Exercice 1 : Classification multi-classes - Iris
 3) Créez un MLP à 3 couches (entrée, cachée, sortie) pour classer ces données.
 
 4) Créez un jeu de données PyTorch à partir des données Iris et entraînez le MLP par batch de 8 en affichant la *Loss* à chaque fin d'époque.
+
+.. code-block:: python
+    
+    import torch
+    train_loader = torch.utils.data.DataLoader(
+      torch.utils.data.TensorDataset(train_X, train_y), batch_size=batch_size, shuffle=True
+    ) 
+
 
 5) Évaluez la performance du modèle sur l'ensemble d'entraînement en calculant les métriques suivantes : 
 
@@ -48,7 +66,9 @@ Aidez-vous de *sklearn.metrics.confusion_matrix* et *matplotlib.pyplot.imshow* (
 Exercice 2 : Classification multi-classes - Breast Cancer
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-1) Charger le jeu de données Breast Cancer depuis sklearn et affichez le sous la forme d'un DataFrame *pandas*.
+1) Charger le jeu de données BreastCancer_ depuis sklearn et affichez le sous la forme d'un DataFrame *pandas*.
+
+.. _BreastCancer : https://scikit-learn.org/stable/modules/generated/sklearn.datasets.load_breast_cancer.html
 
 2) Répondez aux questions suivantes :
   
@@ -94,7 +114,9 @@ Exercice 3 : Classification multi-classes - Handwritten Digits
 
 0) Installez et importez la bibliothèque *wandb*, créez un compte sur https://wandb.ai/.
 
-1) Charger le jeu de données Digits depuis sklearn et affichez le sous la forme d'un DataFrame *pandas*.
+1) Charger le jeu de données Digits_ depuis sklearn et affichez le sous la forme d'un DataFrame *pandas*.
+
+.. _Digits: https://scikit-learn.org/stable/modules/generated/sklearn.datasets.load_digits.html
 
 2) Répondez aux questions suivantes :
 
