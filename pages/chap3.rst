@@ -91,6 +91,13 @@ Il suffit donc d'adapter la couche de sortie du modèle pour qu'elle produise un
          x = self.out_layer(x)
          return x  # logits pour "num_classes"
       
+.. slide::
+Vocabulaire : On appelle **caractéristique** (feature) les variables décrivant une donnée, et **étiquette** (label) la variable que l'on cherche à prédire.
+
+Les **caractéristiques initiales** sont celles de la données en entrée. Par exemple dans le cas d'une image de taille $$100\times100\times3$$, on a 30000 caractéristiques initiales.
+
+Chaque couche d'un réseau de neurone prend en entrée un certain nombre de caractéristiques (pour chaque donnée du batch) et en produit un autre nombre. Par exemple, une couche linéaire (fully connected) avec 128 neurones prend en entrée un tenseur de taille $$N$$ et produit un tenseur de taille $$128$$.
+
 
 .. slide::
 📖 3. Optimiser et évaluer un modèle de classification supervisé

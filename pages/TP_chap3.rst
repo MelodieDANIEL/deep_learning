@@ -23,6 +23,8 @@ Exercice 1 : Classification multi-classes - Iris
 
 1) Charger le jeu de données Iris depuis sklearn et affichez le sous la forme d'un DataFrame *pandas*.
 
+Ce jeu de données contient des données de fleurs, et l'objectif est de prédire l'espèce de la fleur à partir d'observations sur ses caractéristiques (features).
+
 .. code-block:: python
     import sklearn
     import pandas as pd
@@ -43,6 +45,8 @@ Exercice 1 : Classification multi-classes - Iris
 3) Créez un MLP à 3 couches (entrée, cachée, sortie) pour classer ces données.
 
 4) Créez un jeu de données PyTorch à partir des données Iris et entraînez le MLP par batch de 8 en affichant la *Loss* à chaque fin d'époque.
+
+Utilisez le code suivant pour créer un DataLoader PyTorch. A vous de trouver comment créer les tenseurs *train_X* et *train_y* (lisez la documentation de *sklearn.datasets.load_iris() !). 
 
 .. code-block:: python
     
@@ -69,6 +73,8 @@ Exercice 2 : Classification multi-classes - Breast Cancer
 1) Charger le jeu de données BreastCancer_ depuis sklearn et affichez le sous la forme d'un DataFrame *pandas*.
 
 .. _BreastCancer : https://scikit-learn.org/stable/modules/generated/sklearn.datasets.load_breast_cancer.html
+
+Ce jeu de données contient les informations de patients, et l'objectif est de savoir si celui-ci est malade ou non.
 
 2) Répondez aux questions suivantes :
   
@@ -117,6 +123,8 @@ Exercice 3 : Classification multi-classes - Handwritten Digits
 1) Charger le jeu de données Digits_ depuis sklearn et affichez le sous la forme d'un DataFrame *pandas*.
 
 .. _Digits: https://scikit-learn.org/stable/modules/generated/sklearn.datasets.load_digits.html
+
+Ce jeu de données contient des images de chiffres manuscrits, et l'objectif est de prédire quel chiffre est représenté dans chaque image.
 
 2) Répondez aux questions suivantes :
 
