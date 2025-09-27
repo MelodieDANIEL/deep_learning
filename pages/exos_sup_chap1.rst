@@ -213,3 +213,5 @@ Un graphique 3D montrant la surface convexe de la fonction et la descente du poi
 
 
 
+
+
