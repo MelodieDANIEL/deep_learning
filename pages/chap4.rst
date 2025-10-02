@@ -185,6 +185,27 @@ En résumé, une convolution est déterminée par :
 
 La taille du signal convolué est déterminée par celle de l'image d'origine et de ces trois paramètres.
 
+En PyTorch, la convolution 2D est implémentée dans la classe `torch.nn.Conv2d`, qui permet de définir un filtre de convolution avec des paramètres personnalisables. Les valeurs du filtre (noyau) sont initialisées aléatoirement et optimisées lors de l'entraînement du réseau de neurones. L'apprentissage se fait donc au niveau du noyau de convolution, au lieu de le définir manuellement.
+
+Voici un exemple simple d'utilisation de cette classe pour appliquer une convolution à une image : 
+
+.. code-block:: python
+   import torch
+   import torch.nn as nn
+
+   image = torch.randn(1, 3, 64, 64)   # 1 image, 3 channels (RGB), 64×64 pixels
+
+   # Définir une couche de convolution
+   conv_layer = nn.Conv2d(in_channels=1, out_channels=8, kernel_size=3, stride=1, padding=1)
+
+   # Appliquer la convolution à l'image
+   output = conv_layer(image)
+
+   print("Input shape :", image.shape)   # torch.Size([1, 3, 64, 64])
+   print("Output shape:", output.shape)  # torch.Size([1, 8, 64, 64])
+
+
+💡Astuce : Pour traiter efficacement des images en PyTorch, la librairie **torchvision** propose de nombreuses fonctionnalités utiles, telles que des transformations d'images, des jeux de données prétraités et des modèles pré-entraînés. Vous n'en avez pas forcément besoin pour ce TD, mais n'hésitez pas à l'explorer 😉 !
 
 .. slide::
 🏋️ Travaux Pratiques

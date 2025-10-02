@@ -106,3 +106,16 @@ Exercice 3 : Traitement d'un batch d'images
 1) Récupérez sur internet une image de Chien, Chat et Cheval, puis redimensionnez les toutes aux mêmes dimensions. 
 
 2) Appliquez ensuite les mêmes traitements (exercice 2.) sur le batch d'images [Elephants, Chien, Chat, Cheval] en utilisant la bibliothèque PyTorch. Adaptez les questions si nécessaire (par exemple lorsqu'il n'y a pas d'éléphanteau dans les images). ⚠️ Votre code doit traiter toutes les images simultanément.
+
+
+.. slide::
+Exercice 4 : Classification d'image avec des couches de convolution
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1) Reprenez le jeu de données Digits_ de sklearn vu dans les exercices du TP3, et rechargez-le comme vous avez appris à le faire (jeux de *train* et *val*).
+
+.. _Digits: https://scikit-learn.org/stable/modules/generated/sklearn.datasets.load_digits.html
+
+
+2) Créez un réseau de neurones convolutif (CNN) avec maximum 3 couches pour classer ces images. Vous pouvez vous inspirer de l'architecture suivante :
+
+3) Comparez les performances de ce CNN avec celles du MLP que vous aviez créé dans le TP3.
