@@ -42,6 +42,8 @@ Une image est ainsi représentée par un tableau/tenseur $$H \times W \times C$$
 
 Ainsi, dans une image RGB, chaque pixel a une coordonée (y, x) dans $$H \times W$$ qui permet d'accéder à sa couleur encodée par trois valeurs : une pour chaque canal R, G et B. Par exemple, un pixel rouge pur aura les valeurs [255, 0, 0] dans un espace colorimétrique où chaque canal varie de 0 à 255 (i.e., encodé sur 8 bits). En Machine Learning, il est commun de normaliser ces valeurs de [0; 255] vers [0; 1] (en divisant toutes les valeurs par 255).
 
+.. slide::
+
 D'autres espaces de couleurs existent, comme HSL, HSV, CIELAB...
 
 - **HSL (Hue, Saturation, Lightness)** : HSL décompose la couleur en trois composantes : la teinte (Hue, la couleur pure), la saturation (Saturation, l'intensité de la couleur) et la luminosité (Lightness, la clarté). Cet espace est utile pour des opérations comme le changement de teinte ou l'ajustement de la luminosité, car il correspond mieux à la perception humaine des couleurs.
@@ -62,12 +64,15 @@ Cependant, RGB ainsi que sa variente RGBA (qui contient un canal Alpha suppléme
    **Figure 2** : Espaces de couleur RGB, HSL, HSV et CIELAB.
 
 .. slide::
+
 📖 2. Le slicing en Python
 ----------------------
 Pour manipuler des sous-parties de tenseurs (et donc d'image), nous avons besoin de sélectionner des plages de valeur à l'intérieur de celles-ci. La méthode que vous connaissez déjà pour cela est l'utilisation de boucles *for*, avec des indices de début et de fin. Cependant, cette méthode est souvent verbeuse, et l'approche itérative n'est pas adaptée à l'exécution au GPU.
 
 Le slicing est une technique en Python qui permet d'extraire des sous-parties d'une séquence (comme une liste, une chaîne de caractères ou un tableau) en spécifiant des indices de début, de fin et un pas.
 Ici, nous nous concentrerons sur le slicing appliqué aux tableaux NumPy qui sont couramment utilisés pour représenter des images, et pour lesquelles les opérations disponibles sont semblables à celles des tenseurs PyTorch.
+
+.. slide::
 
 Le slicing en Python utilise la syntaxe suivante : *sequence[start:stop:step]*, où :
 
@@ -81,13 +86,17 @@ Le slicing en Python utilise la syntaxe suivante : *sequence[start:stop:step]*, 
    print(sequence[1:6])    # '[1, 2, 3, 4, 5]', affiche de l'indice 1 (inclu) à l'indice 6 (exclu)
    print(sequence[1:6:2])  # '[1, 3, 5]', affiche de l'indice 1 (inclu) à l'indice 6 (exclu) avec un pas de 2
 
+.. slide::
+
 Il est également possible d'utiliser les indices négatifs, et il n'est pas nécessaire de spécifier tous les paramètres :
 
 .. code-block:: python
-   sequence = np.array([0, 1, 2, 3, 4, 5]))
+   sequence = np.array([0, 1, 2, 3, 4, 5])
    print(sequence[2:])  # '[2, 3, 4, 5]', affiche de l'indice 2 (inclu) jusqu'à la fin
    print(sequence[:4])  # '[0, 1, 2, 3]', affiche du début jusqu'à l'indice 4 (exclu)
    print(sequence[-3:]) # '[3, 4, 5]', affiche les 3 derniers éléments
+
+.. slide::
 
 Pour réaliser du slicing sur un tenseur (i.e., tableau multidimensionnel), il suffit de séparer les indices de chaque dimension par une virgule :
 .. code-block:: python
@@ -99,6 +108,8 @@ Pour réaliser du slicing sur un tenseur (i.e., tableau multidimensionnel), il s
    print(sequence_2d[:, 0])  # '[0, 10, 20]', affiche la première colonne de chaque ligne
    print(sequence_2d[0, :])  # '[0, 1, 2]', affiche tous les éléments de la première ligne
 
+.. slide::
+
 Une image étant un tenseur 3D, le slicing peut être utilisé pour accéder à des parties spécifiques de l'image, comme une région rectangulaire ou un canal de couleur particulier : 
 .. code-block:: python
    img = np.random.randint(0, 256, (50, 50, 3), dtype=np.uint8)  
@@ -109,6 +120,8 @@ Une image étant un tenseur 3D, le slicing peut être utilisé pour accéder à 
 
    red_channel = img[:, :, 0]        # Sélectionne le premier canal (rouge) de l'image. 
    # Résultat : un tenseur de taille (50, 50) ou (50, 50, 1) selon la bibliothèque utilisée
+
+.. slide::
 
 Une image RGB peut ainsi être découpée en ses trois canaux de couleur individuels (Rouge, Vert, Bleu) en utilisant le slicing :
 .. code-block:: python
@@ -162,7 +175,7 @@ En Machine Learning, les convolutions sont principalement utilisées dans les r�
 
    **Figure 5** : Exemple de l'application d'un filtre de convolution sur un signal 1D.
 
-Dans l'exemple ci-dessus : soit le noyau $$a = [1, 2, 1]$$ aligné avec les valeurs $$b = [4, 1, 0]$$ du signal. On applique la formule $$ \sum_{i=0}^{N} a_i*b_i$$, le résultat est donc : $$4*1 + 1*2 + 0*1 = 6$$. 
+Dans l'exemple ci-dessus : soit le noyau $$a = [1, 2, 1]$$ aligné avec les valeurs $$b = [4, 1, 0]$$ du signal. On applique la formule $$ \sum_{i=0}^{N} a_i*b_i$$, le résultat est donc : $$4*1 + 1*2 + 0*1 = 6$$. Une convolution n'est donc pas plus compliquée qu'une simple somme pondérée.
 
 *Padding* - Comme on peut le voir dans les figures 5 et 6, la taille du signal convolué est inférieure à celle du signal d'origine. Cela est dû à la manière dont le filtre est appliqué, en glissant sur le signal et en ne produisant une sortie que lorsque le filtre est complètement superposé au signal. Pour compenser cette réduction de taille, il est courant d'utiliser un remplissage (padding) qui ajoute des zéros autour du signal d'origine avant d'appliquer la convolution.
 
@@ -196,7 +209,7 @@ Voici un exemple simple d'utilisation de cette classe pour appliquer une convolu
    image = torch.randn(1, 3, 64, 64)   # 1 image, 3 channels (RGB), 64×64 pixels
 
    # Définir une couche de convolution
-   conv_layer = nn.Conv2d(in_channels=1, out_channels=8, kernel_size=3, stride=1, padding=1)
+   conv_layer = nn.Conv2d(in_channels=3, out_channels=8, kernel_size=3, stride=1, padding=1)
 
    # Appliquer la convolution à l'image
    output = conv_layer(image)

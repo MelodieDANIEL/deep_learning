@@ -46,7 +46,7 @@ Ce jeu de données contient des données de fleurs, et l'objectif est de prédir
 
 4) Créez un jeu de données PyTorch à partir des données Iris et entraînez le MLP par batch de 8 en affichant la *Loss* à chaque fin d'époque.
 
-Utilisez le code suivant pour créer un DataLoader PyTorch. A vous de trouver comment créer les tenseurs *train_X* et *train_y* (lisez la documentation de *sklearn.datasets.load_iris() !). 
+Utilisez le code suivant pour créer un DataLoader PyTorch. A vous de trouver comment créer les tenseurs *train_X* et *train_y* (lisez la documentation de *sklearn.datasets.load_iris()*). 
 
 .. code-block:: python
     

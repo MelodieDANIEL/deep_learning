@@ -48,3 +48,4 @@ Sommaire
     chap2_partie2
     chap2_abs
     chap3
+    chap4
