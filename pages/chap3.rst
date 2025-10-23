@@ -117,7 +117,7 @@ En classification, la fonction de coût la plus couramment utilisée est la **Cr
 où $$C$$ est le nombre de classes, $$y_i$$ est la valeur binaire (0 ou 1) indiquant si la classe $$i$$ est la vraie classe, et $$\hat{y}_i$$ est la probabilité prédite par le modèle pour la classe $$i$$.
 
 .. slide::
-En PyTorch, la Cross-Entropy Loss est implémentée dans la classe `torch.nn.CrossEntropyLoss`, qui combine à la fois la fonction softmax et le calcul de l'entropie croisée en une seule étape pour des raisons d'efficacité numérique.
+En PyTorch, la Cross-Entropy Loss est implémentée dans la classe ``torch.nn.CrossEntropyLoss``, qui combine à la fois la fonction softmax et le calcul de l'entropie croisée en une seule étape pour des raisons d'efficacité numérique.
 Voici comment l'utiliser dans un pipeline de classification :
 .. code-block:: python
    import torch
