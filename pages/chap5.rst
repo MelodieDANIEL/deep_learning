@@ -48,12 +48,14 @@ Si la première couche cachée a 512 neurones :
 1.2. Solution : les réseaux convolutifs (CNN)
 ~~~~~~~~~~~~~~~~~~~
 
-Les réseaux de neurones convolutifs (CNN, de Convolutional Neural Networks en anglais) résolvent ces problèmes en utilisant des **convolutions** au lieu de couches entièrement connectées.
+Les réseaux de neurones convolutifs (CNN, de Convolutional Neural Networks en anglais) résolvent ces problèmes en utilisant des convolutions au lieu de couches entièrement connectées.
 
-1.2.1. Qu'est-ce qu'un filtre (ou noyau de convolution) ?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. slide::
 
-Un **filtre** (aussi appelé *kernel* ou *noyau*) est une petite matrice de poids apprenables qui sert à **détecter des motifs** dans l'image.
+1.3. Qu'est-ce qu'un filtre (ou noyau de convolution) ?
+~~~~~~~~~~~~~~~~~~~
+
+Un filtre (aussi appelé *kernel* ou *noyau*) est une petite matrice de poids apprenables qui sert à détecter des motifs dans l'image.
 
 - **Taille typique** : $$3×3$$, $$5×5$$, ou $$7×7$$ pixels
 - **Fonctionnement** : le filtre "glisse" sur toute l'image (comme un tampon qu'on déplacerait)
@@ -63,8 +65,9 @@ Un **filtre** (aussi appelé *kernel* ou *noyau*) est une petite matrice de poid
 💡 **Intuition** : imaginez que vous cherchez des visages dans une photo. Vos yeux scannent l'image en cherchant des motifs caractéristiques (deux yeux, un nez, une bouche). Les filtres font exactement la même chose, mais de manière automatique et sur des milliers de motifs différents !
 
 .. slide::
-1.2.2. À quoi servent les filtres ?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+1.4. À quoi servent les filtres ?
+~~~~~~~~~~~~~~~~~~~
 
 Chaque filtre est spécialisé dans la détection d'un type de motif :
 
@@ -80,26 +83,29 @@ Les filtres s'organisent de manière hiérarchique :
 - **Couches profondes** : détectent des objets complexes (visages, voitures, animaux)
 
 .. slide::
-1.2.3. Qu'est-ce qui détermine quel filtre fait quoi ?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-C'est l'**entraînement** qui détermine la spécialisation de chaque filtre ! Voici comment :
+
+1.5. Qu'est-ce qui détermine quel filtre fait quoi ?
+~~~~~~~~~~~~~~~~~~~
+
+C'est l'entraînement qui détermine la spécialisation de chaque filtre ! Voici comment :
 
 1. **Initialisation aléatoire** : au départ, les poids des filtres sont initialisés aléatoirement (petites valeurs proches de 0).
 
-2. **Apprentissage automatique** : pendant l'entraînement, l'algorithme de descente de gradient ajuste progressivement les poids de chaque filtre pour **minimiser l'erreur** du réseau.
+2. **Apprentissage automatique** : pendant l'entraînement, l'algorithme de descente de gradient ajuste progressivement les poids de chaque filtre pour minimiser l'erreur du réseau.
 
 3. **Spécialisation émergente** : chaque filtre "apprend" naturellement à détecter les motifs les plus utiles pour la tâche. Par exemple :
    
    - Si le réseau doit reconnaître des chats, certains filtres apprendront à détecter des oreilles pointues
    - Si c'est pour des voitures, d'autres détecteront des roues ou des phares
 
-4. **Pas de programmation manuelle** : on ne dit **jamais** explicitement à un filtre "tu dois détecter les contours verticaux". C'est le réseau qui découvre lui-même quels motifs sont importants !
+4. **Pas de programmation manuelle** : on ne dit jamais explicitement à un filtre "tu dois détecter les contours verticaux". C'est le réseau qui découvre lui-même quels motifs sont importants !
 
 💡 **Analogie** : c'est comme apprendre à reconnaître des champignons comestibles. Au début, vous ne savez pas quoi regarder. Après avoir vu des centaines d'exemples, votre cerveau apprend automatiquement à repérer les indices pertinents (couleur du chapeau, forme du pied, présence d'un anneau, etc.). Les filtres font exactement pareil !
 
 .. slide::
-1.2.4. Avantages des convolutions
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+1.6. Avantages des convolutions
+~~~~~~~~~~~~~~~~~~~
 
 1. **Partage de poids** : le même filtre est appliqué sur toute l'image, réduisant drastiquement le nombre de paramètres.
 2. **Invariance par translation** : un motif appris à un endroit peut être détecté ailleurs dans l'image (un visage reste un visage, qu'il soit en haut à gauche ou en bas à droite).
@@ -128,12 +134,13 @@ Comme nous l'avons vu au chapitre 4, une convolution 2D applique un filtre sur u
    import torch.nn as nn
 
    # Créer une couche de convolution
+   # Note : stride=1 et padding=0 sont les valeurs par défaut, on ne les écrit que si on veut une autre valeur
    conv = nn.Conv2d(
        in_channels=3,      # nombre de canaux en entrée (1 pour niveaux de gris, 3 pour RGB, 4 pour RGBA)
        out_channels=64,    # nombre de filtres à apprendre (64 détecteurs de motifs différents)
        kernel_size=3,      # taille du filtre 3×3 pixels (valeurs courantes : 3, 5, 7, etc.)
        stride=1,           # pas de déplacement du filtre (un stride de 1 déplace d'1 pixel à chaque fois et un stride de 2 divise la taille spatiale par 2)
-       padding=1           # ajout de zéros autour de l'image pour contrôler la taille de sortie (ajoute 1 pixel de zéros autour de l'image pour conserver la taille)
+       padding=1           # ajoute 1 pixel de zéros autour de l'image pour conserver la taille spatiale
    )
 
    # Exemple d'utilisation
@@ -150,13 +157,115 @@ Comme nous l'avons vu au chapitre 4, une convolution 2D applique un filtre sur u
 
    H_{out} = \left\lfloor \frac{H_{in} + 2 \times \text{padding} - \text{kernel_size}}{\text{stride}} \right\rfloor + 1
 
-Avec padding=1, kernel_size=3, stride=1 sur une image 224×224 :
+**Exemple avec padding=1, kernel_size=3, stride=1 sur une image 224×224** :
 
 .. math::
 
    H_{out} = \left\lfloor \frac{224 + 2 - 3}{1} \right\rfloor + 1 = 224
 
 La taille spatiale est préservée.
+
+.. slide::
+
+2.3 Padding
+~~~~~~~~~~~~~
+
+La visualisation ci-dessous montre ce qui se passe avec et sans padding :
+
+.. image:: images/convolution_padding_explanation.png
+   :width: 100%
+   :align: center
+   :alt: Explication visuelle du padding dans les convolutions
+
+.. slide::
+
+Avec un filtre $$3×3$$ et **padding=0** : le filtre ne peut pas se centrer sur les pixels des bords (il déborderait de l'image). C'est à dire que le filtre ne peut se centrer ni sur toute la ligne du haut, ni sur toute la ligne du bas, ni sur toute la colonne de gauche, ni sur toute la colonne de droite.
+
+**Exemple concret : image $$5×5$$ avec filtre $$3×3$$**
+
+Pour comprendre ce qui se passe, regardons le filtre $$3×3$$ qui doit se centrer sur chaque pixel :
+
+.. code-block:: text
+
+   Image 5×5 :
+   ┌───┬───┬───┬───┬───┐
+   │ X │ X │ X │ X │ X │  ← Ligne du haut : impossible (5 pixels)
+   ├───┼───┼───┼───┼───┤
+   │ X │ ✓ │ ✓ │ ✓ │ X │  ← Ligne 2 : coins impossibles, centre OK
+   ├───┼───┼───┼───┼───┤
+   │ X │ ✓ │ ✓ │ ✓ │ X │  ← Ligne 3 : coins impossibles, centre OK
+   ├───┼───┼───┼───┼───┤
+   │ X │ ✓ │ ✓ │ ✓ │ X │  ← Ligne 4 : coins impossibles, centre OK
+   ├───┼───┼───┼───┼───┤
+   │ X │ X │ X │ X │ X │  ← Ligne du bas : impossible (5 pixels)
+   └───┴───┴───┴───┴───┘
+     ↑               ↑
+   Colonne         Colonne
+   gauche          droite
+   impossible      impossible
+   (5 pixels)      (5 pixels)
+
+**⚠️ Attention à ne pas confondre deux choses différentes :**
+
+1. **Nombre de positions impossibles** = 16 pixels (toute la bordure marquée X)
+   
+   - Ligne du haut : 5 pixels
+   - Ligne du bas : 5 pixels
+   - Colonne gauche : 5 pixels (dont 2 déjà comptés dans les lignes)
+   - Colonne droite : 5 pixels (dont 2 déjà comptés dans les lignes)
+   - **Total : 5 + 5 + 3 + 3 = 16 positions impossibles**
+
+2. **Réduction des dimensions** = passer de $$5×5$$ à $$3×3$$
+   
+   - **En hauteur** : ligne du haut + ligne du bas impossibles → **on perd 2 lignes**
+   - **En largeur** : colonne gauche + colonne droite impossibles → **on perd 2 colonnes**
+   - **Résultat** : $$5×5$$ devient $$3×3$$ (image de sortie réduite)
+
+**💡 En résumé** : on a 16 pixels de bordure où le filtre ne peut pas se positionner, mais cela se traduit par une **réduction de 2 en hauteur** (5→3) et **2 en largeur** (5→3), pas par une réduction de 16 pixels au total !
+
+.. slide::
+**Formule générale** : 
+
+Pour un filtre de taille $$k×k$$, on perd :
+
+- **En hauteur** : (kernel_size - 1) lignes au total
+  
+  - $$\frac{kernel\_size - 1}{2}$$ lignes en haut
+  - $$\frac{kernel\_size - 1}{2}$$ lignes en bas
+
+- **En largeur** : (kernel_size - 1) colonnes au total
+  
+  - $$\frac{kernel\_size - 1}{2}$$ colonnes à gauche
+  - $$\frac{kernel\_size - 1}{2}$$ colonnes à droite
+
+**Exemples détaillés** :
+
+1. **Filtre $$3×3$$ sur image $$5×5$$** :
+   
+   - Perte : (3-1) = 2 en hauteur, (3-1) = 2 en largeur
+   - Détail : 1 ligne en haut + 1 ligne en bas, 1 colonne à gauche + 1 colonne à droite
+   - **Résultat** : $$5×5$$ → $$3×3$$
+   - Calcul : hauteur = 5 - 2 = 3, largeur = 5 - 2 = 3
+
+2. **Filtre $$5×5$$ sur image $$7×7$$** :
+   
+   - Perte : (5-1) = 4 en hauteur, (5-1) = 4 en largeur
+   - Détail : 2 lignes en haut + 2 lignes en bas, 2 colonnes à gauche + 2 colonnes à droite
+   - **Résultat** : $$7×7$$ → $$3×3$$
+   - Calcul : hauteur = 7 - 4 = 3, largeur = 7 - 4 = 3
+
+3. **Filtre $$5×5$$ sur image $$5×5$$** :
+   
+   - Perte : (5-1) = 4 en hauteur, (5-1) = 4 en largeur
+   - Détail : 2 lignes en haut + 2 lignes en bas, 2 colonnes à gauche + 2 colonnes à droite
+   - **Résultat** : $$5×5$$ → $$1×1$$ (un seul pixel central valide !)
+   - Calcul : hauteur = 5 - 4 = 1, largeur = 5 - 4 = 1
+
+.. warning::
+   **💡 Règle simple** : Dimensions de sortie = Dimensions d'entrée - (kernel_size - 1)
+
+   **Solution pour ne rien perdre** : le padding qui ajoute des zéros autour pour que le filtre puisse se centrer partout !
+
 
 .. slide::
 
@@ -201,19 +310,33 @@ Le max pooling divise l'image en régions de $$2×2$$ pixels et garde seulement 
 .. code-block:: text
 
    Image d'origine 4×4 :
+   ┌────┬────┬────┬────┐
+   │ 1  │ 2  │ 3  │ 4  │
+   ├────┼────┼────┼────┤
+   │ 5  │ 6  │ 7  │ 8  │
+   ├────┼────┼────┼────┤
+   │ 9  │ 10 │ 11 │ 12 │
+   ├────┼────┼────┼────┤
+   │ 13 │ 14 │ 15 │ 16 │
+   └────┴────┴────┴────┘
+
+   Découpage en 4 régions 2×2 :
    ┌─────────┬─────────┐
-   │  1   2  │  3   4  │  → région 1 : max([1,2,5,6]) = 6
-   │  5   6  │  7   8  │  → région 2 : max([3,4,7,8]) = 8
+   │  1   2  │  3   4  │  ← région 1 (haut-gauche) : max([1,2,5,6]) = 6
+   │  5   6  │  7   8  │  ← région 2 (haut-droite) : max([3,4,7,8]) = 8
    ├─────────┼─────────┤
-   │  9  10  │ 11  12  │  → région 3 : max([9,10,13,14]) = 14
-   │ 13  14  │ 15  16  │  → région 4 : max([11,12,15,16]) = 16
+   │  9  10  │ 11  12  │  ← région 3 (bas-gauche) : max([9,10,13,14]) = 14
+   │ 13  14  │ 15  16  │  ← région 4 (bas-droite) : max([11,12,15,16]) = 16
    └─────────┴─────────┘
 
    Résultat après max pooling 2×2 :
-   ┌─────────┐
-   │  6   8  │
-   │ 14  16  │
-   └─────────┘
+   ┌────┬────┐
+   │ 6  │ 8  │
+   ├────┼────┤
+   │ 14 │ 16 │
+   └────┴────┘
+   
+   Taille : 4×4 → 2×2 (divisée par 2 en hauteur et en largeur)
 
 .. slide::
 
@@ -243,10 +366,6 @@ L'average pooling calcule la moyenne de chaque région.
 Maintenant que nous avons vu les convolutions et le pooling, voici un exemple complet de CNN pour la classification d'images RGB de taille $$224×224$$ pixels en 10 classes :
 
 .. code-block:: python
-
-   import torch
-   import torch.nn as nn
-   import torch.nn.functional as F
 
    class CNNWithPooling(nn.Module):
        def __init__(self, num_classes=10):
@@ -293,7 +412,7 @@ Maintenant que nous avons vu les convolutions et le pooling, voici un exemple co
 ~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
-   
+
    # Créer et tester le modèle
    model = CNNWithPooling(num_classes=10)
    
@@ -378,20 +497,21 @@ En PyTorch, tous les tenseurs ont une dimension de batch en première position :
    images = torch.randn(32, 3, 224, 224)  # batch de 32 images RGB 224×224
 
    # Les opérations sont automatiquement appliquées sur tout le batch
+   # Exemple : Convolution SANS padding (padding=0 par défaut)
    conv = nn.Conv2d(3, 64, kernel_size=3)
-   output = conv(images)  # [32, 64, 222, 222]
+   output = conv(images)  # [32, 64, 222, 222] -> la taille diminue !
 
 **Exemple d'entraînement avec mini-batchs** :
 
 .. code-block:: python
 
    # Supposons qu'on a des données et un modèle
-   model = SimpleCNN()
+   model = CNNWithPooling()
    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
    criterion = nn.CrossEntropyLoss()
 
    # Données factices
-   images = torch.randn(100, 3, 224, 224)
+   images = torch.randn(100, 3, 224, 224) # dataset de 100 images
    labels = torch.randint(0, 10, (100,))
 
    # Paramètres
@@ -399,10 +519,11 @@ En PyTorch, tous les tenseurs ont une dimension de batch en première position :
    num_batches = len(images) // batch_size
 
    # Entraînement par mini-batchs
-   for epoch in range(10):
+   for epoch in range(5): # 5 époques
        for i in range(num_batches):
-           # Extraire un mini-batch
-           start_idx = i * batch_size
+           # Extraire un mini-batch d'images et labels dans en suivant l'ordre du dataset
+           # Attention en pratique on tire les mini-batchs de manière aléatoire
+           start_idx = i * batch_size 
            end_idx = start_idx + batch_size
            
            batch_images = images[start_idx:end_idx]
@@ -429,59 +550,120 @@ Gérer manuellement les mini-batchs comme ci-dessus devient rapidement fastidieu
 5.1. La classe Dataset
 ~~~~~~~~~~~~~~~~~~~
 
-``Dataset`` est une classe abstraite qui représente votre jeu de données. Vous devez implémenter trois méthodes :
+``Dataset`` est une classe abstraite qui représente votre jeu de données. Il existe deux approches :
+
+**Approche 1 : Utiliser TensorDataset (recommandé pour des tenseurs simples)**
+
+Si vos données sont déjà sous forme de tenseurs PyTorch, utilisez directement ``TensorDataset`` :
 
 .. code-block:: python
 
-   from torch.utils.data import Dataset
+   from torch.utils.data import TensorDataset
 
-   class CustomDataset(Dataset):
-       def __init__(self, data, labels):
-           # Initialisation du dataset
-           self.data = data
-           self.labels = labels
-       
-       def __len__(self):
-           # Retourne le nombre total d'exemples
-           return len(self.data)
-       
-       def __getitem__(self, idx):
-           # Retourne un exemple à l'indice idx
-           sample = self.data[idx]
-           label = self.labels[idx]
-           return sample, label
-
-.. slide::
-
-**Exemple concret** :
-
-.. code-block:: python
-
-   import torch
-   from torch.utils.data import Dataset
-
-   class SimpleImageDataset(Dataset):
-       def __init__(self, num_samples=1000):
-           # Générer des données factices
-           self.images = torch.randn(num_samples, 3, 64, 64)
-           self.labels = torch.randint(0, 10, (num_samples,))
-       
-       def __len__(self):
-           return len(self.images)
-       
-       def __getitem__(self, idx):
-           image = self.images[idx]
-           label = self.labels[idx]
-           return image, label
-
-   # Créer une instance
-   dataset = SimpleImageDataset(num_samples=1000)
-   print(f"Nombre d'exemples : {len(dataset)}")
+   # Créer des données factices
+   num_samples = 1000
+   images = torch.randn(num_samples, 3, 64, 64)  # 1000 images RGB 64×64
+   labels = torch.randint(0, 10, (num_samples,))  # labels de 0 à 9
+   
+   # Créer un dataset avec TensorDataset (une seule ligne !)
+   dataset = TensorDataset(images, labels)
+   
+   print(f"Nombre d'exemples : {len(dataset)}")  # 1000
    
    # Accéder à un exemple
    image, label = dataset[0]
-   print(f"Shape de l'image : {image.shape}")
-   print(f"Label : {label}")
+   print(f"Shape de l'image : {image.shape}")  # torch.Size([3, 64, 64])
+   print(f"Label : {label}")  # tensor(X) avec X entre 0 et 9
+
+💡 **Avantage** : Simple et direct, pas besoin de créer une classe personnalisée.
+
+.. slide::
+
+**Approche 2 : Créer une classe Dataset personnalisée avec transformations**
+
+Exemple complet avec chargement depuis des fichiers et application de transformations :
+
+.. code-block:: python
+
+   from torch.utils.data import Dataset
+   from torchvision import transforms
+   from PIL import Image
+   import os
+
+   class ImageFolderDataset(Dataset):
+       def __init__(self, image_paths, labels, transform=None):
+           """
+           Args:
+               image_paths: Liste des chemins vers les images
+               labels: Liste des labels correspondants
+               transform: Transformations à appliquer (optionnel)
+           """
+           self.image_paths = image_paths
+           self.labels = labels
+           self.transform = transform
+       
+       def __len__(self):
+           return len(self.image_paths)
+       
+       def __getitem__(self, idx):
+           # Charger l'image depuis le disque
+           img_path = self.image_paths[idx]
+           image = Image.open(img_path).convert('RGB')
+           label = self.labels[idx]
+           
+           # Appliquer les transformations si spécifiées
+           if self.transform:
+               image = self.transform(image)
+           
+           return image, label
+
+   # Exemple d'utilisation avec transformations
+   train_paths = ['img1.jpg', 'img2.jpg', 'img3.jpg']  # Chemins vers vos images
+   train_labels = [0, 1, 0]  # Labels correspondants
+
+   # Définir les transformations pour l'entraînement
+   train_transform = transforms.Compose([
+       transforms.Resize((224, 224)),        # Redimensionner
+       transforms.RandomHorizontalFlip(),    # Augmentation
+       transforms.ToTensor(),                # Convertir en tenseur
+       transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
+   ])
+
+   # Créer le dataset en passant les transformations
+   train_dataset = ImageFolderDataset(train_paths, train_labels, transform=train_transform)
+
+   # Utiliser le dataset
+   image, label = train_dataset[0]
+   print(image.shape)  # torch.Size([3, 224, 224])
+   
+   # Pour la validation/test, créer des transformations SANS augmentation
+   val_paths = ['val_img1.jpg', 'val_img2.jpg']  # Chemins vers vos images de validation
+   val_labels = [1, 0]  # Labels correspondants
+   
+   val_transform = transforms.Compose([
+       transforms.Resize((224, 224)),         # Redimensionner (pas d'augmentation !)
+       transforms.ToTensor(),                 # Convertir en tenseur
+       transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
+   ])
+   val_dataset = ImageFolderDataset(val_paths, val_labels, transform=val_transform)
+
+.. slide::
+**À propos des transformations** :
+
+Les transformations permettent de modifier les images avant de les donner au réseau. Elles ont deux rôles :
+
+1. **Prétraitement (toujours nécessaire)** : 
+   
+   - ``ToTensor()`` : convertit une image PIL ou numpy en tenseur PyTorch
+   - ``Normalize(mean, std)`` : centre les valeurs autour de 0 pour faciliter l'apprentissage
+
+2. **Augmentation de données (uniquement pour l'entraînement)** :
+   
+   - ``RandomHorizontalFlip()`` : retourne l'image horizontalement de manière aléatoire
+   - ``RandomRotation()`` : fait pivoter l'image d'un angle aléatoire
+   - ``ColorJitter()`` : modifie la luminosité, le contraste, etc.
+
+💡 **Pourquoi pas d'augmentation pour validation/test ?** On veut évaluer le modèle sur les vraies images, pas sur des versions modifiées artificiellement.
 
 .. slide::
 
@@ -500,15 +682,15 @@ Gérer manuellement les mini-batchs comme ci-dessus devient rapidement fastidieu
    from torch.utils.data import DataLoader
 
    # Créer le dataset
-   dataset = SimpleImageDataset(num_samples=1000)
+   ...
 
    # Créer le dataloader
    dataloader = DataLoader(
        dataset,
        batch_size=32,        # taille des batchs
-       shuffle=True,         # mélanger les données
-       num_workers=4,        # nombre de processus pour le chargement
-       drop_last=False       # garder ou non le dernier batch incomplet
+       shuffle=True,         # mélanger les données à chaque epoch (recommandé pour l'entraînement)
+       num_workers=4,        # nombre de processus parallèles pour charger les données (0 = chargement dans le processus principal, >0 = chargement en parallèle pour accélérer)
+       drop_last=True       # si True, ignore le dernier batch s'il est incomplet (utile quand la taille du batch doit être fixe, par exemple pour le batch normalization)
    )
 
    # Itération sur les batchs
@@ -518,101 +700,76 @@ Gérer manuellement les mini-batchs comme ci-dessus devient rapidement fastidieu
 
 .. slide::
 
-5.3. Exemple complet d'entraînement avec Dataset et DataLoader
+5.3. Diviser en ensembles d'entraînement et de validation
 ~~~~~~~~~~~~~~~~~~~
+
+Avant de créer des DataLoaders, il est essentiel de bien diviser vos données en trois ensembles distincts : **train**, **validation** et **test**.
+
+PyTorch fournit ``random_split`` qui divise automatiquement un dataset et mélange les données :
 
 .. code-block:: python
 
-   import torch
-   import torch.nn as nn
-   import torch.optim as optim
-   from torch.utils.data import Dataset, DataLoader
-
-   # 1. Définir le Dataset
-   class MyDataset(Dataset):
-       def __init__(self, num_samples=1000):
-           self.data = torch.randn(num_samples, 3, 64, 64)
-           self.labels = torch.randint(0, 10, (num_samples,))
-       
-       def __len__(self):
-           return len(self.data)
-       
-       def __getitem__(self, idx):
-           return self.data[idx], self.labels[idx]
-
-   # 2. Créer les datasets (train et validation)
-   train_dataset = MyDataset(num_samples=800)
-   val_dataset = MyDataset(num_samples=200)
-
-   # 3. Créer les dataloaders
+   from torch.utils.data import TensorDataset, random_split
+   
+   # 1. Créer ou charger toutes les données
+   all_images = torch.randn(1000, 3, 64, 64)
+   all_labels = torch.randint(0, 10, (1000,))
+   
+   # 2. Créer un dataset avec toutes les données
+   full_dataset = TensorDataset(all_images, all_labels)
+   
+   # 3. Définir les tailles de chaque ensemble (70% train, 15% val, 15% test)
+   train_size = int(0.70 * len(full_dataset))  # 700
+   val_size = int(0.15 * len(full_dataset))     # 150
+   test_size = len(full_dataset) - train_size - val_size  # 150
+   
+   # 4. Diviser le dataset automatiquement (avec mélange aléatoire)
+   train_dataset, val_dataset, test_dataset = random_split(
+       full_dataset,
+       [train_size, val_size, test_size]
+   )
+   
+   # 5. Créer les DataLoaders
+   # shuffle=True pour train : mélanger les données à chaque epoch évite que le modèle apprenne l'ordre des exemples
+   # shuffle=False pour val/test : l'ordre n'a pas d'importance pour l'évaluation, et garder le même ordre permet de reproduire les résultats
    train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
    val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False)
+   test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
+   
+   print(f"Train: {len(train_dataset)} exemples, {len(train_loader)} batches")
+   print(f"Validation: {len(val_dataset)} exemples, {len(val_loader)} batches")
+   print(f"Test: {len(test_dataset)} exemples, {len(test_loader)} batches")
 
-   # 4. Définir le modèle
-   class SimpleCNN(nn.Module):
-       def __init__(self):
-           super().__init__()
-           self.net = nn.Sequential(
-               nn.Conv2d(3, 16, kernel_size=3, padding=1),
-               nn.ReLU(),
-               nn.MaxPool2d(2, 2),
-               nn.Conv2d(16, 32, kernel_size=3, padding=1),
-               nn.ReLU(),
-               nn.MaxPool2d(2, 2),
-               nn.Flatten(),
-               nn.Linear(32 * 16 * 16, 128),
-               nn.ReLU(),
-               nn.Linear(128, 10)
-           )
-       
-       def forward(self, x):
-           return self.net(x)
+💡 **Avantages** : ``random_split`` mélange automatiquement les données et crée des sous-ensembles du dataset original sans dupliquer les données en mémoire.
 
-   model = SimpleCNN()
-   criterion = nn.CrossEntropyLoss()
-   optimizer = optim.Adam(model.parameters(), lr=0.001)
+.. slide::
 
-   # 5. Boucle d'entraînement
-   num_epochs = 5
+**À quoi servent ces trois ensembles ?**
 
-   for epoch in range(num_epochs):
-       # Phase d'entraînement
-       model.train()
-       train_loss = 0.0
-       
-       for images, labels in train_loader:
-           # Forward
-           outputs = model(images)
-           loss = criterion(outputs, labels)
-           
-           # Backward
-           optimizer.zero_grad()
-           loss.backward()
-           optimizer.step()
-           
-           train_loss += loss.item()
-       
-       # Phase de validation
-       model.eval()
-       val_loss = 0.0
-       correct = 0
-       total = 0
-       
-       with torch.no_grad():
-           for images, labels in val_loader:
-               outputs = model(images)
-               loss = criterion(outputs, labels)
-               val_loss += loss.item()
-               
-               _, predicted = torch.max(outputs, 1)
-               total += labels.size(0)
-               correct += (predicted == labels).sum().item()
-       
-       # Affichage
-       print(f"Epoch {epoch+1}/{num_epochs}")
-       print(f"  Train Loss: {train_loss/len(train_loader):.4f}")
-       print(f"  Val Loss: {val_loss/len(val_loader):.4f}")
-       print(f"  Val Accuracy: {100*correct/total:.2f}%")
+1. **Train (70-80%)** : Utilisé pour entraîner le modèle
+   
+   - Calcul du gradient et mise à jour des poids
+   - Apprentissage des patterns dans les données
+
+2. **Validation (10-15%)** : Utilisé pendant l'entraînement pour :
+   
+   - Surveiller les performances sur des données non vues
+   - Détecter le surapprentissage (overfitting)
+   - Choisir les meilleurs hyperparamètres
+   - Décider quand arrêter l'entraînement
+   - Sauvegarder le meilleur modèle
+
+3. **Test (10-15%)** : Utilisé **uniquement à la fin** pour :
+   
+   - Évaluer les performances finales du modèle
+   - Obtenir des métriques non biaisées
+   - Tester sur des données complètement nouvelles
+
+.. warning::
+
+   ⚠️ **Ne JAMAIS utiliser le test set pendant l'entraînement !**
+   
+   Le test set doit rester totalement invisible jusqu'à l'évaluation finale, sinon vous risquez de sur-optimiser votre modèle sur ces données (data leakage).
 
 .. slide::
 
@@ -625,7 +782,7 @@ PyTorch fournit de nombreux datasets prêts à l'emploi dans ``torchvision.datas
 
    from torchvision import datasets, transforms
 
-   # MNIST (chiffres manuscrits)
+   # MNIST (chiffres manuscrits 0-9 en noir et blanc, images 28×28)
    mnist_train = datasets.MNIST(
        root='./data',
        train=True,
@@ -633,7 +790,7 @@ PyTorch fournit de nombreux datasets prêts à l'emploi dans ``torchvision.datas
        transform=transforms.ToTensor()
    )
 
-   # CIFAR-10 (images naturelles, 10 classes)
+   # CIFAR-10 (images naturelles en couleur 32×32, 10 classes : avion, voiture, oiseau, chat, cerf, chien, grenouille, cheval, bateau, camion)
    cifar_train = datasets.CIFAR10(
        root='./data',
        train=True,
@@ -654,7 +811,7 @@ PyTorch fournit de nombreux datasets prêts à l'emploi dans ``torchvision.datas
 📖 6. Sauvegarder et charger les poids d'un modèle
 ----------------------
 
-Après avoir entraîné un modèle pendant des heures (voire des jours), il est essentiel de pouvoir sauvegarder son état pour le réutiliser plus tard sans avoir à tout ré-entraîner.
+Après avoir entraîné un modèle pendant des heures, il est essentiel de pouvoir sauvegarder son état pour le réutiliser plus tard sans avoir à tout ré-entraîner. Il est aussi possible de sauvegarder périodiquement pendant l'entraînement pour éviter de tout perdre en cas d'interruption. Aussi on peut reprendre l'entraînement plus tard. 
 
 6.1. Sauvegarder un modèle complet
 ~~~~~~~~~~~~~~~~~~~
@@ -668,7 +825,7 @@ PyTorch offre deux approches pour sauvegarder un modèle :
    import torch
 
    # Entraînement du modèle
-   model = SimpleCNN()
+   model = CNNWithPooling(num_classes=10)
    # ... entraînement ...
 
    # Sauvegarder le modèle complet
@@ -693,7 +850,7 @@ PyTorch offre deux approches pour sauvegarder un modèle :
    torch.save(model.state_dict(), 'model_weights.pth')
 
    # Charger les poids
-   model = SimpleCNN()  # créer d'abord une instance du modèle
+   model = CNNWithPooling(num_classes=10)  # créer d'abord une instance du modèle
    model.load_state_dict(torch.load('model_weights.pth'))
    model.eval()
 
@@ -702,6 +859,19 @@ PyTorch offre deux approches pour sauvegarder un modèle :
 - Plus flexible : on peut modifier légèrement l'architecture
 - Fichier plus léger
 - Meilleure pratique recommandée par PyTorch
+
+.. code-block:: python
+
+   # Exemple : charger des poids dans un modèle avec architecture modifiée
+   torch.save(model.state_dict(), 'model_10classes.pth')  # modèle avec 10 classes
+   
+   new_model = CNNWithPooling(num_classes=5)  # nouveau modèle avec 5 classes
+   state_dict = torch.load('model_10classes.pth')
+   del state_dict['fc2.weight'], state_dict['fc2.bias']  # supprimer les poids incompatibles
+   new_model.load_state_dict(state_dict, strict=False)  # charger en ignorant les couches manquantes
+
+.. warning::
+   **⚠️ Attention** : modifier l'architecture et charger partiellement les poids avec ``strict=False`` est dangereux ! Vous risquez de créer des incohérences dans le modèle. À éviter sauf si vous savez exactement ce que vous faites.
 
 .. slide::
 
@@ -722,7 +892,7 @@ Pour reprendre l'entraînement exactement où vous l'aviez arrêté, sauvegardez
    torch.save(checkpoint, 'checkpoint.pth')
 
    # Charger et reprendre l'entraînement
-   model = SimpleCNN()
+   model = CNNWithPooling(num_classes=10)
    optimizer = torch.optim.Adam(model.parameters())
 
    checkpoint = torch.load('checkpoint.pth')
@@ -733,109 +903,44 @@ Pour reprendre l'entraînement exactement où vous l'aviez arrêté, sauvegardez
 
    model.train()  # reprendre l'entraînement
 
-.. slide::
-
-6.4. Exemple complet avec sauvegarde automatique
-~~~~~~~~~~~~~~~~~~~
+**Variante : Sauvegarder à chaque epoch**
 
 .. code-block:: python
 
-   import torch
-   import torch.nn as nn
-   import torch.optim as optim
-   from torch.utils.data import DataLoader
    import os
-
-   # Configuration
-   model = SimpleCNN()
-   optimizer = optim.Adam(model.parameters(), lr=0.001)
-   criterion = nn.CrossEntropyLoss()
-   train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
-
-   # Créer un dossier pour les checkpoints
    os.makedirs('checkpoints', exist_ok=True)
-
-   # Variables pour sauvegarder le meilleur modèle
-   best_val_loss = float('inf')
-
-   # Entraînement avec sauvegarde
+   
+   # Boucle d'entraînement avec sauvegarde à chaque epoch
    for epoch in range(num_epochs):
        model.train()
-       train_loss = 0.0
+       # ... entraînement ...
        
-       for images, labels in train_loader:
-           outputs = model(images)
-           loss = criterion(outputs, labels)
-           
-           optimizer.zero_grad()
-           loss.backward()
-           optimizer.step()
-           
-           train_loss += loss.item()
-       
-       # Validation
-       model.eval()
-       val_loss = 0.0
-       with torch.no_grad():
-           for images, labels in val_loader:
-               outputs = model(images)
-               loss = criterion(outputs, labels)
-               val_loss += loss.item()
-       
-       val_loss /= len(val_loader)
-       
-       # Sauvegarder si c'est le meilleur modèle
-       if val_loss < best_val_loss:
-           best_val_loss = val_loss
-           torch.save({
-               'epoch': epoch,
-               'model_state_dict': model.state_dict(),
-               'optimizer_state_dict': optimizer.state_dict(),
-               'val_loss': val_loss,
-           }, 'checkpoints/best_model.pth')
-           print(f"✓ Nouveau meilleur modèle sauvegardé (val_loss: {val_loss:.4f})")
-       
-       # Sauvegarder un checkpoint régulier tous les 10 epochs
-       if (epoch + 1) % 10 == 0:
-           torch.save({
-               'epoch': epoch,
-               'model_state_dict': model.state_dict(),
-               'optimizer_state_dict': optimizer.state_dict(),
-           }, f'checkpoints/checkpoint_epoch_{epoch+1}.pth')
-
-   print(f"Entraînement terminé. Meilleure val_loss: {best_val_loss:.4f}")
-
-.. slide::
-
-6.5. Utiliser un modèle sauvegardé pour l'inférence
-~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: python
-
-   import torch
-
-   # Définir la classe du modèle (doit être identique)
-   class SimpleCNN(nn.Module):
-       # ... définition du modèle ...
+       # Sauvegarder à chaque epoch
+       checkpoint = {
+           'epoch': epoch,
+           'model_state_dict': model.state_dict(),
+           'optimizer_state_dict': optimizer.state_dict(),
+           'train_loss': train_loss,
+           'val_loss': val_loss,
+       }
+       torch.save(checkpoint, f'checkpoints/checkpoint_epoch_{epoch}.pth')
+   
+   # Reprendre depuis un epoch spécifique (par exemple epoch 5)
+   checkpoint = torch.load('checkpoints/checkpoint_epoch_5.pth')
+   model.load_state_dict(checkpoint['model_state_dict'])
+   optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+   start_epoch = checkpoint['epoch'] + 1  # reprendre à l'epoch suivant
+   
+   # Continuer l'entraînement
+   for epoch in range(start_epoch, num_epochs):
+       # ... suite de l'entraînement ...
        pass
 
-   # Charger le meilleur modèle
-   model = SimpleCNN()
-   checkpoint = torch.load('checkpoints/best_model.pth')
-   model.load_state_dict(checkpoint['model_state_dict'])
-   model.eval()
-
-   # Passer le modèle sur GPU si disponible
-   device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-   model = model.to(device)
-
-   # Faire des prédictions
-   with torch.no_grad():
-       for images, labels in test_loader:
-           images = images.to(device)
-           outputs = model(images)
-           _, predicted = torch.max(outputs, 1)
-           # ... traiter les prédictions ...
+#######################################################################
+########################Stop ici pour le moment########################
+########################Stop ici pour le moment########################
+########################Stop ici pour le moment########################
+#######################################################################
 
 .. slide::
 
@@ -996,37 +1101,6 @@ Voici le pipeline standard pour entraîner un CNN avec toutes les techniques vue
 
 .. slide::
 
-7.3. Checklist avant de lancer un entraînement
-~~~~~~~~~~~~~~~~~~~
-
-✅ **Données** :
-
-- [ ] Dataset implémenté correctement (``__len__`` et ``__getitem__``)
-- [ ] Données normalisées (mean=0, std=1)
-- [ ] Train/val/test bien séparés
-- [ ] DataLoader créés avec la bonne batch_size
-
-✅ **Modèle** :
-
-- [ ] Architecture adaptée au problème
-- [ ] Modèle déplacé sur le bon device (CPU/GPU)
-- [ ] Taille des tenseurs vérifiée à chaque couche
-
-✅ **Entraînement** :
-
-- [ ] Loss function appropriée
-- [ ] Optimiseur configuré avec un bon learning rate
-- [ ] ``optimizer.zero_grad()`` appelé avant chaque backward
-- [ ] ``model.train()`` et ``model.eval()`` utilisés correctement
-
-✅ **Monitoring** :
-
-- [ ] Loss affichée régulièrement
-- [ ] Métriques de validation calculées
-- [ ] Meilleur modèle sauvegardé
-
-.. slide::
-
 🏋️ Travaux Pratiques 5
 --------------------
 
@@ -1043,3 +1117,5 @@ Voici le pipeline standard pour entraîner un CNN avec toutes les techniques vue
 ########################Stop ici pour le moment########################
 ########################Stop ici pour le moment########################
 #######################################################################
+
+A un moment il fautdra donner un exemple entier.
