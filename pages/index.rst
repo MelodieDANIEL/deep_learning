@@ -49,3 +49,4 @@ Sommaire
     chap2_abs
     chap3
     chap4
+    chap5
