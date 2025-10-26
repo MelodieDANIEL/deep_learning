@@ -28,7 +28,7 @@ Dans les chapitres précédents, nous avons utilisé des perceptrons multi-couch
 1.1. Limitations des MLP pour les images
 ~~~~~~~~~~~~~~~~~~~
 
-Imaginons une image en couleur de taille $$224×224$$ pixels. Si on "aplatit" (avec ``flatten`` par exemple) cette image pour la donner à un MLP :
+Imaginons une image en couleur de taille $$224×224$$ pixels. Si on "aplatit" (avec ``flatten`` ou ``view`` par exemple) cette image pour la donner à un MLP :
 
 - Chaque pixel RGB → 3 valeurs
 - Total d'entrées : $$224 \times 224 \times 3 = 150528$$ valeurs
@@ -172,7 +172,7 @@ Les couches de pooling permettent de réduire progressivement la taille spatiale
 3.1. Max Pooling
 ~~~~~~~~~~~~~~~~~~~
 
-Le max pooling prend le maximum dans chaque région. C'est le type de pooling le plus utilisé.
+Le max pooling prend le maximum dans chaque région. C'est le type de pooling le plus utilisé car il préserve mieux les caractéristiques importantes (contours, textures).
 
 .. code-block:: python
 
@@ -237,36 +237,10 @@ L'average pooling calcule la moyenne de chaque région.
 
 .. slide::
 
-3.3. Utilisation dans un réseau
+3.3. Exemple d'un CNN qui peut-être utilisé pour la classification d'images
 ~~~~~~~~~~~~~~~~~~~
 
-.. code-block:: python
-
-   class CNNWithPooling(nn.Module):
-       def __init__(self):
-           super(CNNWithPooling, self).__init__()
-           self.conv1 = nn.Conv2d(3, 32, kernel_size=3, padding=1)
-           self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
-           self.conv2 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
-           self.fc = nn.Linear(64 * 56 * 56, 10)
-       
-       def forward(self, x):
-           x = F.relu(self.conv1(x))  # [batch, 32, 224, 224]
-           x = self.pool(x)            # [batch, 32, 112, 112]
-           x = F.relu(self.conv2(x))  # [batch, 64, 112, 112]
-           x = self.pool(x)            # [batch, 64, 56, 56]
-           x = x.view(x.size(0), -1)
-           x = self.fc(x)
-           return x
-
-**💡 Astuce** : le max pooling est généralement préféré car il préserve mieux les caractéristiques importantes (contours, textures).
-
-.. slide::
-
-3.4. Exemple complet : CNN avec convolution et pooling
-~~~~~~~~~~~~~~~~~~~
-
-Maintenant que nous avons vu les convolutions et le pooling, voici un exemple complet de CNN pour la classification d'images :
+Maintenant que nous avons vu les convolutions et le pooling, voici un exemple complet de CNN pour la classification d'images RGB de taille $$224×224$$ pixels en 10 classes :
 
 .. code-block:: python
 
@@ -274,9 +248,9 @@ Maintenant que nous avons vu les convolutions et le pooling, voici un exemple co
    import torch.nn as nn
    import torch.nn.functional as F
 
-   class SimpleCNN(nn.Module):
+   class CNNWithPooling(nn.Module):
        def __init__(self, num_classes=10):
-           super(SimpleCNN, self).__init__()
+           super(CNNWithPooling, self).__init__()
            
            # Première couche convolutive : 3 canaux → 32 filtres
            self.conv1 = nn.Conv2d(3, 32, kernel_size=3, padding=1)
@@ -292,14 +266,19 @@ Maintenant que nous avons vu les convolutions et le pooling, voici un exemple co
            # x: [batch_size, 3, 224, 224] - image RGB d'entrée
            
            # Bloc 1 : Convolution + ReLU + Max Pooling
-           x = F.relu(self.conv1(x))      # [batch, 32, 224, 224] - applique 32 filtres
-           x = F.max_pool2d(x, 2)          # [batch, 32, 112, 112] - divise la taille par 2
+           x = F.relu(self.conv1(x))           # [batch, 32, 224, 224] - applique 32 filtres
+           x = F.max_pool2d(x, kernel_size=2)  # [batch, 32, 112, 112] - divise la taille par 2
+           # Quand on ne précise pas le stride, PyTorch utilise par défaut la même valeur que kernel_size, donc ici stride=2 également.
            
            # Bloc 2 : Convolution + ReLU + Max Pooling
-           x = F.relu(self.conv2(x))      # [batch, 64, 112, 112] - applique 64 filtres
-           x = F.max_pool2d(x, 2)          # [batch, 64, 56, 56] - divise encore par 2
+           x = F.relu(self.conv2(x))           # [batch, 64, 112, 112] - applique 64 filtres
+           x = F.max_pool2d(x, kernel_size=2)  # [batch, 64, 56, 56] - divise encore par 2
            
            # Aplatir les features maps pour les couches fully-connected
+           # Note : on peut utiliser view() plutôt que flatten() pour plus de contrôle
+           # - x.view(x.size(0), -1) : préserve la dimension du batch, aplatit le reste
+           # - x.flatten(1) : équivalent mais moins explicite (le 1 signifie "à partir de la dimension 1")
+           # - Le -1 signifie "calcule automatiquement cette dimension"
            x = x.view(x.size(0), -1)       # [batch, 64*56*56] = [batch, 200704]
            
            # Classification avec couches fully-connected
@@ -308,8 +287,15 @@ Maintenant que nous avons vu les convolutions et le pooling, voici un exemple co
            
            return x
 
+.. slide::
+
+3.4. Création et test du modèle
+~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+   
    # Créer et tester le modèle
-   model = SimpleCNN(num_classes=10)
+   model = CNNWithPooling(num_classes=10)
    
    # Afficher l'architecture
    print(model)
@@ -320,15 +306,18 @@ Maintenant que nous avons vu les convolutions et le pooling, voici un exemple co
    print(f"Input shape: {x.shape}")
    print(f"Output shape: {output.shape}")  # torch.Size([4, 10])
 
-**📊 Analyse du modèle** :
+.. warning::
 
-- **Entrée** : images 224×224 RGB (3 canaux)
-- **Après conv1 + pool** : 32 feature maps de 112×112
-- **Après conv2 + pool** : 64 feature maps de 56×56
-- **Après aplatissement** : vecteur de 200 704 valeurs
-- **Sortie** : 10 scores (un par classe)
-
-Ce modèle réduit progressivement la taille spatiale tout en augmentant le nombre de canaux, ce qui est le pattern typique des CNN.
+   ⚠️ **Adaptation nécessaire selon vos données**
+   
+   Ce modèle est conçu pour des **images RGB de taille 224×224 pixels**. 
+   
+   Si vos images ont une **taille différente**, vous devez adapter la première couche fully-connected :
+   
+   - Utilisez la formule : ``nn.Linear(nombre_de_filtres * (H_final) * (W_final), ...)``
+   - Où ``H_final`` et ``W_final`` sont les dimensions spatiales après toutes les convolutions et poolings
+   
+   💡 **Astuce** : Pour connaître la taille exacte, ajoutez ``print(x.shape)`` juste avant ``x.view()`` dans la méthode ``forward()``.
 
 .. slide::
 
