@@ -1,6 +1,6 @@
 .. slide::
 
-Chapitre 5 — Techniques avancées et bonnes pratiques PyTorch
+Chapitre 5 — Classification d'images avec CNN
 ================
 
 🎯 Objectifs du Chapitre
@@ -944,7 +944,7 @@ Pour reprendre l'entraînement exactement où vous l'aviez arrêté, sauvegardez
 
 .. slide::
 
-📖 7. Récapitulatif et bonnes pratiques
+📖 7. Récapitulatif 
 ----------------------
 
 7.1. Pipeline complet d'entraînement
@@ -958,19 +958,38 @@ Voici le pipeline standard pour entraîner un CNN avec toutes les techniques vue
    import torch.nn as nn
    import torch.optim as optim
    from torch.utils.data import Dataset, DataLoader
+   from torchvision import transforms
+   from PIL import Image
    import os
+   from torch.utils.data import random_split
 
    # 1. Définir le Dataset
    class CustomDataset(Dataset):
-       def __init__(self, data_path, transform=None):
-           # Charger vos données
-           pass
+       def __init__(self, image_paths, labels, transform=None):
+           """
+           Args:
+               image_paths: Liste des chemins vers les images
+               labels: Liste des labels correspondants
+               transform: Transformations à appliquer (optionnel)
+           """
+           self.image_paths = image_paths
+           self.labels = labels
+           self.transform = transform
        
        def __len__(self):
-           return len(self.data)
+           return len(self.image_paths)
        
        def __getitem__(self, idx):
-           return self.data[idx], self.labels[idx]
+           # Charger l'image depuis le disque
+           img_path = self.image_paths[idx]
+           image = Image.open(img_path).convert('RGB')
+           label = self.labels[idx]
+           
+           # Appliquer les transformations si spécifiées
+           if self.transform:
+               image = self.transform(image)
+           
+           return image, label
 
    # 2. Définir le modèle avec convolutions et pooling
    class CNN(nn.Module):
@@ -989,11 +1008,61 @@ Voici le pipeline standard pour entraîner un CNN avec toutes les techniques vue
            return x
 
    # 3. Préparer les données avec DataLoader
-   train_dataset = CustomDataset('train_data')
-   train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True, num_workers=4)
+   # Définir les transformations
+   train_transform = transforms.Compose([
+       transforms.Resize((64, 64)),
+       transforms.RandomHorizontalFlip(),
+       transforms.ToTensor(),
+       transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
+   ])
    
-   val_dataset = CustomDataset('val_data')
+   val_transform = transforms.Compose([
+       transforms.Resize((64, 64)),
+       transforms.ToTensor(),
+       transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
+   ])
+   
+   # Charger toutes les données (à adapter selon votre cas)
+   all_paths = None # Il faut spécifier le chemin, par exemple : ['path/img/image1.jpg', 'path/img/image2.jpg', ...].
+   all_labels = None # Il  faut spécifier le chemin, par exemple : [0, 1, 2, ...].
+
+   # Créer le dataset complet
+   full_dataset = CustomDataset(all_paths, all_labels, transform=None)
+   
+   # Diviser le dataset, par exemple, en train (70%), validation (15%) et test (15%)
+   
+   train_size = int(0.70 * len(full_dataset))
+   val_size = int(0.15 * len(full_dataset))
+   test_size = len(full_dataset) - train_size - val_size
+   
+   train_dataset, val_dataset, test_dataset = random_split(
+       full_dataset,
+       [train_size, val_size, test_size]
+   )
+   
+   # Appliquer les transformations appropriées à chaque subset
+   # Note: random_split crée des Subset qui utilisent le transform du dataset parent
+   # Pour des transformations différentes, on doit créer les datasets séparément:
+   train_dataset = CustomDataset(
+       all_paths[:train_size], 
+       all_labels[:train_size], 
+       transform=train_transform
+   )
+   val_dataset = CustomDataset(
+       all_paths[train_size:train_size+val_size],
+       all_labels[train_size:train_size+val_size],
+       transform=val_transform
+   )
+   test_dataset = CustomDataset(
+       all_paths[train_size+val_size:],
+       all_labels[train_size+val_size:],
+       transform=val_transform  # pas d'augmentation pour test comme pour val
+   )
+   
+   # Créer les DataLoaders
+   train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True, num_workers=4)
    val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False)
+   test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
 
    # 4. Initialiser le modèle, la loss et l'optimiseur
    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -1006,7 +1075,7 @@ Voici le pipeline standard pour entraîner un CNN avec toutes les techniques vue
    best_val_loss = float('inf')
 
    # 6. Boucle d'entraînement
-   num_epochs = 50
+   num_epochs = None # il faut mettre un nombre d'epoch, par exemple : 50
    
    for epoch in range(num_epochs):
        # PHASE D'ENTRAÎNEMENT
@@ -1069,7 +1138,74 @@ Voici le pipeline standard pour entraîner un CNN avec toutes les techniques vue
 
 .. slide::
 
-7.2. Bonnes pratiques
+7.2. Pipeline complet d'inférence (test final)
+~~~~~~~~~~~
+
+Après l'entraînement, évaluez le modèle sur le test set pour obtenir les performances finales :
+
+.. code-block:: python
+
+   # 7. PHASE D'INFÉRENCE - Évaluation finale sur le test set
+   
+   # Charger le meilleur modèle sauvegardé
+   checkpoint = torch.load('checkpoints/best_model.pth')
+   model.load_state_dict(checkpoint['model_state_dict'])
+   print(f"Meilleur modèle chargé (epoch {checkpoint['epoch']}, val_loss: {checkpoint['val_loss']:.4f})")
+   
+   # Passer en mode évaluation
+   model.eval()
+   
+   # Évaluation sur le test set
+   test_loss = 0.0
+   correct = 0
+   total = 0
+   all_predictions = []
+   all_labels = []
+   
+   with torch.no_grad():
+       for images, labels in test_loader:
+           images, labels = images.to(device), labels.to(device)
+           
+           # Forward pass
+           outputs = model(images)
+           loss = criterion(outputs, labels)
+           test_loss += loss.item()
+           
+           # Prédictions
+           _, predicted = torch.max(outputs, 1)
+           total += labels.size(0)
+           correct += (predicted == labels).sum().item()
+           
+           # Sauvegarder pour analyse détaillée (optionnel)
+           all_predictions.extend(predicted.cpu().numpy())
+           all_labels.extend(labels.cpu().numpy())
+   
+   # Calcul des métriques finales
+   test_loss /= len(test_loader)
+   test_acc = 100 * correct / total
+   
+   print("\n" + "="*50)
+   print("RÉSULTATS FINAUX SUR LE TEST SET")
+   print("="*50)
+   print(f"Test Loss: {test_loss:.4f}")
+   print(f"Test Accuracy: {test_acc:.2f}%")
+   print(f"Erreurs: {total - correct}/{total}")
+   print("="*50)
+   
+   # Optionnel : Matrice de confusion et rapport de classification
+   from sklearn.metrics import classification_report, confusion_matrix
+   import numpy as np
+   
+   print("\nRapport de classification:")
+   print(classification_report(all_labels, all_predictions))
+   
+   print("\nMatrice de confusion:")
+   cm = confusion_matrix(all_labels, all_predictions)
+   print(cm)
+
+.. slide::
+
+7.3. Bonnes pratiques
 ~~~~~~~~~~~~~~~~~~~
 
 **Organisation des données** :
@@ -1107,15 +1243,3 @@ Voici le pipeline standard pour entraîner un CNN avec toutes les techniques vue
 .. toctree::
 
     TP_chap5
-
-
-
-
-
-#######################################################################
-########################Stop ici pour le moment########################
-########################Stop ici pour le moment########################
-########################Stop ici pour le moment########################
-#######################################################################
-
-A un moment il fautdra donner un exemple entier.
