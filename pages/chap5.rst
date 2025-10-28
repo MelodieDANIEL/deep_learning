@@ -936,12 +936,6 @@ Pour reprendre l'entraînement exactement où vous l'aviez arrêté, sauvegardez
        # ... suite de l'entraînement ...
        pass
 
-#######################################################################
-########################Stop ici pour le moment########################
-########################Stop ici pour le moment########################
-########################Stop ici pour le moment########################
-#######################################################################
-
 .. slide::
 
 📖 7. Récapitulatif 
