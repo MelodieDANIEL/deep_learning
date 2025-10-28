@@ -1,1023 +1,648 @@
+🏋️ Travaux Pratiques 5
+=========================
 .. slide::
-
-TP Chapitre 5 - Classification d'images avec CNN
-================
-
-🎯 Objectifs du TP
-----------------------
-
-.. important::
-
-   Dans ce TP, vous allez :
-
-   - Implémenter un réseau de neurones convolutif (CNN)
-   - Utiliser les datasets et dataloaders PyTorch
-   - Entraîner un modèle sur le dataset CIFAR-10
-   - Comparer les performances d'un MLP et d'un CNN
-   - Sauvegarder et charger des modèles entraînés
-   - Expérimenter avec différentes architectures
+Sur cette page se trouvent des exercices de TP sur le Chapitre 5. Ils sont classés par niveau de difficulté :
+.. discoverList::
+    * Facile : 🍀
+    * Moyen : ⚖️
+    * Difficile : 🌶️
 
 .. slide::
+🍀 Exercice 1 : Premier CNN pour la classification de chiffres
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-📋 Exercice 1 : Préparation des données (🍀)
-----------------------
+Dans cet exercice, vous allez créer un réseau de neurones convolutif (CNN) pour classifier des chiffres manuscrits du dataset MNIST.
 
-**Objectif** : Charger et préparer le dataset CIFAR-10
+**Objectif :** Comprendre la différence entre un MLP classique et un CNN sur des images.
 
-CIFAR-10 est un dataset célèbre contenant 60 000 images couleur 32×32 réparties en 10 classes :
-avion, voiture, oiseau, chat, cerf, chien, grenouille, cheval, bateau, camion.
-
-1.1. Charger CIFAR-10
-~~~~~~~~~~~~~~~~~~~
-
-Créez un fichier ``tp5_preparation.py`` et implémentez le code suivant :
+On va travailler avec les données MNIST :
 
 .. code-block:: python
 
-   import torch
-   import torchvision
-   import torchvision.transforms as transforms
-   import matplotlib.pyplot as plt
-   import numpy as np
-
-   # Transformations pour normaliser les données
-   transform = transforms.Compose([
-       transforms.ToTensor(),
-       transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-   ])
-
-   # Télécharger et charger les données d'entraînement
-   trainset = torchvision.datasets.CIFAR10(
-       root='./data',
-       train=True,
-       download=True,
-       transform=transform
-   )
-
-   # Télécharger et charger les données de test
-   testset = torchvision.datasets.CIFAR10(
-       root='./data',
-       train=False,
-       download=True,
-       transform=transform
-   )
-
-   # Créer les DataLoaders
-   trainloader = torch.utils.data.DataLoader(
-       trainset,
-       batch_size=64,
-       shuffle=True,
-       num_workers=2
-   )
-
-   testloader = torch.utils.data.DataLoader(
-       testset,
-       batch_size=64,
-       shuffle=False,
-       num_workers=2
-   )
-
-   # Les 10 classes de CIFAR-10
-   classes = ('avion', 'voiture', 'oiseau', 'chat', 'cerf',
-              'chien', 'grenouille', 'cheval', 'bateau', 'camion')
-
-   print(f"Nombre d'images d'entraînement : {len(trainset)}")
-   print(f"Nombre d'images de test : {len(testset)}")
-
-.. slide::
-
-1.2. Visualiser les données
-~~~~~~~~~~~~~~~~~~~
-
-Ajoutez une fonction pour visualiser quelques images :
-
-.. code-block:: python
-
-   def imshow(img):
-       """Fonction pour afficher une image"""
-       img = img / 2 + 0.5     # dénormaliser
-       npimg = img.numpy()
-       plt.imshow(np.transpose(npimg, (1, 2, 0)))
-       plt.show()
-
-   # Obtenir un batch d'images d'entraînement
-   dataiter = iter(trainloader)
-   images, labels = next(dataiter)
-
-   # Afficher les images
-   imshow(torchvision.utils.make_grid(images[:8]))
-   # Afficher les labels
-   print(' '.join(f'{classes[labels[j]]:5s}' for j in range(8)))
-
-**Questions** :
-
-1. Quelle est la forme d'un batch d'images ?
-2. Pourquoi normalise-t-on les images avec ``(0.5, 0.5, 0.5)`` pour la moyenne et l'écart-type ?
-3. Que fait la transformation ``ToTensor()`` ?
-
-.. slide::
-
-📋 Exercice 2 : MLP de base (🍀)
-----------------------
-
-**Objectif** : Créer un perceptron multi-couches pour servir de référence
-
-2.1. Implémenter un MLP
-~~~~~~~~~~~~~~~~~~~
-
-Créez un fichier ``tp5_mlp.py`` avec le code suivant :
-
-.. code-block:: python
-
-   import torch
-   import torch.nn as nn
-   import torch.nn.functional as F
-
-   class SimpleMLP(nn.Module):
-       def __init__(self):
-           super(SimpleMLP, self).__init__()
-           # Une image CIFAR-10 fait 32x32x3 = 3072 pixels
-           self.fc1 = nn.Linear(3 * 32 * 32, 512)
-           self.fc2 = nn.Linear(512, 256)
-           self.fc3 = nn.Linear(256, 10)  # 10 classes
-       
-       def forward(self, x):
-           # Aplatir l'image
-           x = x.view(-1, 3 * 32 * 32)
-           
-           x = F.relu(self.fc1(x))
-           x = F.relu(self.fc2(x))
-           x = self.fc3(x)
-           return x
-
-   # Créer le modèle
-   model_mlp = SimpleMLP()
-   print(model_mlp)
-
-   # Compter le nombre de paramètres
-   total_params = sum(p.numel() for p in model_mlp.parameters())
-   print(f"\nNombre total de paramètres : {total_params:,}")
-
-**À faire** :
-
-1. Exécutez le code et notez le nombre de paramètres
-2. Calculez manuellement le nombre de paramètres de la première couche
-
-.. slide::
-
-2.2. Entraîner le MLP
-~~~~~~~~~~~~~~~~~~~
-
-Ajoutez le code d'entraînement :
-
-.. code-block:: python
-
-   import torch.optim as optim
-   from tp5_preparation import trainloader, testloader
-
-   # Configuration
-   device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-   model_mlp = SimpleMLP().to(device)
-   criterion = nn.CrossEntropyLoss()
-   optimizer = optim.Adam(model_mlp.parameters(), lr=0.001)
-
-   # Entraînement
-   num_epochs = 10
-
-   for epoch in range(num_epochs):
-       model_mlp.train()
-       running_loss = 0.0
-       correct = 0
-       total = 0
-       
-       for i, (images, labels) in enumerate(trainloader):
-           images, labels = images.to(device), labels.to(device)
-           
-           # Forward
-           outputs = model_mlp(images)
-           loss = criterion(outputs, labels)
-           
-           # Backward
-           optimizer.zero_grad()
-           loss.backward()
-           optimizer.step()
-           
-           # Statistiques
-           running_loss += loss.item()
-           _, predicted = torch.max(outputs, 1)
-           total += labels.size(0)
-           correct += (predicted == labels).sum().item()
-       
-       train_acc = 100 * correct / total
-       print(f"Epoch [{epoch+1}/{num_epochs}], "
-             f"Loss: {running_loss/len(trainloader):.4f}, "
-             f"Train Acc: {train_acc:.2f}%")
-
-   # Sauvegarder le modèle
-   torch.save(model_mlp.state_dict(), 'mlp_cifar10.pth')
-   print("Modèle MLP sauvegardé!")
-
-.. slide::
-
-2.3. Évaluer le MLP
-~~~~~~~~~~~~~~~~~~~
-
-Ajoutez la fonction d'évaluation :
-
-.. code-block:: python
-
-   def evaluate_model(model, dataloader, device):
-       """Évalue le modèle sur un dataset"""
-       model.eval()
-       correct = 0
-       total = 0
-       
-       with torch.no_grad():
-           for images, labels in dataloader:
-               images, labels = images.to(device), labels.to(device)
-               outputs = model(images)
-               _, predicted = torch.max(outputs, 1)
-               total += labels.size(0)
-               correct += (predicted == labels).sum().item()
-       
-       accuracy = 100 * correct / total
-       return accuracy
-
-   # Évaluer sur le test set
-   test_acc = evaluate_model(model_mlp, testloader, device)
-   print(f"Précision sur le test set : {test_acc:.2f}%")
-
-**Questions** :
-
-1. Quelle précision obtenez-vous après 10 epochs ?
-2. Le modèle semble-t-il sur-apprendre (overfitting) ?
-3. Combien de temps prend une epoch ?
-
-.. slide::
-
-📋 Exercice 3 : Premier CNN simple (⚖️)
-----------------------
-
-**Objectif** : Créer un réseau convolutif et comparer avec le MLP
-
-3.1. Implémenter un CNN simple
-~~~~~~~~~~~~~~~~~~~
-
-Créez un fichier ``tp5_cnn.py`` :
-
-.. code-block:: python
-
-   import torch
-   import torch.nn as nn
-   import torch.nn.functional as F
-
-   class SimpleCNN(nn.Module):
-       def __init__(self):
-           super(SimpleCNN, self).__init__()
-           # Couches de convolution
-           self.conv1 = nn.Conv2d(3, 32, kernel_size=3, padding=1)
-           self.conv2 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
-           self.conv3 = nn.Conv2d(64, 64, kernel_size=3, padding=1)
-           
-           # Pooling
-           self.pool = nn.MaxPool2d(2, 2)
-           
-           # Couches fully-connected
-           # Après 3 poolings : 32 -> 16 -> 8 -> 4
-           self.fc1 = nn.Linear(64 * 4 * 4, 512)
-           self.fc2 = nn.Linear(512, 10)
-           
-           # Dropout pour la régularisation
-           self.dropout = nn.Dropout(0.5)
-       
-       def forward(self, x):
-           # Block 1
-           x = F.relu(self.conv1(x))       # [batch, 32, 32, 32]
-           x = self.pool(x)                 # [batch, 32, 16, 16]
-           
-           # Block 2
-           x = F.relu(self.conv2(x))       # [batch, 64, 16, 16]
-           x = self.pool(x)                 # [batch, 64, 8, 8]
-           
-           # Block 3
-           x = F.relu(self.conv3(x))       # [batch, 64, 8, 8]
-           x = self.pool(x)                 # [batch, 64, 4, 4]
-           
-           # Aplatir
-           x = x.view(-1, 64 * 4 * 4)
-           
-           # Fully-connected
-           x = F.relu(self.fc1(x))
-           x = self.dropout(x)
-           x = self.fc2(x)
-           
-           return x
-
-   # Créer le modèle
-   model_cnn = SimpleCNN()
-   print(model_cnn)
-
-   # Compter les paramètres
-   total_params = sum(p.numel() for p in model_cnn.parameters())
-   print(f"\nNombre total de paramètres : {total_params:,}")
-
-**À faire** :
-
-1. Comparez le nombre de paramètres avec le MLP
-2. Ajoutez des commentaires pour indiquer la taille des tenseurs à chaque étape
-
-.. slide::
-
-3.2. Entraîner le CNN
-~~~~~~~~~~~~~~~~~~~
-
-Ajoutez le code d'entraînement (similaire au MLP) :
-
-.. code-block:: python
-
-   import torch.optim as optim
-   from tp5_preparation import trainloader, testloader
-   from tp5_mlp import evaluate_model
-
-   # Configuration
-   device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-   model_cnn = SimpleCNN().to(device)
-   criterion = nn.CrossEntropyLoss()
-   optimizer = optim.Adam(model_cnn.parameters(), lr=0.001)
-
-   # Entraînement
-   num_epochs = 20
-
-   for epoch in range(num_epochs):
-       model_cnn.train()
-       running_loss = 0.0
-       correct = 0
-       total = 0
-       
-       for images, labels in trainloader:
-           images, labels = images.to(device), labels.to(device)
-           
-           outputs = model_cnn(images)
-           loss = criterion(outputs, labels)
-           
-           optimizer.zero_grad()
-           loss.backward()
-           optimizer.step()
-           
-           running_loss += loss.item()
-           _, predicted = torch.max(outputs, 1)
-           total += labels.size(0)
-           correct += (predicted == labels).sum().item()
-       
-       train_acc = 100 * correct / total
-       
-       # Évaluation sur le test set
-       test_acc = evaluate_model(model_cnn, testloader, device)
-       
-       print(f"Epoch [{epoch+1}/{num_epochs}], "
-             f"Loss: {running_loss/len(trainloader):.4f}, "
-             f"Train Acc: {train_acc:.2f}%, "
-             f"Test Acc: {test_acc:.2f}%")
-
-   # Sauvegarder le modèle
-   torch.save(model_cnn.state_dict(), 'cnn_cifar10.pth')
-   print("Modèle CNN sauvegardé!")
-
-**Questions** :
-
-1. Comparez la précision du CNN avec celle du MLP
-2. Le CNN apprend-il plus vite que le MLP ?
-3. Y a-t-il du sur-apprentissage ? Comment le détecter ?
-
-.. slide::
-
-📋 Exercice 4 : Dataset personnalisé (⚖️)
-----------------------
-
-**Objectif** : Créer un Dataset PyTorch pour séparer train/validation
-
-4.1. Implémenter un Dataset avec split train/val
-~~~~~~~~~~~~~~~~~~~
-
-Créez un fichier ``tp5_dataset.py`` :
-
-.. code-block:: python
-
-   import torch
-   from torch.utils.data import Dataset, DataLoader, random_split
-   import torchvision
-   import torchvision.transforms as transforms
-
-   # Charger CIFAR-10 complet
-   transform = transforms.Compose([
-       transforms.ToTensor(),
-       transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-   ])
-
-   full_trainset = torchvision.datasets.CIFAR10(
-       root='./data',
-       train=True,
-       download=True,
-       transform=transform
-   )
-
-   testset = torchvision.datasets.CIFAR10(
-       root='./data',
-       train=False,
-       download=True,
-       transform=transform
-   )
-
-   # Séparer train et validation (80/20)
-   train_size = int(0.8 * len(full_trainset))
-   val_size = len(full_trainset) - train_size
-
-   trainset, valset = random_split(
-       full_trainset,
-       [train_size, val_size],
-       generator=torch.Generator().manual_seed(42)  # pour la reproductibilité
-   )
-
-   print(f"Train set : {len(trainset)} images")
-   print(f"Validation set : {len(valset)} images")
-   print(f"Test set : {len(testset)} images")
-
-   # Créer les DataLoaders
-   trainloader = DataLoader(trainset, batch_size=64, shuffle=True, num_workers=2)
-   valloader = DataLoader(valset, batch_size=64, shuffle=False, num_workers=2)
-   testloader = DataLoader(testset, batch_size=64, shuffle=False, num_workers=2)
-
-.. slide::
-
-4.2. Entraîner avec validation
-~~~~~~~~~~~~~~~~~~~
-
-Modifiez la boucle d'entraînement pour inclure la validation :
-
-.. code-block:: python
-
-   from tp5_dataset import trainloader, valloader, testloader
-   from tp5_cnn import SimpleCNN
-   from tp5_mlp import evaluate_model
-   import torch
-   import torch.nn as nn
-   import torch.optim as optim
-
-   # Configuration
-   device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-   model = SimpleCNN().to(device)
-   criterion = nn.CrossEntropyLoss()
-   optimizer = optim.Adam(model.parameters(), lr=0.001)
-
-   # Pour sauvegarder le meilleur modèle
-   best_val_acc = 0.0
-
-   # Entraînement avec validation
-   num_epochs = 20
-
-   for epoch in range(num_epochs):
-       # PHASE D'ENTRAÎNEMENT
-       model.train()
-       train_loss = 0.0
-       train_correct = 0
-       train_total = 0
-       
-       for images, labels in trainloader:
-           images, labels = images.to(device), labels.to(device)
-           
-           outputs = model(images)
-           loss = criterion(outputs, labels)
-           
-           optimizer.zero_grad()
-           loss.backward()
-           optimizer.step()
-           
-           train_loss += loss.item()
-           _, predicted = torch.max(outputs, 1)
-           train_total += labels.size(0)
-           train_correct += (predicted == labels).sum().item()
-       
-       train_acc = 100 * train_correct / train_total
-       
-       # PHASE DE VALIDATION
-       val_acc = evaluate_model(model, valloader, device)
-       
-       # Sauvegarder le meilleur modèle
-       if val_acc > best_val_acc:
-           best_val_acc = val_acc
-           torch.save({
-               'epoch': epoch,
-               'model_state_dict': model.state_dict(),
-               'optimizer_state_dict': optimizer.state_dict(),
-               'val_acc': val_acc,
-           }, 'best_cnn_cifar10.pth')
-           print(f"✓ Nouveau meilleur modèle sauvegardé! Val Acc: {val_acc:.2f}%")
-       
-       print(f"Epoch [{epoch+1}/{num_epochs}], "
-             f"Loss: {train_loss/len(trainloader):.4f}, "
-             f"Train Acc: {train_acc:.2f}%, "
-             f"Val Acc: {val_acc:.2f}%")
-
-   # Évaluer sur le test set avec le meilleur modèle
-   checkpoint = torch.load('best_cnn_cifar10.pth')
-   model.load_state_dict(checkpoint['model_state_dict'])
-   test_acc = evaluate_model(model, testloader, device)
-   print(f"\nPrécision finale sur le test set : {test_acc:.2f}%")
-
-.. slide::
-
-📋 Exercice 5 : CNN amélioré (🌶️)
-----------------------
-
-**Objectif** : Améliorer l'architecture avec des techniques avancées
-
-5.1. CNN avec Batch Normalization
-~~~~~~~~~~~~~~~~~~~
-
-Créez un fichier ``tp5_cnn_advanced.py`` :
-
-.. code-block:: python
-
-   import torch
-   import torch.nn as nn
-   import torch.nn.functional as F
-
-   class ImprovedCNN(nn.Module):
-       def __init__(self):
-           super(ImprovedCNN, self).__init__()
-           
-           # Block 1
-           self.conv1 = nn.Conv2d(3, 32, kernel_size=3, padding=1)
-           self.bn1 = nn.BatchNorm2d(32)
-           
-           # Block 2
-           self.conv2 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
-           self.bn2 = nn.BatchNorm2d(64)
-           
-           # Block 3
-           self.conv3 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
-           self.bn3 = nn.BatchNorm2d(128)
-           
-           # Block 4
-           self.conv4 = nn.Conv2d(128, 128, kernel_size=3, padding=1)
-           self.bn4 = nn.BatchNorm2d(128)
-           
-           # Pooling
-           self.pool = nn.MaxPool2d(2, 2)
-           
-           # Fully-connected
-           self.fc1 = nn.Linear(128 * 2 * 2, 512)
-           self.bn_fc = nn.BatchNorm1d(512)
-           self.fc2 = nn.Linear(512, 10)
-           
-           # Dropout
-           self.dropout = nn.Dropout(0.5)
-       
-       def forward(self, x):
-           # Block 1: [batch, 3, 32, 32] -> [batch, 32, 16, 16]
-           x = self.conv1(x)
-           x = self.bn1(x)
-           x = F.relu(x)
-           x = self.pool(x)
-           
-           # Block 2: [batch, 32, 16, 16] -> [batch, 64, 8, 8]
-           x = self.conv2(x)
-           x = self.bn2(x)
-           x = F.relu(x)
-           x = self.pool(x)
-           
-           # Block 3: [batch, 64, 8, 8] -> [batch, 128, 4, 4]
-           x = self.conv3(x)
-           x = self.bn3(x)
-           x = F.relu(x)
-           x = self.pool(x)
-           
-           # Block 4: [batch, 128, 4, 4] -> [batch, 128, 2, 2]
-           x = self.conv4(x)
-           x = self.bn4(x)
-           x = F.relu(x)
-           x = self.pool(x)
-           
-           # Flatten
-           x = x.view(x.size(0), -1)
-           
-           # FC layers
-           x = self.fc1(x)
-           x = self.bn_fc(x)
-           x = F.relu(x)
-           x = self.dropout(x)
-           x = self.fc2(x)
-           
-           return x
-
-   model = ImprovedCNN()
-   total_params = sum(p.numel() for p in model.parameters())
-   print(f"Nombre total de paramètres : {total_params:,}")
-
-**À faire** :
-
-1. Entraînez ce modèle et comparez les performances
-2. Expérimentez avec différentes valeurs de dropout (0.3, 0.5, 0.7)
-
-.. slide::
-
-5.2. Data Augmentation
-~~~~~~~~~~~~~~~~~~~
-
-Ajoutez de l'augmentation de données pour améliorer la généralisation :
-
-.. code-block:: python
-
-   import torchvision.transforms as transforms
-
-   # Transformations pour l'entraînement (avec augmentation)
-   train_transform = transforms.Compose([
-       transforms.RandomHorizontalFlip(),
-       transforms.RandomCrop(32, padding=4),
-       transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2),
-       transforms.ToTensor(),
-       transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-   ])
-
-   # Transformations pour validation/test (sans augmentation)
-   test_transform = transforms.Compose([
-       transforms.ToTensor(),
-       transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-   ])
-
-   # Charger les données avec les bonnes transformations
-   trainset = torchvision.datasets.CIFAR10(
-       root='./data',
-       train=True,
-       download=True,
-       transform=train_transform
-   )
-
-   testset = torchvision.datasets.CIFAR10(
-       root='./data',
-       train=False,
-       download=True,
-       transform=test_transform
-   )
-
-**Questions** :
-
-1. Quelle amélioration apporte l'augmentation de données ?
-2. Pourquoi n'applique-t-on pas l'augmentation sur le test set ?
-
-.. slide::
-
-📋 Exercice 6 : Visualisation et analyse (🌶️)
-----------------------
-
-**Objectif** : Analyser les performances du modèle
-
-6.1. Matrice de confusion
-~~~~~~~~~~~~~~~~~~~
-
-Créez un fichier ``tp5_analysis.py`` :
-
-.. code-block:: python
-
-   import torch
-   import numpy as np
-   import matplotlib.pyplot as plt
-   from sklearn.metrics import confusion_matrix, classification_report
-   import seaborn as sns
-
-   def plot_confusion_matrix(model, dataloader, classes, device):
-       """Affiche la matrice de confusion"""
-       model.eval()
-       all_preds = []
-       all_labels = []
-       
-       with torch.no_grad():
-           for images, labels in dataloader:
-               images = images.to(device)
-               outputs = model(images)
-               _, predicted = torch.max(outputs, 1)
-               
-               all_preds.extend(predicted.cpu().numpy())
-               all_labels.extend(labels.numpy())
-       
-       # Calculer la matrice de confusion
-       cm = confusion_matrix(all_labels, all_preds)
-       
-       # Afficher
-       plt.figure(figsize=(12, 10))
-       sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
-                   xticklabels=classes, yticklabels=classes)
-       plt.title('Matrice de confusion')
-       plt.ylabel('Vraie classe')
-       plt.xlabel('Classe prédite')
-       plt.tight_layout()
-       plt.savefig('confusion_matrix.png')
-       plt.show()
-       
-       # Afficher le rapport de classification
-       print("\nRapport de classification :")
-       print(classification_report(all_labels, all_preds, target_names=classes))
-
-   # Utilisation
-   from tp5_dataset import testloader
-   from tp5_cnn_advanced import ImprovedCNN
-   from tp5_preparation import classes
-
-   device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-   model = ImprovedCNN().to(device)
-
-   # Charger le meilleur modèle
-   checkpoint = torch.load('best_cnn_cifar10.pth')
-   model.load_state_dict(checkpoint['model_state_dict'])
-
-   plot_confusion_matrix(model, testloader, classes, device)
-
-.. slide::
-
-6.2. Visualiser les prédictions
-~~~~~~~~~~~~~~~~~~~
-
-Ajoutez une fonction pour visualiser les prédictions :
-
-.. code-block:: python
-
-   import matplotlib.pyplot as plt
-   import numpy as np
-   import torchvision
-
-   def visualize_predictions(model, dataloader, classes, device, num_images=20):
-       """Visualise des prédictions du modèle"""
-       model.eval()
-       
-       # Obtenir un batch
-       dataiter = iter(dataloader)
-       images, labels = next(dataiter)
-       images, labels = images.to(device), labels.to(device)
-       
-       # Faire les prédictions
-       with torch.no_grad():
-           outputs = model(images)
-           _, predicted = torch.max(outputs, 1)
-       
-       # Afficher les images avec leurs prédictions
-       fig, axes = plt.subplots(4, 5, figsize=(15, 12))
-       
-       for idx, ax in enumerate(axes.flat):
-           if idx >= num_images:
-               break
-           
-           # Dénormaliser l'image
-           img = images[idx].cpu() / 2 + 0.5
-           img = np.transpose(img.numpy(), (1, 2, 0))
-           
-           # Afficher
-           ax.imshow(img)
-           
-           true_label = classes[labels[idx]]
-           pred_label = classes[predicted[idx]]
-           color = 'green' if labels[idx] == predicted[idx] else 'red'
-           
-           ax.set_title(f'Vrai: {true_label}\nPréd: {pred_label}', 
-                       color=color, fontsize=10)
-           ax.axis('off')
-       
-       plt.tight_layout()
-       plt.savefig('predictions_visualization.png')
-       plt.show()
-
-   # Utilisation
-   visualize_predictions(model, testloader, classes, device)
-
-.. slide::
-
-📋 Exercice 7 : Expérimentations (🌶️)
-----------------------
-
-**Objectif** : Explorer différentes configurations
-
-7.1. Comparaison de plusieurs modèles
-~~~~~~~~~~~~~~~~~~~
-
-Créez un fichier ``tp5_experiments.py`` pour comparer plusieurs configurations :
-
-.. code-block:: python
-
-   import torch
-   import torch.nn as nn
-   import torch.optim as optim
-   from torch.utils.data import DataLoader
-   import pandas as pd
-   import matplotlib.pyplot as plt
-
-   def train_and_evaluate(model, trainloader, valloader, testloader, 
-                          device, num_epochs=20, lr=0.001, model_name="Model"):
-       """Entraîne et évalue un modèle"""
-       criterion = nn.CrossEntropyLoss()
-       optimizer = optim.Adam(model.parameters(), lr=lr)
-       
-       history = {
-           'train_loss': [],
-           'train_acc': [],
-           'val_acc': []
-       }
-       
-       best_val_acc = 0.0
-       
-       for epoch in range(num_epochs):
-           # Phase d'entraînement
-           model.train()
-           train_loss = 0.0
-           train_correct = 0
-           train_total = 0
-           
-           for images, labels in trainloader:
-               images, labels = images.to(device), labels.to(device)
-               
-               outputs = model(images)
-               loss = criterion(outputs, labels)
-               
-               optimizer.zero_grad()
-               loss.backward()
-               optimizer.step()
-               
-               train_loss += loss.item()
-               _, predicted = torch.max(outputs, 1)
-               train_total += labels.size(0)
-               train_correct += (predicted == labels).sum().item()
-           
-           train_acc = 100 * train_correct / train_total
-           
-           # Phase de validation
-           model.eval()
-           val_correct = 0
-           val_total = 0
-           
-           with torch.no_grad():
-               for images, labels in valloader:
-                   images, labels = images.to(device), labels.to(device)
-                   outputs = model(images)
-                   _, predicted = torch.max(outputs, 1)
-                   val_total += labels.size(0)
-                   val_correct += (predicted == labels).sum().item()
-           
-           val_acc = 100 * val_correct / val_total
-           
-           # Enregistrer l'historique
-           history['train_loss'].append(train_loss / len(trainloader))
-           history['train_acc'].append(train_acc)
-           history['val_acc'].append(val_acc)
-           
-           # Sauvegarder le meilleur
-           if val_acc > best_val_acc:
-               best_val_acc = val_acc
-               torch.save(model.state_dict(), f'{model_name}_best.pth')
-           
-           if (epoch + 1) % 5 == 0:
-               print(f"[{model_name}] Epoch [{epoch+1}/{num_epochs}], "
-                     f"Train Acc: {train_acc:.2f}%, Val Acc: {val_acc:.2f}%")
-       
-       # Test final
-       model.load_state_dict(torch.load(f'{model_name}_best.pth'))
-       model.eval()
-       test_correct = 0
-       test_total = 0
-       
-       with torch.no_grad():
-           for images, labels in testloader:
-               images, labels = images.to(device), labels.to(device)
-               outputs = model(images)
-               _, predicted = torch.max(outputs, 1)
-               test_total += labels.size(0)
-               test_correct += (predicted == labels).sum().item()
-       
-       test_acc = 100 * test_correct / test_total
-       
-       return history, test_acc
-
-**À faire** :
-
-Comparez les architectures suivantes :
-
-1. MLP simple
-2. CNN simple (3 couches conv)
-3. CNN avec Batch Normalization
-4. CNN plus profond (5-6 couches conv)
-
-Pour chaque modèle, tracez l'évolution de la loss et de l'accuracy.
-
-.. slide::
-
-7.2. Tracer les courbes d'apprentissage
-~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: python
-
-   def plot_training_curves(histories, model_names):
-       """Trace les courbes d'apprentissage pour plusieurs modèles"""
-       fig, axes = plt.subplots(1, 3, figsize=(18, 5))
-       
-       for history, name in zip(histories, model_names):
-           epochs = range(1, len(history['train_loss']) + 1)
-           
-           # Loss
-           axes[0].plot(epochs, history['train_loss'], label=name)
-           
-           # Train accuracy
-           axes[1].plot(epochs, history['train_acc'], label=name)
-           
-           # Val accuracy
-           axes[2].plot(epochs, history['val_acc'], label=name)
-       
-       axes[0].set_title('Loss d\'entraînement')
-       axes[0].set_xlabel('Epoch')
-       axes[0].set_ylabel('Loss')
-       axes[0].legend()
-       axes[0].grid(True)
-       
-       axes[1].set_title('Précision d\'entraînement')
-       axes[1].set_xlabel('Epoch')
-       axes[1].set_ylabel('Accuracy (%)')
-       axes[1].legend()
-       axes[1].grid(True)
-       
-       axes[2].set_title('Précision de validation')
-       axes[2].set_xlabel('Epoch')
-       axes[2].set_ylabel('Accuracy (%)')
-       axes[2].legend()
-       axes[2].grid(True)
-       
-       plt.tight_layout()
-       plt.savefig('training_curves_comparison.png')
-       plt.show()
-
-.. slide::
-
-📋 Exercice Bonus : Transfer Learning (🌶️🌶️)
-----------------------
-
-**Objectif** : Utiliser un modèle pré-entraîné
-
-8.1. Charger un modèle pré-entraîné
-~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: python
-
-   import torchvision.models as models
-   import torch.nn as nn
-
-   # Charger ResNet18 pré-entraîné sur ImageNet
-   model = models.resnet18(pretrained=True)
-
-   # Geler les poids des couches convolutives
-   for param in model.parameters():
-       param.requires_grad = False
-
-   # Remplacer la dernière couche pour CIFAR-10 (10 classes)
-   num_features = model.fc.in_features
-   model.fc = nn.Linear(num_features, 10)
-
-   # Seule la dernière couche sera entraînée
-   device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-   model = model.to(device)
-
-   # Optimiseur uniquement pour la dernière couche
-   optimizer = torch.optim.Adam(model.fc.parameters(), lr=0.001)
-
-**À faire** :
-
-1. Entraînez ce modèle et comparez avec vos CNN from scratch
-2. Expérimentez avec le fine-tuning : dégelez les dernières couches convolutives
-
-.. slide::
-
-📊 Récapitulatif et questions
-----------------------
-
-**Résumé des concepts clés** :
-
-- MLP vs CNN : réduction drastique des paramètres
-- Convolutions : partage de poids et structure spatiale
-- Pooling : réduction de dimensionnalité
-- Mini-batchs : compromis efficacité/stabilité
-- Dataset/DataLoader : gestion automatique des données
-- Sauvegarde : state_dict pour la flexibilité
-
-**Questions de réflexion** :
-
-1. Pourquoi les CNN performent-ils mieux que les MLP sur les images ?
-2. Quel est le rôle du pooling dans un CNN ?
-3. Comment choisir la taille des mini-batchs ?
-4. Pourquoi sépare-t-on train/validation/test ?
-5. Quand utiliser le transfer learning ?
-
-**Pour aller plus loin** :
-
-- Essayez d'autres architectures : VGG, ResNet, DenseNet
-- Implémentez des techniques d'augmentation avancées
-- Utilisez un scheduler pour le learning rate
-- Explorez la visualisation des filtres convolutifs
-- Testez sur d'autres datasets : CIFAR-100, STL-10
+    import torch
+    import torch.nn as nn
+    import torch.nn.functional as F
+    from torchvision import datasets, transforms
+    from torch.utils.data import DataLoader
+
+    # Charger MNIST
+    transform = transforms.Compose([transforms.ToTensor()])
+    
+    train_dataset = datasets.MNIST(root='./data', train=True, 
+                                   download=True, transform=transform)
+    test_dataset = datasets.MNIST(root='./data', train=False, 
+                                  download=True, transform=transform)
 
 .. note::
+    Pour simplifier cet exercice d'introduction, nous utilisons uniquement train et test, mais en pratique il faudrait aussi un ensemble de validation pour surveiller l'overfitting pendant l'entraînement.
 
-   💡 **Conseil** : Gardez trace de toutes vos expériences dans un tableur ou un notebook. Notez les hyperparamètres, les résultats et vos observations. C'est une pratique essentielle en deep learning !
+**Consigne :** Écrire un programme qui :
+
+1) Crée deux modèles différents :
+   
+   - **MLP classique** : aplatit l'image ($$28×28$$ → 784), puis 2 couches fully-connected de 128 neurones avec ReLU, sortie 10 classes
+   - **CNN simple** : 
+     
+     - 1 couche convolutive (1→16 filtres, kernel $$3×3$$, padding=1)
+     - ReLU + MaxPooling $$2×2$$
+     - 1 couche convolutive (16→32 filtres, kernel $$3×3$$, padding=1)
+     - ReLU + MaxPooling $$2×2$$
+     - Aplatir puis 1 couche fully-connected vers 10 classes
+
+2) Entraîne les deux modèles pendant 5 epochs avec :
+   
+   - Batch size de 64
+   - Optimiseur Adam avec learning rate 0.001
+   - Loss CrossEntropyLoss
+
+3) Compare le nombre de paramètres de chaque modèle (utiliser ``sum(p.numel() for p in model.parameters())``)
+
+4) Évalue la précision (accuracy) sur le test set pour les deux modèles
+
+5) Affiche quelques exemples de prédictions (correctes et incorrectes) pour chaque modèle
+
+
+**Questions :**
+
+6) Quel modèle a le moins de paramètres ?
+7) Quel modèle obtient la meilleure accuracy ?
+8) Pourquoi le CNN est-il plus efficace malgré moins de paramètres ?
+
+
+**Astuce :**
+.. spoiler::
+    .. discoverList::
+        1. Pour le MLP, utiliser ``x.view(x.size(0), -1)`` pour aplatir l'image
+        2. Pour calculer la taille après convolution et pooling : avec 2 pooling $$2×2$$, une image $$28×28$$ devient $$7×7$$  
+        3. Pour l'accuracy : ``(predicted == labels).sum().item() / len(labels)``
+        4. Utiliser ``torch.no_grad()`` lors de l'évaluation pour économiser la mémoire
+        5. Le CNN préserve la structure spatiale de l'image, ce qui est crucial pour la reconnaissance
+
+**Astuce avancée :**        
+.. spoiler::
+    .. discoverList:: 
+        **Voici le code pour visualiser les prédictions correctes et incorrectes :**
+        
+        .. code-block:: python
+        
+            import matplotlib.pyplot as plt
+            
+            # Fonction pour afficher des exemples de prédictions
+            def visualize_predictions(images, labels, predictions, model_name, num_examples=5, correct=True):
+                """
+                Affiche des exemples de prédictions correctes ou incorrectes
+                
+                Args:
+                    images: liste d'images
+                    labels: vrais labels
+                    predictions: prédictions du modèle
+                    model_name: nom du modèle (pour le titre)
+                    num_examples: nombre d'exemples à afficher
+                    correct: True pour afficher les prédictions correctes, False pour les incorrectes
+                """
+                # Trouver les indices selon le critère
+                if correct:
+                    indices = [i for i in range(len(predictions)) 
+                              if predictions[i] == labels[i]]
+                    title_color = 'green'
+                    main_title = f'{model_name} - Prédictions CORRECTES'
+                else:
+                    indices = [i for i in range(len(predictions)) 
+                              if predictions[i] != labels[i]]
+                    title_color = 'red'
+                    main_title = f'{model_name} - Prédictions INCORRECTES'
+                
+                # Créer la figure
+                fig, axes = plt.subplots(1, num_examples, figsize=(15, 3))
+                fig.suptitle(main_title, fontsize=14, fontweight='bold')
+                
+                # Afficher les exemples
+                for i in range(min(num_examples, len(indices))):
+                    idx = indices[i]
+                    axes[i].imshow(images[idx].squeeze(), cmap='gray')
+                    axes[i].set_title(f'Vrai: {labels[idx]}\\nPrédit: {predictions[idx]}', 
+                                    color=title_color, fontweight='bold')
+                    axes[i].axis('off')
+                
+                plt.tight_layout()
+                plt.show()
+            
+            # Utilisation après évaluation :
+            # visualize_predictions(mlp_images, mlp_labels, mlp_preds, "MLP", correct=True)
+            # visualize_predictions(mlp_images, mlp_labels, mlp_preds, "MLP", correct=False)
+
+
+**Résultat attendu :** 
+
+- MLP : environ 100k paramètres, accuracy ~97%
+- CNN : environ 20k paramètres, accuracy ~98-99%
+
+
+.. slide::
+⚖️ Exercice 2 : Comprendre l'effet du padding et du stride
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Dans cet exercice, vous allez explorer comment les paramètres ``padding`` et ``stride`` affectent la taille des feature maps dans un CNN.
+
+**Objectif :**  
+Comprendre l'impact du padding et du stride sur les dimensions spatiales et visualiser les feature maps.
+
+On va créer un mini-dataset synthétique avec des formes géométriques :
+
+.. code-block:: python
+
+    import torch
+    import matplotlib.pyplot as plt
+    
+    # Créer des images synthétiques avec des formes
+    def create_shape_image(shape_type='square'):
+        img = torch.zeros(1, 1, 28, 28)
+        if shape_type == 'square':
+            img[0, 0, 10:18, 10:18] = 1.0
+        elif shape_type == 'cross':
+            img[0, 0, 14, :] = 1.0
+            img[0, 0, :, 14] = 1.0
+        elif shape_type == 'diagonal':
+            for i in range(28):
+                img[0, 0, i, i] = 1.0
+        return img
+
+
+**Consigne :** Écrire un programme qui :
+
+1) Crée 3 images : un carré, une croix, une diagonale
+
+2) Définit 4 configurations de convolution différentes :
+   
+   - Config A : kernel=3, stride=1, padding=0
+   - Config B : kernel=3, stride=1, padding=1
+   - Config C : kernel=3, stride=2, padding=0
+   - Config D : kernel=5, stride=1, padding=2
+
+3) Pour chaque configuration :
+   
+   - Applique la convolution avec 8 filtres sur une des images
+   - Calcule et affiche la taille de sortie
+   - Vérifie avec la formule : $$H_{out} = \lfloor \frac{H_{in} + 2 \times padding - kernel\_size}{stride} \rfloor + 1$$
+
+4) Visualise les 8 feature maps obtenues pour chaque configuration
+
+5) Applique ensuite un MaxPooling $$2×2$$ après la convolution et observe la nouvelle taille
+
+
+**Questions :**
+
+6) Quelle configuration préserve la taille spatiale de l'image ?
+7) Quelle configuration réduit le plus la taille ?
+8) Que se passe-t-il si on applique plusieurs convolutions successives sans padding ?
+9) Pourquoi utilise-t-on souvent padding=1 avec kernel=3 ?
+
+
+**Astuce :**
+.. spoiler::
+    .. discoverList::
+        1. Utiliser ``nn.Conv2d(1, 8, kernel_size=k, stride=s, padding=p)``
+        2. Pour visualiser : ``plt.imshow(feature_map[0, i].detach(), cmap='viridis')``
+        3. Config B (padding=1, stride=1, kernel=3) préserve la taille : $$28×28$$ → $$28×28$$
+        4. Sans padding, chaque convolution réduit la taille de (kernel_size - 1)
+        5. padding=1 avec kernel=3 est un choix standard car il préserve la taille
+
+
+**Résultat attendu :**
+
+Les tailles de sortie attendues pour une image 28×28 :
+
+- Config A (k=3, s=1, p=0) : $$26×26$$
+- Config B (k=3, s=1, p=1) : $$28×28$$
+- Config C (k=3, s=2, p=0) : $$13×13$$
+- Config D (k=5, s=1, p=2) : $$28×28$$
+
+Après MaxPooling $$2×2$$, les tailles sont divisées par 2.
+
+
+.. slide::
+🌶️ Exercice 3 : CNN et Data Augmentation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Cet exercice vous guide d'un CNN et l'utilisation de data augmentation pour améliorer les performances.
+
+**Objectif :**
+
+    - Créer une architecture CNN profonde avec blocs convolutifs
+    - Implémenter et comparer l'entraînement avec/sans data augmentation
+    - Gérer les datasets avec train/validation/test splits
+    - Sauvegarder le meilleur modèle basé sur la validation
+
+**Consigne :** Écrire un programme qui :
+
+1) Charge le dataset CIFAR-10 avec deux types de transformations :
+   
+   - **Sans augmentation** : seulement ToTensor et Normalize
+   - **Avec augmentation** : RandomHorizontalFlip, RandomCrop(32, padding=4), ToTensor, Normalize
+
+2) Divise le training set en train (80%) et validation (20%) avec ``random_split``
+
+3) Crée un CNN avec l'architecture suivante :
+   
+   .. code-block:: python
+   
+       # Bloc 1
+       Conv2d(3, 64, kernel=3, padding=1) + ReLU
+       Conv2d(64, 64, kernel=3, padding=1) + ReLU
+       MaxPool2d(2, 2)  # 32×32 → 16×16
+       
+       # Bloc 2
+       Conv2d(64, 128, kernel=3, padding=1) + ReLU
+       Conv2d(128, 128, kernel=3, padding=1) + ReLU
+       MaxPool2d(2, 2)  # 16×16 → 8×8
+       
+       # Bloc 3
+       Conv2d(128, 256, kernel=3, padding=1) + ReLU
+       Conv2d(256, 256, kernel=3, padding=1) + ReLU
+       MaxPool2d(2, 2)  # 8×8 → 4×4
+       
+       # Classification
+       Flatten
+       Linear(256 * 4 * 4, 512) + ReLU
+       Dropout(0.5)
+       Linear(512, 10)
+
+4) Entraîne deux versions du modèle (10 epochs chacune) :
+   
+   - Modèle A : sans data augmentation
+   - Modèle B : avec data augmentation
+
+5) Pour chaque epoch, calcule et stocke :
+   
+   - Train loss et train accuracy
+   - Validation loss et validation accuracy
+
+6) Implémente un système de sauvegarde qui garde le meilleur modèle basé sur la validation accuracy
+
+7) Trace 4 courbes sur un même graphique :
+   
+   - Train et validation loss (un subplot)
+   - Train et validation accuracy (un autre subplot)
+   - Faire cela pour les deux modèles A et B
+
+8) Évalue le meilleur modèle (A et B) sur le test set et affiche :
+   
+   - Test accuracy finale
+   - Matrice de confusion
+   - Classification report
+
+
+**Questions :**
+
+9) Quel modèle (A ou B) généralise mieux ? Comment le voyez-vous sur les courbes ?
+10) Observe-t-on de l'overfitting ? Sur quel modèle et comment ?
+11) Comment la data augmentation aide-t-elle à réduire l'overfitting ?
+12) Quelle est la différence de performance sur le test set ?
+
+
+**Astuce :**
+.. spoiler::
+    .. discoverList::
+    1. Pour CIFAR-10 : ``transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])``
+    2. Pour la matrice de confusion : ``from sklearn.metrics import confusion_matrix, classification_report``
+    3. Utiliser ``model.train()`` avant l'entraînement et ``model.eval()`` avant l'évaluation
+    4. Sauvegarder avec : ``torch.save({'model_state_dict': model.state_dict(), 'accuracy': best_acc}, 'best_model.pth')``
+    5. Le dropout aide aussi à éviter l'overfitting en désactivant aléatoirement 50% des neurones pendant l'entraînement
+
+
+**Résultats attendus :**
+
+- **Modèle A** (sans augmentation) : test accuracy ~76-77%, **mais fort overfitting** (gap train/val de ~12-13%)
+- **Modèle B** (avec augmentation) : test accuracy ~76-77%, **excellente généralisation** (gap train/val de seulement ~2%)
+- **Observation importante** : Avec seulement 10 epochs, les deux modèles peuvent avoir des test accuracy similaires, **mais le Modèle B généralise beaucoup mieux**
+- Le Modèle A montre des signes clairs d'overfitting après l'epoch 5 (train accuracy continue à monter, val accuracy stagne)
+- Le Modèle B a une meilleure loss sur le test set (~0.70 vs ~0.79), indiquant des prédictions plus confiantes
+- **Avec plus d'epochs (20-30)**, le Modèle B dépasserait clairement A en test accuracy
+- **Leçon importante** : L'accuracy seule ne suffit pas ! Analysez toujours le gap train/val pour évaluer la vraie qualité du modèle
+
+
+.. slide::
+🏋️ Exercices supplémentaires 5
+===============================
+Dans cette section, il y a des exercices supplémentaires pour vous entraîner. Ils suivent le même classement de difficulté que précédemment.
+
+
+.. slide::
+⚖️ Exercice supplémentaire 1 : Visualisation des filtres appris
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Cet exercice propose de visualiser ce que les filtres convolutifs ont appris après l'entraînement.
+
+**Objectif :** Comprendre ce que les filtres convolutifs détectent dans les premières couches d'un CNN.
+
+**Consignes** :
+
+1) Entraîner un CNN simple sur MNIST pendant 3 epochs :
+
+   .. code-block:: python
+   
+       class SimpleCNN(nn.Module):
+           def __init__(self):
+               super().__init__()
+               self.conv1 = nn.Conv2d(1, 16, kernel_size=3, padding=1)
+               self.conv2 = nn.Conv2d(16, 32, kernel_size=3, padding=1)
+               self.fc = nn.Linear(32 * 7 * 7, 10)
+           
+           def forward(self, x):
+               x = F.max_pool2d(F.relu(self.conv1(x)), 2)
+               x = F.max_pool2d(F.relu(self.conv2(x)), 2)
+               x = x.view(x.size(0), -1)
+               x = self.fc(x)
+               return x
+
+2) Après l'entraînement, extraire les poids de la première couche convolutive :
+
+   .. code-block:: python
+   
+       filters = model.conv1.weight.data  # shape: [16, 1, 3, 3]
+
+3) Visualiser les 16 filtres $$3×3$$ de la première couche sur une grille $$4×4$$
+
+4) Prendre une image de test et visualiser les feature maps produites par la première couche convolutive :
+   
+   - Appliquer ``model.conv1(image)`` puis ``F.relu()``
+   - Afficher les 16 feature maps obtenues
+
+5) Faire de même pour la deuxième couche convolutive (afficher 32 feature maps sur une grille 4×8)
+
+
+**Questions :**
+
+6) Que détectent les filtres de la première couche ? (contours, textures, ...)
+7) Les feature maps de la deuxième couche sont-elles plus abstraites que celles de la première ?
+8) Comment évoluent les patterns détectés entre les couches ?
+
+
+**Astuce :**
+.. spoiler::
+    .. discoverList::
+        1. Pour visualiser : ``plt.imshow(filters[i, 0].cpu(), cmap='gray')``
+        2. Pour obtenir les feature maps : ``with torch.no_grad(): features = F.relu(model.conv1(image))``
+        3. Les premiers filtres détectent souvent des contours horizontaux, verticaux, diagonaux
+        4. Les couches profondes détectent des motifs plus complexes et abstraits
+        5. Utiliser ``plt.subplots()`` pour créer une grille de visualisation
+
+
+**Résultats attendus :**
+
+- Une grille montrant les 16 filtres $$3×3$$ de la première couche
+- Une grille montrant les 16 feature maps activées par une image
+- Les filtres de la première couche devraient ressembler à des détecteurs de contours
+- Les feature maps montrent quelles parties de l'image activent chaque filtre
+
+
+.. slide::
+🌶️ Exercice supplémentaire 2 : Transfer Learning avec un modèle pré-entraîné
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Dans cet exercice, vous allez utiliser un modèle pré-entraîné (ResNet18) et le fine-tuner sur un nouveau dataset.
+
+.. warning::
+    ⏰ **Attention : Temps d'entraînement très long !**
+    
+    Cet exercice nécessite d'entraîner 2 modèles ResNet18 sur des images $$224×224$$, ce qui prend **beaucoup de temps** (plusieurs heures sans GPU, et reste long même avec GPU). **Il n'est PAS possible de terminer l'entraînement pendant la séance de TP**. Il est recommandé de :
+    
+    - 🏠 Lancer l'entraînement à la maison ou utiliser Google Colab avec GPU
+    - ⚡ Réduire drastiquement à 3-5 epochs pour tester rapidement (résultats moins concluants)
+    - 💾 Sauvegarder régulièrement les modèles pour reprendre plus tard
+
+.. note::
+    **ResNet18** est une architecture CNN de 18 couches qui a gagné le concours ImageNet en 2015. **ImageNet** est une immense base de 1.2 million d'images réparties en 1000 classes (animaux, véhicules, objets du quotidien). Le **transfer learning** consiste à réutiliser les filtres appris sur ImageNet (qui détectent contours, textures, formes génériques) pour classifier CIFAR-10 (10 classes seulement) : au lieu de tout réapprendre depuis zéro, on adapte juste la dernière couche !
+
+**Objectif** :
+
+- Comprendre le concept de transfer learning
+- Charger un modèle pré-entraîné et modifier sa dernière couche
+- Comparer l'entraînement from scratch vs transfer learning
+
+**Consignes** :
+
+1) Charger le dataset CIFAR-10 avec des transformations appropriées :
+
+   .. code-block:: python
+   
+       from torchvision import models
+       
+       transform = transforms.Compose([
+           transforms.Resize(224),  # ResNet attend du 224×224
+           transforms.ToTensor(),
+           transforms.Normalize(mean=[0.485, 0.456, 0.406], 
+                              std=[0.229, 0.224, 0.225])
+       ])
+
+2) Créer deux modèles :
+   
+   - **Modèle A (from scratch)** : ResNet18 initialisé aléatoirement
+   - **Modèle B (transfer learning)** : ResNet18 pré-entraîné sur ImageNet, on gèle toutes les couches sauf la dernière
+
+   .. code-block:: python
+   
+       # Modèle A
+       model_scratch = models.resnet18(pretrained=False)
+       model_scratch.fc = nn.Linear(model_scratch.fc.in_features, 10)
+       
+       # Modèle B
+       model_transfer = models.resnet18(pretrained=True)
+       # Geler toutes les couches
+       for param in model_transfer.parameters():
+           param.requires_grad = False
+       # Remplacer la dernière couche et la dégeler
+       model_transfer.fc = nn.Linear(model_transfer.fc.in_features, 10)
+
+3) Entraîner les deux modèles pendant 10 epochs avec :
+   
+   - Batch size 64
+   - Adam optimizer, learning rate 0.001
+   - Diviser train en train (80%) et validation (20%)
+
+4) Pour chaque modèle, tracer :
+   
+   - Evolution de la train loss et validation loss
+   - Evolution de la train accuracy et validation accuracy
+
+5) Comparer le temps d'entraînement par epoch pour les deux modèles
+
+6) Évaluer les deux modèles sur le test set
+
+7) Afficher une matrice de confusion pour chaque modèle
+
+
+**Questions :**
+
+8) Quel modèle converge le plus rapidement ?
+9) Quel modèle atteint la meilleure accuracy finale ?
+10) Pourquoi le transfer learning est-il plus efficace ?
+11) Que se passerait-il si on dégelait aussi les couches intermédiaires ?
+
+
+**Astuce :**
+.. spoiler::
+    .. discoverList:: 
+        1. Pour mesurer le temps : ``import time; start = time.time(); ... ; elapsed = time.time() - start``
+        2. Le modèle pré-entraîné a déjà appris des features génériques sur ImageNet
+        3. En gelant les couches, on a moins de paramètres à entraîner → plus rapide
+        4. Le transfer learning devrait donner ~80-85% accuracy en quelques epochs
+        5. From scratch atteindra peut-être ~70-75% après 10 epochs
+        6. Si on dégèle tout, on risque de détruire les features pré-apprises (sauf si learning rate très faible)
+
+
+**Résultats attendus :**
+
+- Modèle from scratch : convergence lente, accuracy finale ~70-75%
+- Modèle transfer learning : convergence rapide (2-3 epochs), accuracy finale ~80-85%
+- Temps par epoch : similaire pour les deux, mais transfer learning nécessite moins d'epochs
+- Le gap train/validation devrait être plus petit pour le transfer learning
+
+
+.. slide::
+🌶️ Exercice supplémentaire 3 : Early Stopping et Learning Rate Scheduler
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Dans cet exercice, vous allez implémenter un système complet d'entraînement avec early stopping et ajustement dynamique du learning rate.
+
+.. warning::
+    ⏰ **Attention : Temps d'entraînement long !**
+    
+    Cet exercice nécessite d'entraîner **3 modèles différents** sur CIFAR-10, ce qui prend **un temps conséquent** (le temps varie beaucoup selon votre GPU). **Il n'est pas possible de terminer l'entraînement pendant la séance de TP**. Options recommandées :
+    
+    - 🏠 Lancer l'entraînement à la maison ou utiliser Google Colab avec GPU
+    - ⚡ Réduire à 10-15 epochs max pour tester rapidement (résultats moins concluants)
+    - 💾 Sauvegarder régulièrement les modèles pour reprendre plus tard
+
+**Objectif** :
+
+- Implémenter un early stopping robuste pour éviter l'overfitting
+- Utiliser un learning rate scheduler pour améliorer la convergence
+- Comparer différentes stratégies de training
+
+**Consignes** :
+
+1) Utiliser CIFAR-10 avec data augmentation et diviser en train/val/test (70%/15%/15%)
+
+2) Créer un CNN de taille moyenne :
+
+   .. code-block:: python
+   
+       class MediumCNN(nn.Module):
+           def __init__(self):
+               super().__init__()
+               self.features = nn.Sequential(
+                   nn.Conv2d(3, 64, 3, padding=1),
+                   nn.ReLU(),
+                   nn.Conv2d(64, 64, 3, padding=1),
+                   nn.ReLU(),
+                   nn.MaxPool2d(2),
+                   
+                   nn.Conv2d(64, 128, 3, padding=1),
+                   nn.ReLU(),
+                   nn.Conv2d(128, 128, 3, padding=1),
+                   nn.ReLU(),
+                   nn.MaxPool2d(2),
+               )
+               self.classifier = nn.Sequential(
+                   nn.Linear(128 * 8 * 8, 256),
+                   nn.ReLU(),
+                   nn.Dropout(0.5),
+                   nn.Linear(256, 10)
+               )
+           
+           def forward(self, x):
+               x = self.features(x)
+               x = x.view(x.size(0), -1)
+               x = self.classifier(x)
+               return x
+
+3) Implémenter une classe ``EarlyStopping`` avec les paramètres :
+   
+   - ``patience`` : nombre d'epochs sans amélioration avant d'arrêter
+   - ``min_delta`` : amélioration minimale pour considérer un progrès
+   - Sauvegarder le meilleur modèle automatiquement
+
+4) Entraîner 3 versions du modèle (max 50 epochs) :
+   
+   - **Modèle A** : learning rate constant 0.001, pas d'early stopping
+   - **Modèle B** : learning rate constant 0.001, early stopping (patience=5)
+   - **Modèle C** : learning rate avec ``ReduceLROnPlateau`` + early stopping (patience=7)
+
+5) Pour chaque modèle, tracer sur un même graphique :
+   
+   - Train et validation loss
+   - Train et validation accuracy
+   - Marquer l'epoch où l'entraînement s'arrête (si early stopping)
+   - Marquer les epochs où le learning rate change (modèle C)
+
+6) Comparer les résultats finaux sur le test set
+
+7) Afficher pour chaque modèle :
+   
+   - Nombre total d'epochs entraînées
+   - Meilleure validation accuracy
+   - Test accuracy finale
+   - Temps d'entraînement total
+
+
+**Questions :**
+
+8) Quel modèle évite le mieux l'overfitting ?
+9) Quel est l'impact du learning rate scheduler ?
+10) L'early stopping permet-il de gagner du temps d'entraînement ?
+11) Quelle stratégie recommanderiez-vous pour un nouveau projet ?
+
+
+**Astuce :**
+.. spoiler::
+    .. discoverList:: 
+        **Implémentation de la classe EarlyStopping :**
+        
+        .. code-block:: python
+        
+            class EarlyStopping:
+                def __init__(self, patience=5, min_delta=0, path='checkpoint.pth'):
+                    self.patience = patience
+                    self.min_delta = min_delta
+                    self.path = path
+                    self.counter = 0
+                    self.best_loss = None
+                    self.early_stop = False
+                
+                def __call__(self, val_loss, model):
+                    if self.best_loss is None:
+                        self.best_loss = val_loss
+                        self.save_checkpoint(model)
+                    elif val_loss > self.best_loss - self.min_delta:
+                        self.counter += 1
+                        if self.counter >= self.patience:
+                            self.early_stop = True
+                    else:
+                        self.best_loss = val_loss
+                        self.save_checkpoint(model)
+                        self.counter = 0
+                
+                def save_checkpoint(self, model):
+                    torch.save(model.state_dict(), self.path)
+        
+        **Pour le scheduler :**
+        
+        .. code-block:: python
+        
+            from torch.optim.lr_scheduler import ReduceLROnPlateau
+            
+            scheduler = ReduceLROnPlateau(optimizer, mode='min', 
+                                         factor=0.5, patience=3, verbose=True)
+            
+            # Dans la boucle d'entraînement, après validation :
+            scheduler.step(val_loss)
+
+
+**Résultats attendus :**
+
+- Modèle A : overfitting après ~20 epochs, test accuracy ~75%
+- Modèle B : s'arrête à ~15-20 epochs, test accuracy ~78%
+- Modèle C : s'arrête à ~25-30 epochs avec LR réduit, test accuracy ~79-80%
+- Modèle C devrait avoir la meilleure généralisation
+- Le temps total d'entraînement est réduit pour B et C par rapport à A
