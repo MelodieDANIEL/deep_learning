@@ -1,6 +1,6 @@
 .. slide::
 
-Chapitre 5 — Classification d'images avec CNN
+Chapitre 5 — Classification d'images avec un CNN
 ================
 
 🎯 Objectifs du Chapitre
