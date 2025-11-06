@@ -34,39 +34,49 @@ On va travailler avec les données MNIST :
                                   download=True, transform=transform)
 
 .. note::
-    Pour simplifier cet exercice d'introduction, nous utilisons uniquement train et test, mais en pratique il faudrait aussi un ensemble de validation pour surveiller l'overfitting pendant l'entraînement.
+    Pour simplifier cet exercice d'introduction, nous utilisons uniquement les datasets train et test, mais en pratique il faudrait aussi un ensemble de validation pour surveiller l'overfitting pendant l'entraînement.
 
 **Consigne :** Écrire un programme qui :
 
-1) Crée deux modèles différents :
-   
-   - **MLP classique** : aplatit l'image ($$28×28$$ → 784), puis 2 couches fully-connected de 128 neurones avec ReLU, sortie 10 classes
-   - **CNN simple** : 
-     
-     - 1 couche convolutive (1→16 filtres, kernel $$3×3$$, padding=1)
-     - ReLU + MaxPooling $$2×2$$
-     - 1 couche convolutive (16→32 filtres, kernel $$3×3$$, padding=1)
-     - ReLU + MaxPooling $$2×2$$
-     - Aplatir puis 1 couche fully-connected vers 10 classes
+.. step:: 
+    1) Crée deux modèles différents :
+    
+    - **MLP classique** : aplatit l'image ($$28×28$$ → 784), puis 2 couches fully-connected de 128 neurones avec ReLU, sortie 10 classes
+    - **CNN simple** : 
+        
+        - 1 couche convolutive (1→16 filtres, kernel $$3×3$$, padding=1)
+        - ReLU + MaxPooling $$2×2$$
+        - 1 couche convolutive (16→32 filtres, kernel $$3×3$$, padding=1)
+        - ReLU + MaxPooling $$2×2$$
+        - Aplatir puis 1 couche fully-connected vers 10 classes
 
-2) Entraîne les deux modèles pendant 5 epochs avec :
-   
-   - Batch size de 64
-   - Optimiseur Adam avec learning rate 0.001
-   - Loss CrossEntropyLoss
+.. step:: 
+    2) Entraîne les deux modèles pendant 5 epochs avec :
+    
+    - Batch size de 64
+    - Optimiseur Adam avec learning rate 0.001
+    - Loss CrossEntropyLoss
 
-3) Compare le nombre de paramètres de chaque modèle (utiliser ``sum(p.numel() for p in model.parameters())``)
+.. step:: 
+    3) Compare le nombre de paramètres de chaque modèle (utiliser ``sum(p.numel() for p in model.parameters())``)
 
-4) Évalue la précision (accuracy) sur le test set pour les deux modèles
+.. step::
+    4) Évalue la précision (accuracy) sur le test set pour les deux modèles
 
-5) Affiche quelques exemples de prédictions (correctes et incorrectes) pour chaque modèle
+.. step::
+    5) Affiche quelques exemples de prédictions (correctes et incorrectes) pour chaque modèle
 
 
 **Questions :**
 
-6) Quel modèle a le moins de paramètres ?
-7) Quel modèle obtient la meilleure accuracy ?
-8) Pourquoi le CNN est-il plus efficace malgré moins de paramètres ?
+.. step::
+    6) Quel modèle a le moins de paramètres ?
+
+.. step::
+    7) Quel modèle obtient la meilleure accuracy ?
+
+.. step::
+    8) Pourquoi le CNN est-il plus efficace malgré moins de paramètres ?
 
 
 **Astuce :**
@@ -170,32 +180,44 @@ On va créer un mini-dataset synthétique avec des formes géométriques :
 
 **Consigne :** Écrire un programme qui :
 
-1) Crée 3 images : un carré, une croix, une diagonale
+.. step::
+    1) Crée 3 images : un carré, une croix, une diagonale
 
-2) Définit 4 configurations de convolution différentes :
-   
-   - Config A : kernel=3, stride=1, padding=0
-   - Config B : kernel=3, stride=1, padding=1
-   - Config C : kernel=3, stride=2, padding=0
-   - Config D : kernel=5, stride=1, padding=2
+.. step::
+    2) Définit 4 configurations de convolution différentes :
+    
+    - Config A : kernel=3, stride=1, padding=0
+    - Config B : kernel=3, stride=1, padding=1
+    - Config C : kernel=3, stride=2, padding=0
+    - Config D : kernel=5, stride=1, padding=2
 
-3) Pour chaque configuration :
-   
-   - Applique la convolution avec 8 filtres sur une des images
-   - Calcule et affiche la taille de sortie
-   - Vérifie avec la formule : $$H_{out} = \lfloor \frac{H_{in} + 2 \times padding - kernel\_size}{stride} \rfloor + 1$$
+.. step::
+    3) Pour chaque configuration :
+    
+    - Applique la convolution avec 8 filtres sur une des images
+    - Calcule et affiche la taille de sortie
+    - Vérifie avec la formule : $$H_{out} = \lfloor \frac{H_{in} + 2 \times padding - kernel\_size}{stride} \rfloor + 1$$
 
-4) Visualise les 8 feature maps obtenues pour chaque configuration
+.. step::
+    4) Visualise les 8 feature maps obtenues pour chaque configuration
 
-5) Applique ensuite un MaxPooling $$2×2$$ après la convolution et observe la nouvelle taille
+.. step::
+    5) Applique ensuite un MaxPooling $$2×2$$ après la convolution et observe la nouvelle taille
 
 
 **Questions :**
 
-6) Quelle configuration préserve la taille spatiale de l'image ?
-7) Quelle configuration réduit le plus la taille ?
-8) Que se passe-t-il si on applique plusieurs convolutions successives sans padding ?
-9) Pourquoi utilise-t-on souvent padding=1 avec kernel=3 ?
+.. step::
+    6) Quelle configuration préserve la taille spatiale de l'image ?
+
+.. step::
+    7) Quelle configuration réduit le plus la taille ?
+
+.. step::
+    8) Que se passe-t-il si on applique plusieurs convolutions successives sans padding ?
+
+.. step::
+    9) Pourquoi utilise-t-on souvent padding=1 avec kernel=3 ?
 
 
 **Astuce :**
@@ -210,7 +232,7 @@ On va créer un mini-dataset synthétique avec des formes géométriques :
 
 **Résultat attendu :**
 
-Les tailles de sortie attendues pour une image 28×28 :
+Les tailles de sortie attendues pour une image $$28×28$$ :
 
 - Config A (k=3, s=1, p=0) : $$26×26$$
 - Config B (k=3, s=1, p=1) : $$28×28$$
