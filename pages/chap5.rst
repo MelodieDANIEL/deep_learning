@@ -69,7 +69,7 @@ Un filtre (aussi appelé *kernel* ou *noyau*) est une petite matrice de poids ap
 1.4. À quoi servent les filtres ?
 ~~~~~~~~~~~~~~~~~~~
 
-Chaque filtre est spécialisé dans la détection d'un type de motif :
+Chaque filtre peut être spécialisé dans la détection d'un type de motif :
 
 - **Contours** : verticaux, horizontaux, diagonaux
 - **Textures** : lignes, points, motifs répétés
