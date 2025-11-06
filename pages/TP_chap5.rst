@@ -34,7 +34,7 @@ On va travailler avec les données MNIST :
                                   download=True, transform=transform)
 
 .. note::
-    Pour simplifier cet exercice d'introduction, nous utilisons uniquement les datasets train et test, mais en pratique il faudrait aussi un ensemble de validation pour surveiller l'overfitting pendant l'entraînement.
+    Pour simplifier cet exercice d'introduction, nous utilisons uniquement les datasets train et test, mais en pratique il faudrait aussi un dataset de validation pour surveiller l'overfitting pendant l'entraînement.
 
 **Consigne :** Écrire un programme qui :
 
@@ -257,69 +257,84 @@ Cet exercice vous guide d'un CNN et l'utilisation de data augmentation pour amé
 
 **Consigne :** Écrire un programme qui :
 
-1) Charge le dataset CIFAR-10 avec deux types de transformations :
-   
-   - **Sans augmentation** : seulement ToTensor et Normalize
-   - **Avec augmentation** : RandomHorizontalFlip, RandomCrop(32, padding=4), ToTensor, Normalize
+.. step:: 
+    1) Charge le dataset CIFAR-10 avec deux types de transformations :
+    
+    - **Sans augmentation** : seulement ToTensor et Normalize
+    - **Avec augmentation** : RandomHorizontalFlip, RandomCrop(32, padding=4), ToTensor, Normalize
 
-2) Divise le training set en train (80%) et validation (20%) avec ``random_split``
+.. step::
+    2) Divise le training set en train (80%) et validation (20%) avec ``random_split``
 
-3) Crée un CNN avec l'architecture suivante :
-   
-   .. code-block:: python
-   
-       # Bloc 1
-       Conv2d(3, 64, kernel=3, padding=1) + ReLU
-       Conv2d(64, 64, kernel=3, padding=1) + ReLU
-       MaxPool2d(2, 2)  # 32×32 → 16×16
-       
-       # Bloc 2
-       Conv2d(64, 128, kernel=3, padding=1) + ReLU
-       Conv2d(128, 128, kernel=3, padding=1) + ReLU
-       MaxPool2d(2, 2)  # 16×16 → 8×8
-       
-       # Bloc 3
-       Conv2d(128, 256, kernel=3, padding=1) + ReLU
-       Conv2d(256, 256, kernel=3, padding=1) + ReLU
-       MaxPool2d(2, 2)  # 8×8 → 4×4
-       
-       # Classification
-       Flatten
-       Linear(256 * 4 * 4, 512) + ReLU
-       Dropout(0.5)
-       Linear(512, 10)
+.. step::
+    3) Crée un CNN avec l'architecture suivante :
+    
+    .. code-block:: python
+    
+        # Bloc 1
+        Conv2d(3, 64, kernel=3, padding=1) + ReLU
+        Conv2d(64, 64, kernel=3, padding=1) + ReLU
+        MaxPool2d(2, 2)  # 32×32 → 16×16
+        
+        # Bloc 2
+        Conv2d(64, 128, kernel=3, padding=1) + ReLU
+        Conv2d(128, 128, kernel=3, padding=1) + ReLU
+        MaxPool2d(2, 2)  # 16×16 → 8×8
+        
+        # Bloc 3
+        Conv2d(128, 256, kernel=3, padding=1) + ReLU
+        Conv2d(256, 256, kernel=3, padding=1) + ReLU
+        MaxPool2d(2, 2)  # 8×8 → 4×4
+        
+        # Classification
+        Flatten
+        Linear(256 * 4 * 4, 512) + ReLU
+        Dropout(0.5)
+        Linear(512, 10)
 
-4) Entraîne deux versions du modèle (10 epochs chacune) :
-   
-   - Modèle A : sans data augmentation
-   - Modèle B : avec data augmentation
+.. step::
+    4) Entraîne deux versions du modèle (10 epochs chacune) :
+    
+    - Modèle A : sans data augmentation
+    - Modèle B : avec data augmentation
 
-5) Pour chaque epoch, calcule et stocke :
-   
-   - Train loss et train accuracy
-   - Validation loss et validation accuracy
+.. step::
+    5) Pour chaque epoch, calcule et stocke :
+    
+    - Train loss et train accuracy
+    - Validation loss et validation accuracy
 
-6) Implémente un système de sauvegarde qui garde le meilleur modèle basé sur la validation accuracy
+.. step::
+    6) Implémente un système de sauvegarde qui garde le meilleur modèle basé sur la validation accuracy
 
-7) Trace 4 courbes sur un même graphique :
-   
-   - Train et validation loss (un subplot)
-   - Train et validation accuracy (un autre subplot)
-   - Faire cela pour les deux modèles A et B
+.. step::
+    7) Trace 4 courbes sur un même graphique :
+    
+    - Train et validation loss (un subplot)
+    - Train et validation accuracy (un autre subplot)
+    - Faire cela pour les deux modèles A et B
 
-8) Évalue le meilleur modèle (A et B) sur le test set et affiche :
-   
-   - Test accuracy finale
-   - Matrice de confusion
-   - Classification report
+.. step::
+    8) Évalue le meilleur modèle (A et B) sur le test set et affiche :
+    
+    - Test accuracy finale
+    - Matrice de confusion
+    - Classification report
 
 
 **Questions :**
 
-9) Quel modèle (A ou B) généralise mieux ? Comment le voyez-vous sur les courbes ?
-10) Observe-t-on de l'overfitting ? Sur quel modèle et comment ?
-11) Comment la data augmentation aide-t-elle à réduire l'overfitting ?
-12) Quelle est la différence de performance sur le test set ?
+.. step::
+    9) Quel modèle (A ou B) généralise mieux ? Comment le voyez-vous sur les courbes ?
+
+.. step::
+    10) Observe-t-on de l'overfitting ? Sur quel modèle et comment ?
+
+.. step::
+    11) Comment la data augmentation aide-t-elle à réduire l'overfitting ?
+
+.. step::
+    12) Quelle est la différence de performance sur le test set ?
 
 
 **Astuce :**
@@ -359,45 +374,55 @@ Cet exercice propose de visualiser ce que les filtres convolutifs ont appris apr
 
 **Consignes** :
 
-1) Entraîner un CNN simple sur MNIST pendant 3 epochs :
+.. step::
+    1) Entraîner un CNN simple sur MNIST pendant 3 epochs :
 
-   .. code-block:: python
-   
-       class SimpleCNN(nn.Module):
-           def __init__(self):
-               super().__init__()
-               self.conv1 = nn.Conv2d(1, 16, kernel_size=3, padding=1)
-               self.conv2 = nn.Conv2d(16, 32, kernel_size=3, padding=1)
-               self.fc = nn.Linear(32 * 7 * 7, 10)
-           
-           def forward(self, x):
-               x = F.max_pool2d(F.relu(self.conv1(x)), 2)
-               x = F.max_pool2d(F.relu(self.conv2(x)), 2)
-               x = x.view(x.size(0), -1)
-               x = self.fc(x)
-               return x
+    .. code-block:: python
+    
+        class SimpleCNN(nn.Module):
+            def __init__(self):
+                super().__init__()
+                self.conv1 = nn.Conv2d(1, 16, kernel_size=3, padding=1)
+                self.conv2 = nn.Conv2d(16, 32, kernel_size=3, padding=1)
+                self.fc = nn.Linear(32 * 7 * 7, 10)
+            
+            def forward(self, x):
+                x = F.max_pool2d(F.relu(self.conv1(x)), 2)
+                x = F.max_pool2d(F.relu(self.conv2(x)), 2)
+                x = x.view(x.size(0), -1)
+                x = self.fc(x)
+                return x
 
-2) Après l'entraînement, extraire les poids de la première couche convolutive :
+.. step::
+    2) Après l'entraînement, extraire les poids de la première couche convolutive :
 
-   .. code-block:: python
-   
-       filters = model.conv1.weight.data  # shape: [16, 1, 3, 3]
+    .. code-block:: python
+    
+        filters = model.conv1.weight.data  # shape: [16, 1, 3, 3]
 
-3) Visualiser les 16 filtres $$3×3$$ de la première couche sur une grille $$4×4$$
+.. step::
+    3) Visualiser les 16 filtres $$3×3$$ de la première couche sur une grille $$4×4$$
 
-4) Prendre une image de test et visualiser les feature maps produites par la première couche convolutive :
-   
-   - Appliquer ``model.conv1(image)`` puis ``F.relu()``
-   - Afficher les 16 feature maps obtenues
+.. step::
+    4) Prendre une image de test et visualiser les feature maps produites par la première couche convolutive :
+    
+    - Appliquer ``model.conv1(image)`` puis ``F.relu()``
+    - Afficher les 16 feature maps obtenues
 
-5) Faire de même pour la deuxième couche convolutive (afficher 32 feature maps sur une grille 4×8)
+.. step::
+    5) Faire de même pour la deuxième couche convolutive (afficher 32 feature maps sur une grille 4×8)
 
 
 **Questions :**
 
+.. step::
 6) Que détectent les filtres de la première couche ? (contours, textures, ...)
-7) Les feature maps de la deuxième couche sont-elles plus abstraites que celles de la première ?
-8) Comment évoluent les patterns détectés entre les couches ?
+
+.. step::
+    7) Les feature maps de la deuxième couche sont-elles plus abstraites que celles de la première ?
+
+.. step::
+    8) Comment évoluent les patterns détectés entre les couches ?
 
 
 **Astuce :**
@@ -444,62 +469,76 @@ Dans cet exercice, vous allez utiliser un modèle pré-entraîné (ResNet18) et 
 
 **Consignes** :
 
-1) Charger le dataset CIFAR-10 avec des transformations appropriées :
+.. step::
+    1) Charger le dataset CIFAR-10 avec des transformations appropriées :
 
-   .. code-block:: python
-   
-       from torchvision import models
-       
-       transform = transforms.Compose([
-           transforms.Resize(224),  # ResNet attend du 224×224
-           transforms.ToTensor(),
-           transforms.Normalize(mean=[0.485, 0.456, 0.406], 
-                              std=[0.229, 0.224, 0.225])
-       ])
+    .. code-block:: python
+    
+        from torchvision import models
+        
+        transform = transforms.Compose([
+            transforms.Resize(224),  # ResNet attend du 224×224
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], 
+                                std=[0.229, 0.224, 0.225])
+        ])
 
-2) Créer deux modèles :
-   
-   - **Modèle A (from scratch)** : ResNet18 initialisé aléatoirement
-   - **Modèle B (transfer learning)** : ResNet18 pré-entraîné sur ImageNet, on gèle toutes les couches sauf la dernière
+.. step::
+    2) Créer deux modèles :
+    
+    - **Modèle A (from scratch)** : ResNet18 initialisé aléatoirement
+    - **Modèle B (transfer learning)** : ResNet18 pré-entraîné sur ImageNet, on gèle toutes les couches sauf la dernière
 
-   .. code-block:: python
-   
-       # Modèle A
-       model_scratch = models.resnet18(pretrained=False)
-       model_scratch.fc = nn.Linear(model_scratch.fc.in_features, 10)
-       
-       # Modèle B
-       model_transfer = models.resnet18(pretrained=True)
-       # Geler toutes les couches
-       for param in model_transfer.parameters():
-           param.requires_grad = False
-       # Remplacer la dernière couche et la dégeler
-       model_transfer.fc = nn.Linear(model_transfer.fc.in_features, 10)
+    .. code-block:: python
+    
+        # Modèle A
+        model_scratch = models.resnet18(pretrained=False)
+        model_scratch.fc = nn.Linear(model_scratch.fc.in_features, 10)
+        
+        # Modèle B
+        model_transfer = models.resnet18(pretrained=True)
+        # Geler toutes les couches
+        for param in model_transfer.parameters():
+            param.requires_grad = False
+        # Remplacer la dernière couche et la dégeler
+        model_transfer.fc = nn.Linear(model_transfer.fc.in_features, 10)
 
-3) Entraîner les deux modèles pendant 10 epochs avec :
-   
-   - Batch size 64
-   - Adam optimizer, learning rate 0.001
-   - Diviser train en train (80%) et validation (20%)
+.. step::
+    3) Entraîner les deux modèles pendant 10 epochs avec :
+    
+    - Batch size 64
+    - Adam optimizer, learning rate 0.001
+    - Diviser train en train (80%) et validation (20%)
 
-4) Pour chaque modèle, tracer :
-   
-   - Evolution de la train loss et validation loss
-   - Evolution de la train accuracy et validation accuracy
+.. step::
+    4) Pour chaque modèle, tracer :
+    
+    - Evolution de la train loss et validation loss
+    - Evolution de la train accuracy et validation accuracy
 
-5) Comparer le temps d'entraînement par epoch pour les deux modèles
+.. step::           
+    5) Comparer le temps d'entraînement par epoch pour les deux modèles
 
-6) Évaluer les deux modèles sur le test set
+.. step::
+    6) Évaluer les deux modèles sur le test set
 
-7) Afficher une matrice de confusion pour chaque modèle
+.. step::
+    7) Afficher une matrice de confusion pour chaque modèle
 
 
 **Questions :**
 
-8) Quel modèle converge le plus rapidement ?
-9) Quel modèle atteint la meilleure accuracy finale ?
-10) Pourquoi le transfer learning est-il plus efficace ?
-11) Que se passerait-il si on dégelait aussi les couches intermédiaires ?
+.. step::
+    8) Quel modèle converge le plus rapidement ?
+
+.. step::
+    9) Quel modèle atteint la meilleure accuracy finale ?
+
+.. step::
+    10) Pourquoi le transfer learning est-il plus efficace ?
+
+.. step::
+    11) Que se passerait-il si on dégelait aussi les couches intermédiaires ?
 
 
 **Astuce :**
@@ -544,76 +583,90 @@ Dans cet exercice, vous allez implémenter un système complet d'entraînement a
 
 **Consignes** :
 
-1) Utiliser CIFAR-10 avec data augmentation et diviser en train/val/test (70%/15%/15%)
+.. step::
+    1) Utiliser CIFAR-10 avec data augmentation et diviser en train/val/test (70%/15%/15%)
 
-2) Créer un CNN de taille moyenne :
+.. step::
+    2) Créer un CNN de taille moyenne :
 
-   .. code-block:: python
-   
-       class MediumCNN(nn.Module):
-           def __init__(self):
-               super().__init__()
-               self.features = nn.Sequential(
-                   nn.Conv2d(3, 64, 3, padding=1),
-                   nn.ReLU(),
-                   nn.Conv2d(64, 64, 3, padding=1),
-                   nn.ReLU(),
-                   nn.MaxPool2d(2),
-                   
-                   nn.Conv2d(64, 128, 3, padding=1),
-                   nn.ReLU(),
-                   nn.Conv2d(128, 128, 3, padding=1),
-                   nn.ReLU(),
-                   nn.MaxPool2d(2),
-               )
-               self.classifier = nn.Sequential(
-                   nn.Linear(128 * 8 * 8, 256),
-                   nn.ReLU(),
-                   nn.Dropout(0.5),
-                   nn.Linear(256, 10)
-               )
-           
-           def forward(self, x):
-               x = self.features(x)
-               x = x.view(x.size(0), -1)
-               x = self.classifier(x)
-               return x
+    .. code-block:: python
+    
+        class MediumCNN(nn.Module):
+            def __init__(self):
+                super().__init__()
+                self.features = nn.Sequential(
+                    nn.Conv2d(3, 64, 3, padding=1),
+                    nn.ReLU(),
+                    nn.Conv2d(64, 64, 3, padding=1),
+                    nn.ReLU(),
+                    nn.MaxPool2d(2),
+                    
+                    nn.Conv2d(64, 128, 3, padding=1),
+                    nn.ReLU(),
+                    nn.Conv2d(128, 128, 3, padding=1),
+                    nn.ReLU(),
+                    nn.MaxPool2d(2),
+                )
+                self.classifier = nn.Sequential(
+                    nn.Linear(128 * 8 * 8, 256),
+                    nn.ReLU(),
+                    nn.Dropout(0.5),
+                    nn.Linear(256, 10)
+                )
+            
+            def forward(self, x):
+                x = self.features(x)
+                x = x.view(x.size(0), -1)
+                x = self.classifier(x)
+                return x
 
-3) Implémenter une classe ``EarlyStopping`` avec les paramètres :
-   
-   - ``patience`` : nombre d'epochs sans amélioration avant d'arrêter
-   - ``min_delta`` : amélioration minimale pour considérer un progrès
-   - Sauvegarder le meilleur modèle automatiquement
+.. step::
+    3) Implémenter une classe ``EarlyStopping`` avec les paramètres :
+    
+    - ``patience`` : nombre d'epochs sans amélioration avant d'arrêter
+    - ``min_delta`` : amélioration minimale pour considérer un progrès
+    - Sauvegarder le meilleur modèle automatiquement
 
-4) Entraîner 3 versions du modèle (max 50 epochs) :
-   
-   - **Modèle A** : learning rate constant 0.001, pas d'early stopping
-   - **Modèle B** : learning rate constant 0.001, early stopping (patience=5)
-   - **Modèle C** : learning rate avec ``ReduceLROnPlateau`` + early stopping (patience=7)
+.. step::
+    4) Entraîner 3 versions du modèle (max 50 epochs) :
+    
+    - **Modèle A** : learning rate constant 0.001, pas d'early stopping
+    - **Modèle B** : learning rate constant 0.001, early stopping (patience=5)
+    - **Modèle C** : learning rate avec ``ReduceLROnPlateau`` + early stopping (patience=7)
 
-5) Pour chaque modèle, tracer sur un même graphique :
-   
-   - Train et validation loss
-   - Train et validation accuracy
-   - Marquer l'epoch où l'entraînement s'arrête (si early stopping)
-   - Marquer les epochs où le learning rate change (modèle C)
+.. step::
+    5) Pour chaque modèle, tracer sur un même graphique :
+    
+    - Train et validation loss
+    - Train et validation accuracy
+    - Marquer l'epoch où l'entraînement s'arrête (si early stopping)
+    - Marquer les epochs où le learning rate change (modèle C)
 
-6) Comparer les résultats finaux sur le test set
+.. step::
+    6) Comparer les résultats finaux sur le test set
 
-7) Afficher pour chaque modèle :
-   
-   - Nombre total d'epochs entraînées
-   - Meilleure validation accuracy
-   - Test accuracy finale
-   - Temps d'entraînement total
+.. step::
+    7) Afficher pour chaque modèle :
+    
+    - Nombre total d'epochs entraînées
+    - Meilleure validation accuracy
+    - Test accuracy finale
+    - Temps d'entraînement total
 
 
 **Questions :**
 
-8) Quel modèle évite le mieux l'overfitting ?
-9) Quel est l'impact du learning rate scheduler ?
-10) L'early stopping permet-il de gagner du temps d'entraînement ?
-11) Quelle stratégie recommanderiez-vous pour un nouveau projet ?
+.. step::
+    8) Quel modèle évite le mieux l'overfitting ?
+
+.. step::
+    9) Quel est l'impact du learning rate scheduler ?
+
+.. step::
+    10) L'early stopping permet-il de gagner du temps d'entraînement ?
+
+.. step::
+    11) Quelle stratégie recommanderiez-vous pour un nouveau projet ?
 
 
 **Astuce :**
