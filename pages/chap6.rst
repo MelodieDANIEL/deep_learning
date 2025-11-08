@@ -858,8 +858,7 @@ Après l'annotation, il faut exporter les données dans un format exploitable pa
 
 Label Studio peut exporter dans plusieurs formats. **Dans ce chapitre, nous allons utiliser :**
 
-1. **Le format JSON natif de Label Studio** pour créer un **détecteur CNN custom** (sections suivantes)
-2. **Le format YOLO** pour utiliser les modèles YOLO pré-entraînés (fin du chapitre)
+1. **Le format JSON natif de Label Studio** pour créer un **détecteur CNN custom** (sections 6-7)
 
 **Étapes pour exporter** :
 
@@ -868,7 +867,7 @@ Label Studio peut exporter dans plusieurs formats. **Dans ce chapitre, nous allo
 3. Choisir le format :
    
    - **"JSON"** → format natif Label Studio (pour notre CNN custom)
-   - **"YOLO"** → fichiers .txt au format YOLO (pour YOLO v5/v8/etc.)
+   - "YOLO" → fichiers .txt au format YOLO (si vous voulez entraîner YOLO sur votre dataset custom)
    - "COCO" → fichier JSON au format COCO (autre méthode)
    - "Pascal VOC" → archive ZIP avec XMLs (autre méthode)
 
@@ -876,11 +875,10 @@ Label Studio peut exporter dans plusieurs formats. **Dans ce chapitre, nous allo
 
 .. note::
 
-   💡 **Choix du format**
+   💡 **Choix du format selon votre objectif**
    
-   - **Dans la suite de ce chapitre**, nous utiliserons le **format JSON** de Label Studio pour construire notre propre détecteur avec PyTorch
-   - **Plus loin dans le chapitre**, nous verrons comment utiliser le **format YOLO** avec les modèles YOLO pré-entraînés
-   - Les formats **COCO** et **Pascal VOC** sont disponibles si vous souhaitez utiliser d'autres frameworks.
+   - **Sections 6-7** : Nous utiliserons le **format JSON** de Label Studio pour construire notre propre détecteur avec PyTorch
+   - **Section 8** : Nous utiliserons **COCO** (téléchargé automatiquement) pour apprendre YOLO sur un dataset standard
 
 .. slide::
 
@@ -1512,18 +1510,14 @@ Toujours vérifier que le Dataset charge correctement :
        visualize_sample(train_dataset, i)
 
 
-STOP ICI
 
-STOP ICI
-
-STOP ICI
 
 .. slide::
 
 📖 7. CNN ultra-simple : régression directe de boîte
 ----------------------
 
-Pour des cas simples avec **1 seul objet par image**, on peut utiliser une approche beaucoup plus simple que YOLO ou Faster R-CNN : **régression directe des coordonnées** de la boîte. Le modèle prédit directement 4 nombres : `(x_center, y_center, width, height)` normalisés dans [0,1].
+Pour des cas simples avec **1 seul objet par image**, on peut utiliser une approche beaucoup plus simple que YOLO ou Faster R-CNN : **régression directe des coordonnées** de la boîte. Le modèle prédit directement 4 nombres : ``(x_center, y_center, width, height)`` normalisés dans [0,1].
 
 .. note::
 
@@ -1531,8 +1525,10 @@ Pour des cas simples avec **1 seul objet par image**, on peut utiliser une appro
    
    ✅ **OUI** : 1 objet par image, objet centré, peu de variations (ex: détection de visage, logo)
    
-   ❌ **NON** : plusieurs objets, positions variables, objets qui se chevauchent
+   ❌ **NON** : plusieurs objets, positions variables, objets qui se chevauchent, etc.
 
+.. slide::
+    
 7.1. Architecture ultra-simple
 ~~~~~~~~~~~~~~~~~~~
 
@@ -1600,12 +1596,10 @@ Le modèle est constitué d'un **backbone CNN** (4 couches Conv2D + MaxPool) sui
 .. note::
 
    📊 **Taille du modèle**
-   
-   Ce modèle a environ **25 millions** de paramètres (principalement dans la première couche FC `128*14*14 → 128`). C'est bien plus petit que Faster R-CNN (>40M) mais simple et efficace pour 1 objet par image.
 
-.. warning::
+   Ce modèle a environ **25 millions** de paramètres (principalement dans la première couche FC ``128*14*14 → 128``). C'est bien plus petit que Faster R-CNN (``>40M``) qui est plus générique.
 
-   Ce modèle suppose **1 seul objet par image**. Si votre dataset contient plusieurs objets par image, utilisez plutôt un modèle avec anchors (section 7.2 de la version complète) ou Faster R-CNN (section 8).
+.. slide::
 
 7.2. Loss et optimiseur
 ~~~~~~~~~~~~~~~~~~~
@@ -1626,8 +1620,8 @@ Le modèle est constitué d'un **backbone CNN** (4 couches Conv2D + MaxPool) sui
        
        Suppose 1 seule boîte par image.
        """
-       boxes = target['boxes']  # [N, 4] en pixels
-       box = boxes[0]  # Prendre la première (et unique) boîte
+       boxes = target['boxes']  # [N, 4] en pixels avec N=1 (le seul objet à détecter)
+       box = boxes[0]  # Prendre la première et unique boîte (sécurité)
        
        x1, y1, x2, y2 = box
        x_center = (x1 + x2) / 2 / 224  # Normaliser par la taille de l'image
@@ -1641,11 +1635,11 @@ Le modèle est constitué d'un **backbone CNN** (4 couches Conv2D + MaxPool) sui
 
    📐 **Normalisation des coordonnées**
    
-   - Entrée : boîtes en pixels `[x1, y1, x2, y2]` dans `[0, 224]`
-   - Sortie : coordonnées normalisées `[x_c, y_c, w, h]` dans `[0, 1]`
+   - Entrée : boîtes en pixels ``[x1, y1, x2, y2]`` dans ``[0, 224]``
+   - Sortie : coordonnées normalisées ``[x_c, y_c, w, h]`` dans ``[0, 1]``
    - Le modèle prédit directement ces 4 valeurs normalisées
-   - Pas d'anchors, pas de grille, pas d'objectness !
 
+.. slide::
 
 7.3. Entraînement (boucles train/val)
 ~~~~~~~~~~~~~~~~~~~
@@ -1653,8 +1647,6 @@ Le modèle est constitué d'un **backbone CNN** (4 couches Conv2D + MaxPool) sui
 Boucles simples d'entraînement et d'évaluation.
 
 .. code-block:: python
-
-   from tqdm import tqdm
    
    # Fonctions d'entraînement
    def train_simple_epoch(model, criterion, optimizer, data_loader, device, epoch):
@@ -1662,6 +1654,7 @@ Boucles simples d'entraînement et d'évaluation.
        model.train()
        total_loss = 0
        
+       # tqdm enveloppe le data_loader : itère sur les batchs + affiche une barre de progression
        pbar = tqdm(data_loader, desc=f"Epoch {epoch}")
        
        for images, targets in pbar:
@@ -1736,13 +1729,10 @@ Boucles simples d'entraînement et d'évaluation.
 
    🏋️ **Convergence**
    
-   Avec ce modèle simple, vous devriez voir la loss descendre rapidement :
-   
-   - Epoch 0 : ~0.02-0.03 (loss MSE élevée)
-   - Epoch 5 : ~0.005-0.01 (convergence)
-   - Epoch 15+ : ~0.001-0.003 (modèle bien entraîné)
-   
-   Si la loss ne descend pas, vérifiez que vos données sont bien normalisées !
+   Avec ce modèle simple, vous devriez voir la loss descendre rapidement (à partir de l'epoch 5). Si la loss ne descend pas, vérifiez que vos données sont bien normalisées !
+
+
+.. slide::
 
 7.4. Évaluation avec IoU
 ~~~~~~~~~~~~~~~~~~~
@@ -1784,7 +1774,8 @@ Calcul de l'**IoU moyen** (Intersection over Union) sur le test set.
            gt_boxes = target['boxes']  # [N, 4] en pixels
            gt_box = gt_boxes[0]  # Prendre la première boîte
            
-           # Convertir prédiction vers pixels [x1, y1, x2, y2]
+           # Convertir prédiction [x_c, y_c, w, h] normalisés → [x1, y1, x2, y2] pixels
+           # (inverse de prepare_single_box_target)
            x_c, y_c, w, h = pred
            x1 = (x_c - w/2) * 224
            y1 = (y_c - h/2) * 224
@@ -1810,12 +1801,14 @@ Calcul de l'**IoU moyen** (Intersection over Union) sur le test set.
 .. note::
 
    📈 **Interprétation de l'IoU**
-   
-   - IoU > **0.5** : Bonne détection (standard COCO)
-   - IoU > **0.75** : Très bonne détection
-   - IoU > **0.9** : Détection quasi-parfaite
-   
-   Un modèle bien entraîné sur ce dataset simple devrait obtenir un IoU moyen > 0.8.
+
+   - IoU $$> 0.5$$ : Bonne détection
+   - IoU $$> 0.75$$ : Très bonne détection
+   - IoU $$> 0.9$$ : Détection quasi-parfaite
+
+   Un modèle bien entraîné sur ce dataset simple devrait obtenir un IoU moyen $$> 0.8$$.
+
+.. slide::
 
 7.5. Visualisation
 ~~~~~~~~~~~~~~~~~~~
@@ -1894,879 +1887,538 @@ Affichage des prédictions sur une grille d'images avec GT (vert) et prédiction
 
 .. slide::
 
-📖 8. Entraînement avec Faster R-CNN (torchvision)
+📖 8. Entraînement avec YOLO sur dataset existant
 ----------------------
 
-Nous allons maintenant entraîner un détecteur d'objets avec **Faster R-CNN**, l'un des modèles les plus populaires et performants.
+Nous allons maintenant utiliser **YOLOv11** (Ultralytics) pour entraîner un détecteur sur un dataset standard (COCO ou Pascal VOC). YOLO (You Only Look Once) est un modèle utilisé pour la détection d'objets rapide et efficace, parfait pour la détection en temps réel.
 
-8.1. Qu'est-ce que Faster R-CNN ?
+8.1. Introduction à YOLO
 ~~~~~~~~~~~~~~~~~~~
 
-**Faster R-CNN** (Region-based Convolutional Neural Network) est un modèle **two-stage** :
+**YOLO** divise l'image en une **grille** (ex: $$7×7$$, $$13×13$$, etc.) et pour chaque **cellule** de la grille, prédit :
 
-**Stage 1 : Region Proposal Network (RPN)**
+- **Plusieurs boîtes englobantes candidates** (typiquement 3-9 selon les versions) grâce aux **anchors**
+- Chaque boîte est représentée par : **(x, y, w, h)** relatives au centre de la cellule
+- **Objectness** : probabilité qu'un objet soit présent dans cette boîte
+- **Classes** : probabilités pour chaque classe (si objet détecté)
 
-- Scanne l'image pour proposer des régions susceptibles de contenir des objets
-- Génère ~1000-2000 propositions de boîtes
+**Avantages de YOLO :**
 
-**Stage 2 : Classification et raffinement**
+- ✅ **Rapide** : 30-80 FPS (temps réel)
+- ✅ **One-stage** : prédiction directe
+- ✅ **Précis** : performances supérieures à Faster R-CNN
+- ✅ **Facile à utiliser** : librairie Ultralytics très simple
 
-- Pour chaque proposition, prédit la classe et affine les coordonnées
-- Filtre les boîtes redondantes (Non-Maximum Suppression)
+**YOLOv11** est la dernière version stable (2024) avec des améliorations significatives par rapport à YOLOv8 (2023) :
 
-.. image:: images/faster_rcnn_architecture.png
-   :width: 80%
-   :align: center
-   :alt: Architecture Faster R-CNN
+- Architecture optimisée 
 
-**Avantages** :
+- Meilleure précision 
 
-- Très précis, surtout sur petits objets
-- Entraînement possible avec peu de données (quelques centaines d'images)
-- Architecture bien comprise et stable
-
-**Inconvénients** :
-
-- Plus lent que YOLO en inférence (~5-10 fps)
-- Plus complexe qu'un modèle one-stage
-
-.. slide::
-
-8.2. Charger un modèle pré-entraîné
-~~~~~~~~~~~~~~~~~~~
-
-torchvision fournit Faster R-CNN pré-entraîné sur COCO (80 classes). On va le fine-tuner sur nos propres classes.
-
-.. code-block:: python
-
-   import torch
-   import torchvision
-   from torchvision.models.detection import fasterrcnn_resnet50_fpn
-   from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
-
-   def get_model(num_classes):
-       """
-       Charge Faster R-CNN et adapte la tête de classification.
-       
-       Args:
-           num_classes: nombre de classes + 1 (pour le background)
-                       Ex : 2 classes → num_classes = 3
-       """
-       # Charger le modèle pré-entraîné
-       model = fasterrcnn_resnet50_fpn(pretrained=True)
-       
-       # Récupérer le nombre de features en entrée de la tête de classification
-       in_features = model.roi_heads.box_predictor.cls_score.in_features
-       
-       # Remplacer la tête par une nouvelle pour nos classes
-       model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
-       
-       return model
-
-   # Exemple : 2 classes (bouteille, gobelet) + background
-   model = get_model(num_classes=3)
-   print(model)
-
-**Explication** :
-
-- ``pretrained=True`` : charge les poids entraînés sur COCO (80 classes)
-- On **remplace uniquement la dernière couche** pour nos classes
-- Les couches précédentes (backbone ResNet50, RPN) sont déjà très performantes et seront fine-tunées
-
-💡 **Transfer learning** : on réutilise les connaissances du modèle (formes, textures, objets génériques) pour accélérer l'apprentissage sur notre tâche spécifique.
-
-.. slide::
-
-8.3. Configuration de l'entraînement
-~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: python
-
-   import torch
-   from torch.utils.data import DataLoader
-
-.. code-block:: python
-
-   # 📊 ÉVALUATION COMPLÈTE DU CNN CUSTOM SUR TOUT LE TEST SET (depuis le notebook)
-
-   import numpy as np
-
-   def compute_iou_boxes(box1, box2):
-       """
-       Calcule l'IoU entre deux boîtes.
-       
-       Args:
-           box1, box2: [x1, y1, x2, y2]
-       
-       Returns:
-           iou: score IoU (0-1)
-       """
-       x1_inter = max(box1[0], box2[0])
-       y1_inter = max(box1[1], box2[1])
-       x2_inter = min(box1[2], box2[2])
-       y2_inter = min(box1[3], box2[3])
-       
-       if x2_inter < x1_inter or y2_inter < y1_inter:
-           return 0.0
-       
-       inter_area = (x2_inter - x1_inter) * (y2_inter - y1_inter)
-       
-       box1_area = (box1[2] - box1[0]) * (box1[3] - box1[1])
-       box2_area = (box2[2] - box2[0]) * (box2[3] - box2[1])
-       
-       union_area = box1_area + box2_area - inter_area
-       
-       iou = inter_area / (union_area + 1e-6)
-       return iou
-
-   # Charger le meilleur modèle
-   custom_model.load_state_dict(torch.load('best_custom_cube_detector.pth'))
-   custom_model.eval()
-   
-   print("🔍 ÉVALUATION SUR LE TEST SET COMPLET")
-   print("="*60)
-   
-   # Métriques globales
-   total_gt_objects = 0
-   total_detected = 0
-   total_true_positives = 0
-   iou_threshold = 0.5
-   conf_threshold = 0.75  # seuil relevé pour réduire les faux positifs
-   #conf_threshold = 0.3  # exemple d'autre seuil
-   
-   all_ious = []
-   detection_per_image = []
-   
-   print(f"\n📈 Test sur {len(test_dataset)} images...\n")
-   
-   # Tester sur chaque image
-   for idx in range(len(test_dataset)):
-       test_img, test_target = test_dataset[idx]
-       test_img_tensor = test_img.unsqueeze(0).to(device)
-       
-       # Prédiction
-       with torch.no_grad():
-           predictions = custom_model(test_img_tensor)
-           results = custom_model.decode_predictions(predictions, conf_threshold=conf_threshold, device=device)
-       
-       detected_boxes = results[0]['boxes'].cpu().numpy()
-       detected_labels = results[0]['labels'].cpu().numpy()
-       detected_scores = results[0]['scores'].cpu().numpy()
-       
-       gt_boxes = test_target['boxes'].cpu().numpy()
-       gt_labels = test_target['labels'].cpu().numpy()
-       
-       # Compter les objets
-       num_gt = len(gt_boxes)
-       num_detected = len(detected_boxes)
-       
-       total_gt_objects += num_gt
-       total_detected += num_detected
-       
-       detection_per_image.append({
-           'image_idx': idx,
-           'gt_count': num_gt,
-           'detected_count': num_detected
-       })
-       
-       # Calculer les True Positives (matching avec IoU)
-       matched_gt = set()
-       image_ious = []
-       
-       for det_box in detected_boxes:
-           best_iou = 0
-           best_gt_idx = -1
-           
-           for gt_idx, gt_box in enumerate(gt_boxes):
-               if gt_idx in matched_gt:
-                   continue
-               
-               iou = compute_iou_boxes(det_box, gt_box)
-               
-               if iou > best_iou:
-                   best_iou = iou
-                   best_gt_idx = gt_idx
-           
-           if best_iou >= iou_threshold:
-               total_true_positives += 1
-               matched_gt.add(best_gt_idx)
-               image_ious.append(best_iou)
-       
-       all_ious.extend(image_ious)
-       
-       # Afficher les détails de cette image
-       print(f"Image {idx+1}/{len(test_dataset)}:")
-       print(f"   Ground Truth: {num_gt} cubes")
-       print(f"   Détections:   {num_detected} cubes")
-       print(f"   True Positives: {len(image_ious)}")
-       if image_ious:
-           print(f"   IoU moyen:    {np.mean(image_ious):.3f}")
-   
-   # Calculer les métriques globales
-   print("\n" + "="*60)
-   print("📊 RÉSULTATS GLOBAUX")
-   print("="*60)
-   
-   precision = total_true_positives / total_detected if total_detected > 0 else 0
-   recall = total_true_positives / total_gt_objects if total_gt_objects > 0 else 0
-   f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
-   mean_iou = np.mean(all_ious) if all_ious else 0
-   
-   print(f"\n🎯 Métriques de détection (IoU threshold = {iou_threshold}, conf = {conf_threshold}):")
-   print(f"   Objets ground truth:  {total_gt_objects}")
-   print(f"   Objets détectés:      {total_detected}")
-   print(f"   True Positives:       {total_true_positives}")
-   print(f"   False Positives:      {total_detected - total_true_positives}")
-   print(f"   False Negatives:      {total_gt_objects - total_true_positives}")
-   
-   print(f"\n📈 Scores:")
-   print(f"   Precision:  {precision:.3f} ({total_true_positives}/{total_detected})")
-   print(f"   Recall:     {recall:.3f} ({total_true_positives}/{total_gt_objects})")
-   print(f"   F1-Score:   {f1_score:.3f}")
-   print(f"   IoU moyen:  {mean_iou:.3f}")
-   
-   # Taux de détection par image
-   perfect_detections = sum(1 for d in detection_per_image if d['detected_count'] == d['gt_count'])
-   print(f"\n🎨 Détections parfaites (nombre exact): {perfect_detections}/{len(test_dataset)} images ({perfect_detections/len(test_dataset)*100:.1f}%)")
-   
-   # Visualisation de quelques résultats
-   print("\n" + "="*60)
-   print("🖼️  VISUALISATION DE 3 EXEMPLES DU TEST SET")
-   print("="*60)
-   
-   fig, axes = plt.subplots(3, 2, figsize=(16, 18))
-   
-   for i, test_idx in enumerate(range(min(3, len(test_dataset)))):
-       test_img, test_target = test_dataset[test_idx]
-       test_img_tensor = test_img.unsqueeze(0).to(device)
-       
-       # Prédiction
-       with torch.no_grad():
-           predictions = custom_model(test_img_tensor)
-           results = custom_model.decode_predictions(predictions, conf_threshold=conf_threshold, device=device)
-       
-       detected_boxes = results[0]['boxes']
-       detected_labels = results[0]['labels']
-       detected_scores = results[0]['scores']
-       
-       # Convertir l'image pour affichage
-       img_np = test_img.permute(1, 2, 0).cpu().numpy()
-       
-       # Ground Truth
-       ax = axes[i, 0]
-       ax.imshow(img_np)
-       ax.set_title(f'Image {test_idx+1} - Ground Truth ({len(test_target["boxes"])} cubes)', 
-                    fontsize=14, weight='bold')
-       
-       for box, label in zip(test_target['boxes'], test_target['labels']):
-           x1, y1, x2, y2 = box.tolist()
-           width = x2 - x1
-           height = y2 - y1
-           
-           rect = patches.Rectangle(
-               (x1, y1), width, height,
-               linewidth=3, edgecolor='green', facecolor='none'
-           )
-           ax.add_patch(rect)
-           
-           class_name = full_dataset.get_class_name(label.item())
-           ax.text(x1, y1-5, f"{class_name}",
-                   bbox=dict(facecolor='green', alpha=0.7),
-                   fontsize=10, color='white', weight='bold')
-       
-       ax.axis('off')
-       
-       # Prédictions
-       ax = axes[i, 1]
-       ax.imshow(img_np)
-       ax.set_title(f'Image {test_idx+1} - Prédictions ({len(detected_boxes)} cubes)', 
-                    fontsize=14, weight='bold')
-       
-       colors = ['red', 'blue', 'orange', 'purple', 'yellow']
-       
-       for box, label, score in zip(detected_boxes, detected_labels, detected_scores):
-           x1, y1, x2, y2 = box.tolist()
-           width = x2 - x1
-           height = y2 - y1
-           
-           color = colors[(label.item() - 1) % len(colors)]
-           
-           rect = patches.Rectangle(
-               (x1, y1), width, height,
-               linewidth=3, edgecolor=color, facecolor='none'
-           )
-           ax.add_patch(rect)
-           
-           class_name = full_dataset.get_class_name(label.item())
-           label_text = f"{class_name}: {score:.2f}"
-           ax.text(x1, y1-5, label_text,
-                   bbox=dict(facecolor=color, alpha=0.7),
-                   fontsize=10, color='white', weight='bold')
-       
-       ax.axis('off')
-   
-   plt.tight_layout()
-   plt.savefig('test_set_evaluation.png', bbox_inches='tight', dpi=150)
-   print(f"\n✅ Visualisation sauvegardée : test_set_evaluation.png")
-   plt.show()
-   
-   print("\n" + "="*60)
-   print("✨ CONCLUSION")
-   print("="*60)
-   
-   if f1_score > 0.8:
-       print("🌟 Excellent ! Le CNN custom détecte très bien les cubes.")
-   elif f1_score > 0.6:
-       print("👍 Très bien ! Le CNN custom a de bonnes performances.")
-   elif f1_score > 0.4:
-       print("👌 Correct. Le CNN custom fonctionne mais pourrait être amélioré.")
-   else:
-       print("⚠️  Le modèle nécessite plus d'entraînement ou d'ajustements.")
-   
-   print(f"\nLe modèle a {custom_model.count_parameters():,} paramètres et a été")
-   print("entraîné from scratch sans transfer learning sur seulement")
-   print(f"{len(train_dataset)} images d'entraînement.")
-
-7.6. Remarque — Batch Normalization et seuil de confiance
-           # Forward pass
-           loss_dict = model(images, targets)
-Qu’est-ce que la BatchNorm (BN) ? Elle normalise les activations par la moyenne/variance du mini-batch. Effets concrets: stabilise et accélère l’entraînement, aide la profondeur et agit comme une légère régularisation. Avec de très petits batchs (1–4), les statistiques de batch peuvent être bruyantes et la calibration des scores varier.
-
-Dans ce notebook, la BN est commentée par simplicité (lignes `#self.bn...`). Vous pouvez:
-
-- Laisser SANS BN (comme dans le code ci-dessus): souvent plus de faux positifs → utilisez un seuil plus haut en inférence (≈ 0.75 par défaut dans l’évaluation).
-- Activer AVEC BN: décommentez les lignes `self.bn*` et les passes `F.relu(self.bn*(...))` dans le forward. Scores souvent mieux calibrés → un seuil plus bas est possible (≈ 0.5–0.6).
-
-Observation du notebook: «sans BN ça fonctionne, mais avec BN les résultats étaient meilleurs». Présentez les deux aux étudiants et faites varier le seuil: plus bas avec BN, plus haut sans BN.
-
-Alternative petits batchs: GroupNorm (``nn.GroupNorm``) ne dépend pas de la taille de batch et peut remplacer BatchNorm2d(C) par ``GroupNorm(8, C)``.
-           losses.backward()
-           optimizer.step()
-           
-           # Tracking
-           total_loss += losses.item()
-           pbar.set_postfix({
-               'loss': f"{losses.item():.4f}",
-               'loss_classifier': f"{loss_dict['loss_classifier'].item():.3f}",
-               'loss_box_reg': f"{loss_dict['loss_box_reg'].item():.3f}",
-               'loss_objectness': f"{loss_dict['loss_objectness'].item():.3f}",
-               'loss_rpn_box_reg': f"{loss_dict['loss_rpn_box_reg'].item():.3f}"
-           })
-       
-       return total_loss / len(data_loader)
-
-   @torch.no_grad()
-   def evaluate(model, data_loader, device):
-       """Évalue le modèle sur le set de validation."""
-       model.train()  # Faster R-CNN nécessite train() même en eval !
-       total_loss = 0
-       
-       for images, targets in tqdm(data_loader, desc="Validation"):
-           images = list(image.to(device) for image in images)
-           targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
-           
-           loss_dict = model(images, targets)
-           losses = sum(loss for loss in loss_dict.values())
-           total_loss += losses.item()
-       
-       return total_loss / len(data_loader)
-
-   # Entraînement principal
-   best_loss = float('inf')
-   
-   for epoch in range(num_epochs):
-       # Entraînement
-       train_loss = train_one_epoch(model, optimizer, train_loader, device, epoch)
-       
-       # Validation
-       val_loss = evaluate(model, val_loader, device)
-       
-       # Mise à jour du learning rate
-       lr_scheduler.step()
-       
-       # Affichage
-       print(f"\nEpoch {epoch}:")
-       print(f"  Train Loss: {train_loss:.4f}")
-       print(f"  Val Loss:   {val_loss:.4f}")
-       print(f"  LR: {optimizer.param_groups[0]['lr']:.6f}")
-       
-       # Sauvegarder le meilleur modèle
-       if val_loss < best_loss:
-           best_loss = val_loss
-           torch.save(model.state_dict(), 'best_model.pth')
-           print("  ✓ Meilleur modèle sauvegardé !")
-   
-   print("\n✓ Entraînement terminé !")
-
-**Détails importants** :
-
-- **4 losses** dans Faster R-CNN :
-  
-  - ``loss_classifier`` : classification des objets
-  - ``loss_box_reg`` : régression des boîtes
-  - ``loss_objectness`` : score objectness du RPN
-  - ``loss_rpn_box_reg`` : régression des proposals du RPN
-
-- Le modèle doit rester en mode ``train()`` même pour la validation (particularité de l'implémentation torchvision)
-
-.. warning::
-
-   ⚠️ **Mémoire GPU limitée ?**
-   
-   Si vous obtenez une erreur "CUDA out of memory" :
-   
-   - Réduire ``batch_size`` à 2 ou 1
-   - Réduire la résolution des images
-   - Utiliser des images de validation moins nombreuses
-
-.. slide::
-
-8.5. Surveiller l'entraînement
-~~~~~~~~~~~~~~~~~~~
-
-Pour un suivi plus détaillé, utilisez TensorBoard ou wandb :
-
-.. code-block:: python
-
-   from torch.utils.tensorboard import SummaryWriter
-
-   # Créer un writer TensorBoard
-   writer = SummaryWriter('runs/detection_experiment_1')
-
-   # Dans la boucle d'entraînement, ajouter :
-   for epoch in range(num_epochs):
-       train_loss = train_one_epoch(model, optimizer, train_loader, device, epoch)
-       val_loss = evaluate(model, val_loader, device)
-       
-       # Logger dans TensorBoard
-       writer.add_scalar('Loss/train', train_loss, epoch)
-       writer.add_scalar('Loss/val', val_loss, epoch)
-       writer.add_scalar('Learning_rate', optimizer.param_groups[0]['lr'], epoch)
-   
-   writer.close()
-
-   # Visualiser avec : tensorboard --logdir=runs
-
-💡 **Quand arrêter l'entraînement ?**
-
-- La val_loss ne diminue plus pendant 3-5 epochs → probablement convergé
-- La train_loss continue de baisser mais val_loss augmente → overfitting
-- Après 10-20 epochs pour un petit dataset
-
-.. slide::
-
-📖 9. Inférence : utiliser le modèle entraîné
-----------------------
-
-Maintenant que notre modèle est entraîné, voyons comment l'utiliser pour détecter des objets sur de nouvelles images.
-
-9.1. Charger le modèle sauvegardé
-~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: python
-
-   import torch
-   from PIL import Image
-   from torchvision.transforms import functional as F
-   import matplotlib.pyplot as plt
-   import matplotlib.patches as patches
-
-   # Charger le modèle
-   num_classes = 3  # 2 classes + background
-   model = get_model(num_classes)
-   model.load_state_dict(torch.load('best_model.pth'))
-   
-   device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-   model.to(device)
-   model.eval()  # Mode évaluation (important !)
-   
-   print("✓ Modèle chargé")
-
-.. slide::
-
-9.2. Faire une prédiction
-~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: python
-
-   @torch.no_grad()
-   def predict(image_path, model, device, threshold=0.5):
-       """
-       Effectue une prédiction sur une image.
-       
-       Args:
-           image_path: chemin vers l'image
-           model: modèle entraîné
-           device: CPU ou GPU
-           threshold: seuil de confiance minimum (0-1)
-       
-       Returns:
-           boxes: tensor [N, 4] des boîtes détectées
-           labels: tensor [N] des classes
-           scores: tensor [N] des scores de confiance
-       """
-       # Charger et préparer l'image
-       img = Image.open(image_path).convert('RGB')
-       img_tensor = F.to_tensor(img).unsqueeze(0).to(device)
-       
-       # Prédiction
-       model.eval()
-       predictions = model(img_tensor)[0]
-       
-       # Filtrer par score de confiance
-       keep = predictions['scores'] > threshold
-       boxes = predictions['boxes'][keep].cpu()
-       labels = predictions['labels'][keep].cpu()
-       scores = predictions['scores'][keep].cpu()
-       
-       return img, boxes, labels, scores
-
-   # Exemple d'utilisation
-   img, boxes, labels, scores = predict(
-       'data/images/test/frame_00001.jpg',
-       model,
-       device,
-       threshold=0.5
-   )
-
-   print(f"Objets détectés : {len(boxes)}")
-   for i, (box, label, score) in enumerate(zip(boxes, labels, scores)):
-       x1, y1, x2, y2 = box.tolist()
-       class_name = train_dataset.get_class_name(label.item())
-       print(f"  {i+1}. {class_name} (conf: {score:.2f}) - bbox: [{x1:.0f}, {y1:.0f}, {x2:.0f}, {y2:.0f}]")
-
-.. slide::
-
-9.3. Visualiser les détections
-~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: python
-
-   def visualize_predictions(img, boxes, labels, scores, class_names, threshold=0.5):
-       """Affiche l'image avec les boîtes détectées."""
-       fig, ax = plt.subplots(1, figsize=(12, 8))
-       ax.imshow(img)
-       
-       # Couleurs pour chaque classe
-       colors = ['red', 'blue', 'green', 'yellow', 'orange']
-       
-       for box, label, score in zip(boxes, labels, scores):
-           if score < threshold:
-               continue
-           
-           x1, y1, x2, y2 = box.tolist()
-           width = x2 - x1
-           height = y2 - y1
-           
-           # Dessiner la boîte
-           color = colors[(label.item() - 1) % len(colors)]
-           rect = patches.Rectangle(
-               (x1, y1), width, height,
-               linewidth=3, edgecolor=color, facecolor='none'
-           )
-           ax.add_patch(rect)
-           
-           # Ajouter le label et le score
-           class_name = class_names[label.item() - 1]
-           label_text = f'{class_name} {score:.2f}'
-           ax.text(
-               x1, y1 - 5,
-               label_text,
-               bbox=dict(facecolor=color, alpha=0.7),
-               fontsize=12, color='white', weight='bold'
-           )
-       
-       plt.axis('off')
-       plt.tight_layout()
-       return fig
-
-   # Utilisation
-   class_names = train_dataset.classes
-   fig = visualize_predictions(img, boxes, labels, scores, class_names, threshold=0.5)
-   plt.savefig('detection_result.jpg', bbox_inches='tight', dpi=150)
-   print("✓ Résultat sauvegardé : detection_result.jpg")
-
-.. slide::
-
-9.4. Traiter une vidéo complète
-~~~~~~~~~~~~~~~~~~~
-
-Pour détecter des objets dans une vidéo, on traite chaque frame :
-
-.. code-block:: python
-
-   import cv2
-   from tqdm import tqdm
-
-   def detect_in_video(video_path, model, device, output_path='output_video.mp4', threshold=0.5):
-       """Applique la détection sur chaque frame d'une vidéo."""
-       cap = cv2.VideoCapture(video_path)
-       
-       # Propriétés de la vidéo
-       width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-       height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-       fps = int(cap.get(cv2.CAP_PROP_FPS))
-       total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-       
-       # Créer le writer pour la vidéo de sortie
-       fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-       out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
-       
-       pbar = tqdm(total=total_frames, desc="Traitement vidéo")
-       
-       model.eval()
-       
-       while cap.isOpened():
-           ret, frame = cap.read()
-           if not ret:
-               break
-           
-           # Convertir BGR → RGB
-           frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-           img_pil = Image.fromarray(frame_rgb)
-           
-           # Prédiction
-           _, boxes, labels, scores = predict_from_pil(img_pil, model, device, threshold)
-           
-           # Dessiner les boîtes sur la frame
-           for box, label, score in zip(boxes, labels, scores):
-               if score < threshold:
-                   continue
-               
-               x1, y1, x2, y2 = map(int, box.tolist())
-               class_name = train_dataset.get_class_name(label.item())
-               
-               # Dessiner le rectangle
-               cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-               
-               # Ajouter le label
-               label_text = f'{class_name} {score:.2f}'
-               cv2.putText(frame, label_text, (x1, y1-10),
-                          cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
-           
-           # Écrire la frame
-           out.write(frame)
-           pbar.update(1)
-       
-       cap.release()
-       out.release()
-       pbar.close()
-       
-       print(f"✓ Vidéo traitée : {output_path}")
-
-   @torch.no_grad()
-   def predict_from_pil(img_pil, model, device, threshold=0.5):
-       """Version de predict qui prend directement une image PIL."""
-       img_tensor = F.to_tensor(img_pil).unsqueeze(0).to(device)
-       predictions = model(img_tensor)[0]
-       
-       keep = predictions['scores'] > threshold
-       boxes = predictions['boxes'][keep].cpu()
-       labels = predictions['labels'][keep].cpu()
-       scores = predictions['scores'][keep].cpu()
-       
-       return img_pil, boxes, labels, scores
-
-   # Utilisation
-   detect_in_video(
-       'ma_video.mp4',
-       model,
-       device,
-       output_path='video_with_detections.mp4',
-       threshold=0.6
-   )
-
-.. slide::
-
-📖 10. Alternative : utiliser YOLO pré-entraîné
-----------------------
-
-Jusqu'ici, nous avons construit notre propre détecteur CNN. Mais si vous voulez des résultats rapides avec moins de code, **YOLO** est une excellente alternative.
-
-9.1. Pourquoi YOLO ?
-~~~~~~~~~~~~~~~~~~~
-
-**YOLO (You Only Look Once)** est une famille de modèles de détection très populaires :
-
-**Avantages** :
-
-- ⚡ **Très rapide** : 30-100 fps (temps réel)
-- 🎯 **Facile à utiliser** : 3-4 lignes de code
-- 📦 **Pré-entraînés** : excellents résultats sur COCO out-of-the-box
-- 🔄 **Fine-tuning simple** : export depuis Label Studio → entraînement en 2 commandes
-
-**Inconvénients** :
-
-- Moins bon que Faster R-CNN sur petits objets
-- Moins de contrôle sur l'architecture
-
-💡 **Quand utiliser YOLO ?**
-
-- Vous avez besoin de détection en temps réel
-- Vous débutez et voulez des résultats rapides
-- Votre dataset a >500 images
-
-💡 **Quand utiliser Faster R-CNN (ce que nous avons fait) ?**
-
-- Vous voulez la meilleure précision possible
-- Vous avez peu de données (<500 images)
-- Vous voulez comprendre et contrôler l'architecture
-
-.. slide::
-
-9.2. Installation et premier test
-~~~~~~~~~~~~~~~~~~~
-
-YOLO version 8 (ultralytics) est la plus récente et facile à utiliser :
-
-.. code-block:: bash
-
-   pip install ultralytics
-
-Test rapide avec un modèle pré-entraîné :
-
-.. code-block:: python
-
-   from ultralytics import YOLO
-   
-   # Charger le modèle pré-entraîné
-   model = YOLO('yolov8n.pt')  # n = nano (le plus petit et rapide)
-   
-   # Détecter sur une image
-   results = model('data/images/frame_00001.jpg')
-   
-   # Afficher les résultats
-   results[0].show()  # Affiche l'image avec les boîtes
-   
-   # Sauvegarder
-   results[0].save('yolo_detection.jpg')
-
-Les modèles disponibles :
-
-- ``yolov8n.pt`` : nano (le plus rapide, ~6 MB)
-- ``yolov8s.pt`` : small
-- ``yolov8m.pt`` : medium
-- ``yolov8l.pt`` : large
-- ``yolov8x.pt`` : extra large (le plus précis, ~130 MB)
-
-.. slide::
-
-9.3. Fine-tuner YOLO sur vos données Label Studio
-~~~~~~~~~~~~~~~~~~~
-
-**Étape 1 : Exporter depuis Label Studio en format YOLO**
-
-1. Dans Label Studio, cliquer sur "Export"
-2. Choisir le format **"YOLO"**
-3. Télécharger le fichier ZIP
-
-Le ZIP contient :
-
-.. code-block:: text
-
-   yolo_export.zip
-   ├── classes.txt      # Liste des classes
-   ├── notes.json       # Métadonnées
-   └── labels/          # Un .txt par image
-       ├── frame_00001.txt
-       ├── frame_00002.txt
-       └── ...
-
-**Étape 2 : Organiser les données**
-
-.. code-block:: text
-
-   yolo_dataset/
-   ├── images/
-   │   ├── train/
-   │   │   ├── frame_00001.jpg
-   │   │   └── ...
-   │   └── val/
-   │       ├── frame_00151.jpg
-   │       └── ...
-   ├── labels/
-   │   ├── train/
-   │   │   ├── frame_00001.txt
-   │   │   └── ...
-   │   └── val/
-   │       ├── frame_00151.txt
-   │       └── ...
-   └── data.yaml  # Fichier de configuration
-
-**Étape 3 : Créer le fichier** ``data.yaml``
-
-.. code-block:: yaml
-
-   path: /chemin/absolu/vers/yolo_dataset
-   train: images/train
-   val: images/val
-
-   names:
-     0: bouteille
-     1: gobelet
-
-**Étape 4 : Entraîner**
-
-.. code-block:: python
-
-   from ultralytics import YOLO
-
-   # Charger le modèle pré-entraîné
-   model = YOLO('yolov8n.pt')
-
-   # Entraîner (fine-tuning)
-   results = model.train(
-       data='yolo_dataset/data.yaml',
-       epochs=50,
-       imgsz=640,
-       batch=16,
-       name='detection_bouteille'
-   )
-
-**Étape 5 : Utiliser le modèle entraîné**
-
-.. code-block:: python
-
-   # Charger le meilleur modèle
-   model = YOLO('runs/detect/detection_bouteille/weights/best.pt')
-   
-   # Prédire
-   results = model('nouvelle_image.jpg', conf=0.5)
-   results[0].show()
+- Plus rapide 
 
 .. note::
 
-   💡 **Comparaison YOLO vs Faster R-CNN**
+   📚 **Ressources YOLO**
    
-   **YOLO** : rapide (30-100 fps), facile, bon pour temps réel
-   
-   **Faster R-CNN** : plus précis, meilleur sur petits objets, plus de contrôle
-   
-   **Conseil** : commencez par YOLO pour prototyper rapidement, puis passez à Faster R-CNN si vous avez besoin de plus de précision.
+   - Documentation officielle : https://docs.ultralytics.com/
+   - GitHub : https://github.com/ultralytics/ultralytics
+   - Papier YOLOv11 (2024) : https://arxiv.org/abs/2410.17725
+   - Papier YOLOv1 original (2015) : https://arxiv.org/abs/1506.02640
 
 .. slide::
 
-📖 10. Conclusion et aller plus loin
-----------------------
+8.2. Concepts clés : Anchors et NMS
+~~~~~~~~~~~~~~~~~~~
 
-🎓 **Ce que vous avez appris** :
+**C'est quoi un anchor (ancre) ?**
 
-1. ✅ Différence entre classification et détection d'objets
-2. ✅ Extraire des frames d'une vidéo avec OpenCV
-3. ✅ Annoter des images avec Label Studio (workflow collaboratif)
-4. ✅ Comprendre le format JSON de Label Studio
-5. ✅ Créer un Dataset PyTorch pour la détection
-6. ✅ Entraîner Faster R-CNN avec transfer learning
-7. ✅ Faire de l'inférence sur images et vidéos
-8. ✅ Utiliser YOLO comme alternative rapide
+Un anchor est une boîte de référence prédéfinie avec des proportions spécifiques (largeur/hauteur).
 
-🚀 **Pour aller plus loin** :
+**Exemple d'anchors :** 
 
-- **Métriques d'évaluation** : mAP (mean Average Precision), IoU
-- **Data augmentation** : rotation, flip, changement de luminosité
-- **Post-processing** : NMS (Non-Maximum Suppression), filtrage par taille
-- **Modèles avancés** : Mask R-CNN (segmentation), DETR (Transformers)
-- **Déploiement** : ONNX, TensorRT, optimisation pour mobile
+- Anchor 1 : petit carré ($$0.2 × 0.2$$ de l'image) → pour détecter petits objets
+
+- Anchor 2 : rectangle vertical ($$0.1 × 0.3$$) → pour personnes debout
+
+- Anchor 3 : rectangle horizontal ($$0.4 × 0.2$$) → pour voitures
+
+Le modèle **ajuste** ces anchors (décale et redimensionne) pour coller aux objets réels. C'est plus efficace que de prédire la taille depuis zéro !
+
+➡️ **Au total** : Si grille $$13×13$$ avec 3 anchors par cellule = $$13×13×3$$ = **507 boîtes candidates** par image !
+
+**🧹 C'est quoi le NMS (Non-Maximum Suppression) ?**
+
+Problème : Plusieurs boîtes détectent souvent le **même objet** (ex: 5 boîtes qui se chevauchent sur une voiture).
+
+**NMS élimine les doublons en 3 étapes :**
+
+1. **Trier** les boîtes par score de confiance (objectness) décroissant
+
+2. **Garder** la boîte avec le meilleur score
+
+3. **Supprimer** toutes les boîtes qui se chevauchent trop (IoU > seuil, ex: 0.5) avec la boîte gardée
+
+4. Répéter pour les boîtes restantes
+
+**Exemple :**
+
+- Avant NMS : 507 boîtes candidates
+
+- Après NMS : 3-10 détections finales (les meilleures, sans doublons)
+
+Le modèle filtre ainsi avec **NMS** pour garder les meilleures détections sans redondance.
+
+.. slide::
+
+8.3. Installation de YOLOv11 (Ultralytics)
+~~~~~~~~~~~~~~~~~~~
+
+Installation simple via pip :
+
+.. code-block:: python
+
+   # Installer Ultralytics (inclut YOLOv11)
+   !pip install ultralytics
+   
+   # Imports
+   from ultralytics import YOLO
+   import torch
+   
+   print(f"✅ Ultralytics installé !")
+   print(f"🔥 PyTorch version: {torch.__version__}")
+   print(f"🎮 CUDA disponible: {torch.cuda.is_available()}")
+
+.. note::
+
+   💡 **Versions compatibles**
+   
+   - Python ≥ 3.8
+   - PyTorch ≥ 1.8
+   - Ultralytics maintient automatiquement les dépendances
+
+.. slide::
+
+8.4. Dataset COCO (Common Objects in Context)
+~~~~~~~~~~~~~~~~~~~
+
+**COCO** est le dataset de référence pour la détection d'objets :
+
+- **80 classes** d'objets courants (personne, voiture, chien, etc.)
+- **118 000 images** d'entraînement (COCO complet)
+- **5 000 images** de validation
+- Annotations au format JSON (boîtes + segmentation)
+
+**Pour ce cours, nous utilisons COCO128**, une version réduite avec seulement 128 images, car :
+
+- ✅ Téléchargement rapide (6.8 Mo au lieu de ~20 Go)
+- ✅ Entraînement rapide (2-3 min au lieu de 6-10h)
+- ✅ Parfait pour apprendre et tester
+
+.. note::
+
+   📊 **Classes COCO (extrait)**
+   
+   0: person, 1: bicycle, 2: car, 3: motorcycle, ... 5: bus, ... 7: truck, ... 15: bird, 16: cat, 17: dog, ... 39: bottle, ... 41: cup, ... 56: chair, ...
+
+
+.. slide::
+
+8.5. Entraînement YOLOv11 sur COCO128
+~~~~~~~~~~~~~~~~~~~
+
+**8.5.1. Choisir et charger le modèle**
+
+YOLOv11 propose plusieurs tailles. Nous utilisons **YOLOv11n (Nano)** pour le cours car il est rapide :
+
+.. code-block:: python
+   
+   # Charger YOLOv11 Nano (le plus rapide)
+   model = YOLO('yolo11n.pt')
+   
+   print(f"✅ Modèle YOLOv11n chargé (3M paramètres, 80+ FPS)")
+
+.. note::
+
+   📦 **Autres modèles disponibles** (pour information)
+   
+   - ``yolo11n.pt`` : Nano (3M params, 80+ FPS) ← **on utilise celui-ci**
+   - ``yolo11s.pt`` : Small (9M params, 60 FPS)
+   - ``yolo11m.pt`` : Medium (20M params, 45 FPS)
+   - ``yolo11l.pt`` : Large (26M params, 35 FPS)
+   - ``yolo11x.pt`` : XLarge (57M params, 30 FPS)
+
+.. slide::
+
+**8.5.2. Télécharger COCO128**
+
+Téléchargez le dataset COCO128 via Ultralytics :
+
+.. code-block:: python
+
+   from ultralytics.data.utils import check_det_dataset
+   
+   # Télécharger COCO128 (6.8 Mo, 128 images)
+   print("📥 Téléchargement de COCO128 (6.8 Mo)...")
+   data_dict = check_det_dataset('coco128.yaml', autodownload=True)
+   print(f"✅ Dataset téléchargé : {data_dict['path']}")
+
+.. note::
+
+   💾 **COCO128 : 128 images, 80 classes possibles**
+   
+   - **128 images** : le nombre d'images dans le dataset
+   - **80 classes** : les types d'objets que le modèle peut détecter (person, car, dog, etc.)
+   - Les 128 images contiennent des objets de ces 80 classes
+   - Dataset téléchargé dans : ``./datasets/coco128/``
+
+.. slide::
+
+**8.5.3. Lancer l'entraînement**
+
+.. code-block:: python
+
+   # Entraîner YOLOv11n sur COCO128
+   results = model.train(
+       data='coco128.yaml',        # COCO128 (128 images)
+       epochs=3,                   # 3 epochs pour le cours (rapide)
+       imgsz=640,                  # Taille des images
+       batch=16,                   # Batch size (ajuster selon votre GPU)
+       device=0,                   # GPU 0 (ou 'cpu' sans GPU)
+       project='runs/detect',      # Dossier de sortie
+       name='yolo11_coco128'       # Nom de l'expérience
+   )
+   
+   print(f"✅ Entraînement terminé !")
+   print(f"📁 Résultats : runs/detect/yolo11_coco128/")
+
+.. note::
+
+   ⏱️ **Temps d'entraînement**
+   
+   - **COCO128** (128 images, 3 epochs) : ~2-3 minutes sur GPU
+   - **COCO complet** (118k images, 50 epochs) : ~6-10 heures sur GPU
+   
+   Pour ce cours, COCO128 suffit amplement pour comprendre le fonctionnement !
+
+.. slide::
+
+**8.5.4. Visualiser les résultats de l'entraînement**
+
+Ultralytics génère automatiquement plusieurs fichiers de résultats dans ``runs/detect/yolo11_coco128/`` :
+
+- **results.png** : graphiques avec toutes les courbes (loss, mAP, etc.)
+- **Courbes de loss** (train/val)
+- **Métriques mAP** (mean Average Precision)
+- **Exemples de prédictions**
+
+.. code-block:: python
+
+   # Afficher les résultats de l'entraînement
+   from IPython.display import Image, display
+   
+   # Afficher la courbe de loss
+   results_path = 'runs/detect/yolo11_coco128/results.png'
+   try:
+       print(f"📊 Affichage des courbes d'entraînement YOLO\n")
+       display(Image(filename=results_path))
+       print(f"\n✅ Graphiques chargés depuis : {results_path}")
+   except FileNotFoundError:
+       print(f"⚠️ Fichier non trouvé : {results_path}")
+       print("   Les résultats seront disponibles après l'entraînement.")
+
+.. slide::
+
+**8.5.5. Pour aller plus loin : COCO complet (optionnel)**
+
+Si vous voulez entraîner sur le dataset complet après avoir testé avec COCO128 :
+
+.. code-block:: python
+
+   # Télécharger COCO complet (~20 Go, peut prendre 30-60 min)
+   # print("📥 Téléchargement de COCO complet (~20 Go)...")
+   # data_dict = check_det_dataset('coco.yaml', autodownload=True)
+   
+   # Entraîner sur COCO complet (plusieurs heures)
+   # results = model.train(
+   #     data='coco.yaml',         # COCO complet (118k images)
+   #     epochs=50,                # 50 epochs minimum
+   #     imgsz=640,
+   #     batch=16,
+   #     device=0,
+   #     project='runs/detect',
+   #     name='yolo11_coco_full'
+   # )
+
+STOP ICI
+
+STOP ICI
+
+STOP ICI
+
+STOP ICI
+
+.. slide::
+
+8.6. Évaluation sur le test set
+~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+   # Charger le meilleur modèle
+    model = YOLO('runs/detect/yolo11_coco128/weights/best.pt')
+    
+    # Évaluer sur le validation set
+    metrics = model.val()
+
+    print(f"📊 mAP@0.5: {metrics.box.map50:.3f}")
+    print(f"📊 mAP@0.5:0.95: {metrics.box.map:.3f}")
+    print(f"📊 Precision: {metrics.box.mp:.3f}")
+    print(f"📊 Recall: {metrics.box.mr:.3f}")
+
+.. note::
+
+   📈 **Métriques COCO**
+   
+   - **mAP@0.5** : Précision moyenne avec seuil IoU=0.5
+   - **mAP@0.5:0.95** : Précision moyenne sur plusieurs seuils (standard COCO)
+   - **Objectif** : mAP@0.5:0.95 > 0.40 pour un bon modèle
+
+.. slide::
+
+8.7. Inférence et visualisation
+~~~~~~~~~~~~~~~~~~~
+
+Une fois le modèle entraîné, vous pouvez l'utiliser pour détecter des objets dans de nouvelles images.
+
+**Étape 1 : Charger le modèle entraîné**
+
+.. code-block:: python
+
+   from ultralytics import YOLO
+   
+   # Charger le meilleur modèle entraîné
+   model = YOLO('runs/detect/yolo11_coco128/weights/best.pt')
+   print("✅ Modèle chargé !")
+
+**Étape 2 : Faire une prédiction sur une image**
+
+.. code-block:: python
+
+   # Prédiction sur une image
+   results = model.predict(
+       source='path/to/image.jpg',  # Chemin vers votre image
+       conf=0.5,                    # Seuil de confiance minimum
+       iou=0.45,                    # Seuil NMS (élimination des doublons)
+       show=False,                  # Ne pas afficher automatiquement
+       save=False                   # Ne pas sauvegarder automatiquement
+   )
+
+.. note::
+
+   🎯 **Paramètres de prédiction**
+   
+   - ``source`` : Chemin vers l'image, dossier, vidéo, ou URL
+   - ``conf=0.5`` : **Seuil de confiance**. Le modèle ne garde que les détections avec une confiance ≥ 50%
+   - ``iou=0.45`` : **Seuil NMS** (Non-Maximum Suppression). Élimine les boîtes qui se chevauchent trop (IoU > 45%) pour éviter les doublons
+   
+   ⚠️ **Différence importante** : Ce seuil IoU (0.45) sert à **filtrer les doublons** du modèle. C'est différent de l'IoU d'**évaluation** (section 7.4) qui compare les prédictions avec la vérité terrain.
+
+.. slide::
+
+**Étape 3 : Extraire les résultats**
+
+.. code-block:: python
+
+   # Récupérer les résultats de la première image
+   result = results[0]
+   
+   # Extraire les informations des détections
+   boxes = result.boxes.xyxy.cpu().numpy()    # Coordonnées [x1, y1, x2, y2] en pixels
+   confs = result.boxes.conf.cpu().numpy()    # Confiances [0-1]
+   classes = result.boxes.cls.cpu().numpy()   # IDs des classes détectées
+   
+   print(f"🎯 {len(boxes)} objets détectés !")
+   
+   # Afficher les détails de chaque détection
+   for i, (box, conf, cls) in enumerate(zip(boxes, confs, classes)):
+       x1, y1, x2, y2 = box
+       class_name = model.names[int(cls)]  # Nom de la classe
+       print(f"  Objet {i+1}: {class_name} (confiance: {conf:.2f})")
+
+**Étape 4 : Visualiser les détections**
+
+.. code-block:: python
+
+   from IPython.display import Image, display
+   import matplotlib.pyplot as plt
+   
+   # Méthode 1 : Visualisation automatique (recommandée)
+   # Ultralytics dessine automatiquement les boîtes avec labels
+   img_with_boxes = result.plot()  # Image numpy avec boîtes dessinées
+   
+   plt.figure(figsize=(12, 8))
+   plt.imshow(img_with_boxes)
+   plt.axis('off')
+   plt.title(f'{len(boxes)} objets détectés')
+   # L'image s'affiche automatiquement dans le notebook
+
+.. note::
+
+   💡 **Astuce visualisation**
+   
+   La méthode ``result.plot()`` dessine automatiquement :
+   - Les boîtes englobantes avec couleurs par classe
+   - Les noms des classes
+   - Les scores de confiance
+   
+   Vous n'avez rien d'autre à faire !
+
+**Visualisation sur plusieurs images :**
+
+.. code-block:: python
+
+   import os
+   from pathlib import Path
+   
+   # Prédire sur un dossier
+   results = model.predict(
+       source='datasets/coco/images/val2017/',
+       conf=0.5,
+       save=True,            # Sauvegarder les images annotées
+       project='runs/detect',
+       name='predictions'
+   )
+   
+   print(f"✅ Prédictions sauvegardées dans runs/detect/predictions/")
+
+.. slide::
+
+8.8. Dataset personnalisé (format YOLO)
+~~~~~~~~~~~~~~~~~~~
+
+Pour entraîner sur **votre propre dataset**, utilisez le format YOLO :
+
+**Structure du dataset :**
+
+.. code-block:: text
+
+   my_dataset/
+   ├── images/
+   │   ├── train/
+   │   │   ├── img1.jpg
+   │   │   └── img2.jpg
+   │   └── val/
+   │       └── img3.jpg
+   └── labels/
+       ├── train/
+       │   ├── img1.txt
+       │   └── img2.txt
+       └── val/
+           └── img3.txt
+
+**Format des annotations (fichier .txt) :**
+
+.. code-block:: text
+
+   # Une ligne par objet : <class_id> <x_center> <y_center> <width> <height>
+   # Coordonnées normalisées dans [0, 1]
+   0 0.5 0.5 0.3 0.4
+   1 0.2 0.3 0.15 0.2
+
+**Fichier de configuration (my_dataset.yaml) :**
+
+.. code-block:: yaml
+
+   path: ../my_dataset
+   train: images/train
+   val: images/val
+   
+   nc: 2  # Nombre de classes
+   names: ['class0', 'class1']
+
+**Convertir Label Studio → YOLO :**
+
+.. code-block:: python
+
+   import json
+   
+   def labelstudio_to_yolo(json_path, output_dir, img_width=224, img_height=224):
+       """Convertit Label Studio JSON vers format YOLO."""
+       with open(json_path) as f:
+           data = json.load(f)
+       
+       for item in data:
+           img_name = item['file_upload'].split('-')[-1]
+           label_file = output_dir / f"{img_name.split('.')[0]}.txt"
+           
+           with open(label_file, 'w') as f:
+               for annot in item['annotations'][0]['result']:
+                   if annot['type'] == 'rectanglelabels':
+                       val = annot['value']
+                       # Label Studio : pourcentages [0, 100]
+                       x = val['x'] / 100
+                       y = val['y'] / 100
+                       w = val['width'] / 100
+                       h = val['height'] / 100
+                       
+                       # Convertir en center format
+                       x_center = x + w/2
+                       y_center = y + h/2
+                       
+                       class_id = 0  # Adapter selon vos classes
+                       f.write(f"{class_id} {x_center} {y_center} {w} {h}\n")
+   
+   # Utiliser
+   labelstudio_to_yolo('project.json', Path('my_dataset/labels/train'))
+
+.. slide::
 
 
 
+8.10. Exercices pratiques
+~~~~~~~~~~~~~~~~~~~
+
+**Exercice 1 : Entraîner YOLOv11n sur subset COCO**
+
+1. Créer un subset de 1000 images avec 3 classes (person, car, dog)
+2. Entraîner YOLOv11n pendant 20 epochs
+3. Évaluer avec mAP@0.5
+4. Visualiser 10 prédictions
+
+**Exercice 2 : Convertir votre dataset Label Studio**
+
+1. Utiliser le script de conversion `labelstudio_to_yolo()`
+2. Créer le fichier `.yaml` de configuration
+3. Entraîner YOLOv11n sur votre dataset
+4. Comparer avec SimpleBBoxRegressor (§7)
+
+**Exercice 3 : Fine-tuning et hyperparamètres**
+
+1. Tester différentes tailles de modèle (n, s, m)
+2. Varier le learning rate (0.001, 0.01, 0.1)
+3. Tester différents augmentations (flip, rotate, etc.)
+4. Analyser l'impact sur mAP
+
+.. warning::
+
+   ⚠️ **Limites GPU**
+   
+   L'entraînement YOLO demande une GPU avec au moins 8GB VRAM pour des batchs raisonnables. Utilisez Google Colab (gratuit) si vous n'avez pas de GPU locale.
+
+.. slide::
+
+
+
+
+
+
+###### ATTENTION : définir clairement format coco vs yolo ######################
+
+
+
+faire une section yolo avec le cube. 
+
+exo faire un réseax custum pour 2 objets ou plus et utiliser yolo
+
+faire du traking
