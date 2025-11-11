@@ -1,6 +1,6 @@
 .. slide::
 
-Chapitre 6 — Détection d'objets avec des boîtes englobantes (Partie 2)
+Chapitre 6 — Détection d'objets avec des boîtes englobantes (partie 2)
 ================
 
 🎯 Objectifs du Chapitre
