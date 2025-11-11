@@ -10,6 +10,18 @@ Sur cette page se trouvent des exercices de TP sur le Chapitre 6 (Détection d'o
     * Moyen : ⚖️
     * Difficile : 🌶️
 
+
+
+############################
+
+TP :
+~~~~~~
+
+exo faire un réseau custom pour 2 objets ou sans objet du tout et utiliser yolo
+
+faire du tracking
+
+############################
 .. slide::
 
 🍀 Exercice 1 : Extraction de frames et visualisation
@@ -1046,25 +1058,3 @@ Dans cet exercice bonus, vous allez comparer votre Faster R-CNN avec YOLOv8.
 
 **Résultat attendu :**
 
-.. list-table::
-   :header-rows: 1
-   
-   * - Modèle
-     - Temps/image
-     - mAP@0.5
-     - Paramètres
-     - Taille fichier
-   * - Faster R-CNN
-     - ~100ms
-     - ?
-     - ?
-     - ~160 MB
-   * - YOLOv8n
-     - ~10ms
-     - ?
-     - ?
-     - ~6 MB
-
----
-
-**Félicitations !** Vous maîtrisez maintenant le pipeline complet de détection d'objets, de la capture vidéo jusqu'au déploiement ! 🎉
