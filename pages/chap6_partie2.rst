@@ -510,29 +510,6 @@ Installation simple via pip :
    
    0: person, 1: bicycle, 2: car, 3: motorcycle, ... 5: bus, ... 7: truck, ... 15: bird, 16: cat, 17: dog, ... 39: bottle, ... 41: cup, ... 56: chair, ...
 
-.. note::
-
-   💡 **Format COCO vs Format YOLO - Clarification importante**
-   
-   Le mot "COCO" désigne **deux choses différentes** :
-   
-   1. **COCO le dataset** : 118k images avec 80 classes d'objets (person, car, dog...)
-   2. **COCO le format d'annotation** : fichier JSON avec boîtes au format ``[x, y, width, height]`` en pixels
-   
-   **YOLO** utilise son **propre format** : fichiers TXT avec coordonnées normalisées ``[x_center, y_center, w, h]`` (section 4.3)
-   
-   **Quand on entraîne YOLO sur le dataset COCO :**
-   
-   - Ultralytics télécharge les annotations COCO (format JSON)
-   - Les convertit **automatiquement** en format YOLO (TXT) en interne
-   - Vous n'avez **rien à faire manuellement** !
-   
-   **Pour un dataset custom (section 9) :**
-   
-   - Vous annotez dans Label Studio
-   - Vous exportez directement au **format YOLO** (section 9.1)
-   - Pas besoin de passer par le format COCO
-
 
 .. slide::
 
