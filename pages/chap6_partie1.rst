@@ -103,7 +103,13 @@ Une **boîte englobante** est un rectangle défini par 4 valeurs. Il existe plus
    Format YOLO : [0.3125, 0.3125, 0.3125, 0.4167]
    → Centre à 31.25% de la largeur/hauteur, boîte de 31.25%×41.67% de l'image
 
-.. slide::
+.. warning::
+
+   ⚠️ **Format utilisé dans la suite du TP**
+   
+   Dans la suite de ce chapitre, nous utiliserons le **Format 3 (YOLO)** avec des coordonnées normalisées. C'est le format standard pour la détection d'objets, compatible avec YOLO et la plupart des frameworks modernes.
+
+.. slide:
 
 1.4. Applications concrètes de la détection
 ~~~~~~~~~~~~~~~~~~~
@@ -325,6 +331,12 @@ Pour économiser l'espace disque et accélérer le traitement, on peut redimensi
 Voici les deux approches :
 
 **Approche 1 : Crop au centre (recommandée - pas de déformation)**
+
+.. warning::
+
+   ⚠️ **Code utilisé dans la suite du TP**
+   
+   C'est **cette fonction** (``extraire_frames_crop_redimensionner``) que nous utiliserons dans tous les exercices du chapitre. Elle évite les déformations en découpant un carré au centre de l'image avant de redimensionner.
 
 .. code-block:: python
 
@@ -666,56 +678,37 @@ Pour accélérer l'annotation :
 
 .. slide::
 
-📖 4. Formats d'annotations : Label Studio JSON et YOLO
+📖 4. Exporter depuis Label Studio au format YOLO
 ----------------------
 
-Après l'annotation dans Label Studio, nous allons utiliser deux formats différents dans ce chapitre :
-
-1. **Format JSON** : pour créer notre détecteur CNN custom (sections 5-7)
-2. **Format YOLO** : pour entraîner YOLO sur notre dataset (section 9)
+Après avoir terminé l'annotation de vos images dans Label Studio, vous devez exporter les données pour l'entraînement. Dans ce chapitre, nous allons utiliser le format **"YOLO with Images"**.
 
 .. slide::
 
-4.1. Format Label Studio JSON
+4.1. Qu'est-ce que le format "YOLO with Images" ?
 ~~~~~~~~~~~~~~~~~~~
 
-Label Studio utilise son propre format JSON qui stocke toutes les annotations dans un seul fichier.
+Le format **"YOLO with Images"** est un export complet proposé par Label Studio qui contient :
 
-**Caractéristiques principales** :
+1. **Un dossier ``images/``** : toutes vos images annotées
+2. **Un dossier ``labels/``** : un fichier texte ``.txt`` par image contenant les annotations
+3. **Un fichier ``classes.txt``** : la liste des noms de classes (un par ligne)
+4. **Un fichier ``notes.json``** : métadonnées sur l'export
 
-- **Un fichier JSON** contenant toutes les images et leurs annotations
-- **Coordonnées en pourcentages** : ``x, y, width, height`` exprimés en % de la taille de l'image (0-100)
-- ``x, y`` : position du coin supérieur gauche en %
-- ``width, height`` : dimensions de la boîte en %
-- ``rectanglelabels`` : liste des classes détectées
-
-**Avantages** :
-
-- Format complet avec métadonnées (id, date, utilisateur...)
-- Un seul fichier pour tout le dataset (facile à manipuler)
-- Structure Python-friendly (facile à parser)
-
-**Inconvénients** :
-
-- Fichier unique qui peut devenir volumineux
-- Nécessite de créer un Dataset PyTorch custom
-
-.. note::
-
-   💡 La structure détaillée du JSON sera présentée en **section 5** avec des exemples de parsing Python
+**C'est le format idéal** car il regroupe tout ce dont vous avez besoin pour l'entraînement dans une seule archive ZIP.
 
 .. slide::
 
-4.2. Format YOLO (TXT) 
+4.2. Structure du format YOLO
 ~~~~~~~~~~~~~~~~~~~
 
-**YOLO** utilise un format ultra-simple : un fichier texte par image.
+**Format d'annotation YOLO** : un fichier texte par image avec des coordonnées normalisées.
 
-**Exemple de fichier** ``frame_00001.txt`` :
+**Exemple de fichier** ``labels/frame_00001.txt`` :
 
 .. code-block:: text
 
-   0 0.3125 0.2604 0.3125 0.3125
+   0 0.3125 0.3125 0.3125 0.4167
    1 0.6250 0.5417 0.1562 0.2500
 
 **Format d'une ligne** : ``class_id x_center y_center width height``
@@ -723,567 +716,302 @@ Label Studio utilise son propre format JSON qui stocke toutes les annotations da
 **Toutes les valeurs sont normalisées entre 0 et 1** :
 
 - ``class_id`` : entier (0, 1, 2...) correspondant à l'index de la classe
-- ``x_center`` : position X du centre / largeur de l'image
-- ``y_center`` : position Y du centre / hauteur de l'image
+- ``x_center`` : position X du centre de la boîte / largeur de l'image
+- ``y_center`` : position Y du centre de la boîte / hauteur de l'image
 - ``width`` : largeur de la boîte / largeur de l'image
 - ``height`` : hauteur de la boîte / hauteur de l'image
 
-**Exemple de calcul** (image $$640×480$$, objet de 100,50 à 300,200) :
+.. slide::
+
+**Exemple concret** (image $$640×480$$, objet de 100,50 à 300,200) :
 
 .. code-block:: python
 
-   # Coordonnées en pixels
+   # Coordonnées en pixels (format classique)
    x1, y1, x2, y2 = 100, 50, 300, 200
    img_width, img_height = 640, 480
    
-   # Calcul des valeurs YOLO
-   x_center = ((x1 + x2) / 2) / img_width  # (100+300)/2 / 640 = 0.3125
-   y_center = ((y1 + y2) / 2) / img_height  # (50+200)/2 / 480 = 0.2604
-   width = (x2 - x1) / img_width  # (300-100) / 640 = 0.3125
-   height = (y2 - y1) / img_height  # (200-50) / 480 = 0.3125
+   # Conversion en format YOLO
+   x_center = ((x1 + x2) / 2) / img_width   # Centre X : (100+300)/2 / 640 = 0.3125
+   y_center = ((y1 + y2) / 2) / img_height  # Centre Y : (50+200)/2 / 480 = 0.2604
+   width = (x2 - x1) / img_width            # Largeur : (300-100) / 640 = 0.3125
+   height = (y2 - y1) / img_height          # Hauteur : (200-50) / 480 = 0.3125
    
-   # Ligne YOLO : "0 0.3125 0.2604 0.3125 0.3125"
+   # Résultat : "0 0.3125 0.2604 0.3125 0.3125"
 
-.. slide::
-
-**Avantages du format YOLO** :
-
-- Format ultra-compact et rapide à parser
-- Un fichier par image (facile à paralléliser)
-- Coordonnées normalisées (insensible à la résolution)
-- Utilisé nativement par tous les modèles YOLO
-
-**Structure complète d'un dataset YOLO** :
+**Structure complète après export** :
 
 .. code-block:: text
 
    dataset_yolo/
-   ├── images/           # Toutes les images
-   │   ├── img1.jpg
-   │   └── img2.jpg
-   ├── labels/           # Fichiers .txt (mêmes noms que les images)
-   │   ├── img1.txt
-   │   └── img2.txt
-   └── classes.txt       # Liste des noms de classes (1 par ligne)
+   ├── images/              # Toutes vos images annotées
+   │   ├── frame_00001.jpg
+   │   ├── frame_00002.jpg
+   │   └── ...
+   ├── labels/              # Fichiers .txt (même nom que l'image)
+   │   ├── frame_00001.txt
+   │   ├── frame_00002.txt
+   │   └── ...
+   ├── classes.txt          # Liste des classes : une par ligne
+   └── notes.json           # Métadonnées (optionnel)
 
-.. slide::
-
-4.3. Exporter depuis Label Studio
-~~~~~~~~~~~~~~~~~~~
-
-Label Studio peut exporter dans plusieurs formats. **Dans ce chapitre, nous allons utiliser :**
-
-1. **Le format JSON natif de Label Studio** pour créer un **détecteur CNN custom** (sections 5-7)
-2. **Le format YOLO** pour entraîner YOLO sur notre dataset custom (section 9)
-
-**Étapes pour exporter** :
-
-1. Ouvrez votre projet dans Label Studio
-2. Cliquez sur "Export" en haut de la liste des tâches
-3. Choisir le format :
-   
-   - **"JSON"** → format natif Label Studio (pour sections 5-7)
-   - **"YOLO"** → fichiers .txt au format YOLO (pour section 9)
-
-4. Télécharger le fichier
-
-.. slide::
-
-📖 5. Comprendre le format JSON de Label Studio
-----------------------
-
-Nous allons utiliser le **format JSON natif de Label Studio** pour entraîner notre détecteur custom. Voyons d'abord sa structure.
-
-5.1. Structure du fichier JSON exporté
-~~~~~~~~~~~~~~~~~~~
-
-Après avoir cliqué sur "Export" → "JSON" dans Label Studio, vous obtenez un fichier avec cette structure :
-
-.. code-block:: json
-
-   [
-     {
-       "id": 1,
-       "annotations": [
-         {
-           "id": 1,
-           "completed_by": 1,
-           "result": [
-             {
-               "original_width": 224,
-               "original_height": 224,
-               "value": {
-                 "x": 24.67,
-                 "y": 45.99,
-                 "width": 52.41,
-                 "height": 54.01,
-                 "rotation": 0,
-                 "rectanglelabels": ["cube"]
-               },
-               "type": "rectanglelabels",
-               "from_name": "label",
-               "to_name": "image"
-             }
-           ]
-         }
-       ],
-       "file_upload": "ad2a7904-frame_000000.jpg",
-       "data": {
-         "image": "/data/upload/1/ad2a7904-frame_000000.jpg"
-       }
-     },
-     {
-       "id": 2,
-       "annotations": [...],
-       "file_upload": "caed06ef-frame_000001.jpg",
-       "data": {
-         "image": "/data/upload/1/caed06ef-frame_000001.jpg"
-       }
-     }
-   ]
-
-.. slide::
-
-**Points importants** :
-
-- Chaque élément du tableau JSON représente **une image**
-- ``file_upload`` : nom original du fichier image
-- ``data.image`` : chemin dans Label Studio (à ignorer, on utilise ``file_upload``)
-- ``annotations[0].result`` : liste des boîtes englobantes
-- ``value.x, y, width, height`` : **coordonnées en pourcentage** (0-100) de l'image
-- ``value.rectanglelabels`` : liste des labels (ici un seul)
-- ``original_width`` et ``original_height`` : dimensions de l'image (utile pour vérifier)
-
-.. slide::
-
-5.2. Extraire le nom de fichier depuis le JSON
-~~~~~~~~~~~~~~~~~~~
-
-Le champ ``file_upload`` contient le nom du fichier tel que stocké par Label Studio (avec un préfixe UUID ajouté automatiquement). Voici comment l'utiliser :
-
-.. code-block:: python
-
-   import json
-
-   # Charger le JSON
-   with open('project-1-annotations.json', 'r', encoding='utf-8') as f: # ADAPTEZ : le nom de fichier
-       data = json.load(f)
-
-   # Examiner la première image
-   first_item = data[0]
-   
-   # Le champ file_upload contient le nom avec le préfixe UUID
-   image_name = first_item['file_upload']
-   print(f"Nom du fichier : {image_name}")
-   # Exemple : "ad2a7904-frame_000000.jpg"
-   
-   # Vous pouvez aussi l'extraire depuis data.image (même résultat)
-   import os
-   image_path = first_item['data']['image']
-   image_name_alt = os.path.basename(image_path)
-   print(f"Nom du fichier (depuis path) : {image_name_alt}")
-   # Exemple : "ad2a7904-frame_000000.jpg"
-   
-   # Vérifier les dimensions de l'image dans les annotations
-   result = first_item['annotations'][0]['result'][0]
-   print(f"Dimensions : {result['original_width']}x{result['original_height']}")
-   # Exemple : "Dimensions : 224x224"
-
-.. warning::
-
-   ⚠️ **Attention au préfixe UUID !**
-   
-   Label Studio ajoute automatiquement un préfixe UUID lors de l'upload (ex : ``ad2a7904-frame_000000.jpg``). 
-   
-   **Si vos fichiers images ont les noms originaux** (``frame_000000.jpg``), vous devrez extraire la partie originale du nom.
-
-.. slide::
-
-**Script complet : nettoyer le JSON et renommer les images** :
-
-.. code-block:: python
-
-   import json
-   import os
-   import shutil
-
-   def clean_labelstudio_dataset(json_path, images_dir, output_json_path=None):
-       """
-       Nettoie complètement un dataset Label Studio :
-       - Enlève les préfixes UUID du JSON
-       - Renomme les fichiers images correspondants
-       
-       Args:
-           json_path: chemin vers le JSON Label Studio
-           images_dir: dossier contenant les images
-           output_json_path: chemin JSON de sortie (None = écrase l'original)
-       """
-       
-       def remove_prefix(filename):
-           """Enlève le préfixe UUID (8 caractères hexa + tiret)."""
-           if '-' in filename:
-               parts = filename.split('-', 1)
-               if len(parts[0]) == 8 and all(c in '0123456789abcdef' for c in parts[0].lower()):
-                   return parts[1]
-           return filename
-       
-       # 1. NETTOYER LE JSON
-       print("📄 Nettoyage du JSON...")
-       with open(json_path, 'r', encoding='utf-8') as f:
-           data = json.load(f)
-       
-       json_changes = 0
-       for item in data:
-           # Nettoyer file_upload
-           if 'file_upload' in item:
-               original = remove_prefix(item['file_upload'])
-               if original != item['file_upload']:
-                   print(f"  ✓ {item['file_upload']} → {original}")
-                   item['file_upload'] = original
-                   json_changes += 1
-           
-           # Nettoyer data.image
-           if 'data' in item and 'image' in item['data']:
-               path = item['data']['image']
-               filename = os.path.basename(path)
-               cleaned = remove_prefix(filename)
-               if '/' in path:
-                   item['data']['image'] = path.rsplit('/', 1)[0] + '/' + cleaned
-               else:
-                   item['data']['image'] = cleaned
-       
-       # Sauvegarder le JSON nettoyé
-       output_path = output_json_path or json_path
-       with open(output_path, 'w', encoding='utf-8') as f:
-           json.dump(data, f, indent=2, ensure_ascii=False)
-       
-       print(f"  ✓ {json_changes} noms nettoyés dans le JSON")
-       print(f"  ✓ JSON sauvegardé : {output_path}\n")
-       
-       # 2. RENOMMER LES IMAGES
-       print("🖼️  Renommage des images...")
-       if not os.path.exists(images_dir):
-           print(f"  ⚠️  Dossier introuvable : {images_dir}")
-           return
-       
-       image_changes = 0
-       for filename in os.listdir(images_dir):
-           if not filename.lower().endswith(('.jpg', '.jpeg', '.png')):
-               continue
-           
-           original = remove_prefix(filename)
-           if original != filename:
-               old_path = os.path.join(images_dir, filename)
-               new_path = os.path.join(images_dir, original)
-               
-               if os.path.exists(new_path):
-                   print(f"  ⚠️  {original} existe déjà, ignoré")
-                   continue
-               
-               shutil.move(old_path, new_path)
-               print(f"  ✓ {filename} → {original}")
-               image_changes += 1
-       
-       print(f"\n✅ Terminé ! {image_changes} images renommées")
-
-   # 🎯 UTILISATION
-   clean_labelstudio_dataset(
-       json_path='project-1-annotations.json',
-       images_dir='data/images/',
-       output_json_path='project-1-annotations-clean.json'  # Ou None pour écraser
-   )
-
-💡 **Astuce** : le format peut varier selon la configuration de Label Studio. Utilisez ``file_upload`` si disponible, sinon extrayez depuis ``data.image``.
-
-.. slide::
-
-5.3. Vérifier que tout fonctionne
-~~~~~~~~~~~~~~~~~~~
-
-Après avoir nettoyé le JSON, vérifiez que les données sont correctes :
-
-.. code-block:: python
-
-   import json
-   import os
-   import cv2
-
-   def verify_labelstudio_dataset(json_path, images_dir, num_samples=5):
-       """
-       Vérifie que le JSON et les images correspondent.
-       Affiche les statistiques et dessine quelques exemples.
-       
-       Args:
-           json_path: JSON Label Studio (nettoyé)
-           images_dir: dossier des images
-           num_samples: nombre d'images à visualiser
-       """
-       
-       # Charger le JSON
-       with open(json_path, 'r', encoding='utf-8') as f:
-           data = json.load(f)
-       
-       print(f"📊 STATISTIQUES DU DATASET")
-       print(f"   Nombre d'images : {len(data)}")
-       
-       # Compter les objets et classes
-       total_objects = 0
-       classes_count = {}
-       missing_images = []
-       
-       for item in data:
-           image_name = item['file_upload']
-           full_path = os.path.join(images_dir, image_name)
-           
-           # Vérifier que l'image existe
-           if not os.path.exists(full_path):
-               missing_images.append(image_name)
-               continue
-           
-           # Compter les objets
-           annotations = item.get('annotations', [])
-           if annotations:
-               result = annotations[-1].get('result', [])
-               for ann in result:
-                   if ann.get('type') == 'rectanglelabels':
-                       total_objects += 1
-                       label = ann['value']['rectanglelabels'][0]
-                       classes_count[label] = classes_count.get(label, 0) + 1
-       
-       print(f"   Objets annotés : {total_objects}")
-       print(f"   Classes : {list(classes_count.keys())}")
-       for cls, count in classes_count.items():
-           print(f"      - {cls}: {count} objets")
-       
-       if missing_images:
-           print(f"\n⚠️  {len(missing_images)} images manquantes :")
-           for img in missing_images[:5]:
-               print(f"      - {img}")
-       else:
-           print(f"\n✅ Toutes les images sont présentes !")
-       
-       # Visualiser quelques exemples
-       print(f"\n🖼️  VISUALISATION DE {num_samples} EXEMPLES")
-       os.makedirs('verification', exist_ok=True)
-       
-       for idx, item in enumerate(data[:num_samples]):
-           image_name = item['file_upload']
-           full_path = os.path.join(images_dir, image_name)
-           
-           if not os.path.exists(full_path):
-               continue
-           
-           # Charger l'image
-           img = cv2.imread(full_path)
-           h, w = img.shape[:2]
-           
-           # Dessiner les boîtes
-           annotations = item.get('annotations', [])
-           if annotations:
-               result = annotations[-1].get('result', [])
-               for ann in result:
-                   if ann.get('type') != 'rectanglelabels':
-                       continue
-                   
-                   value = ann['value']
-                   label = value['rectanglelabels'][0]
-                   
-                   # Convertir % → pixels
-                   x1 = int(value['x'] * w / 100)
-                   y1 = int(value['y'] * h / 100)
-                   x2 = int((value['x'] + value['width']) * w / 100)
-                   y2 = int((value['y'] + value['height']) * h / 100)
-                   
-                   # Dessiner
-                   cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
-                   cv2.putText(img, label, (x1, y1-10),
-                              cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
-           
-           # Sauvegarder
-           output_path = f'verification/check_{idx:02d}_{image_name}'
-           cv2.imwrite(output_path, img)
-           print(f"   ✓ {output_path}")
-       
-       print(f"\n✅ Vérification terminée ! Consultez le dossier 'verification/'")
-
-   # 🎯 UTILISATION
-   verify_labelstudio_dataset(
-       json_path='project-1-annotations-clean.json',
-       images_dir='data/images/',
-       num_samples=5
-   )
-
-💡 **Conseil** : vérifiez toujours vos données avant de lancer l'entraînement !
-
-.. slide::
-
-📖 6. Créer un Dataset PyTorch pour la détection
-----------------------
-
-Maintenant que nos annotations sont prêtes, créons un Dataset PyTorch personnalisé qui charge directement le JSON de Label Studio.
-
-6.1. Structure de dossiers recommandée
-~~~~~~~~~~~~~~~~~~~
-
-Organisez vos fichiers ainsi :
+**Fichier** ``classes.txt`` **exemple** :
 
 .. code-block:: text
 
-   mon_projet_detection/
-   ├── data/
-   │   ├── images/           # Toutes les images
-   │   │   ├── frame_00001.jpg
-   │   │   ├── frame_00002.jpg
-   │   │   └── ...
-   │   ├── annotations.json  # Export Label Studio
-   │   └── splits.json       # Split train/val/test (optionnel)
-   └── train.py              # Script d'entraînement
+   cube
+   bouteille
+   gobelet
 
-**Fichier** ``splits.json`` **(optionnel)** : pour séparer train/val/test
-
-.. code-block:: json
-
-   {
-     "train": ["frame_00001.jpg", "frame_00002.jpg", ...],
-     "val": ["frame_00151.jpg", "frame_00152.jpg", ...],
-     "test": ["frame_00181.jpg", "frame_00182.jpg", ...]
-   }
-
-.. note::
-
-   💡 **Split automatique avec random_split**
-   
-   Pas besoin de créer ``splits.json`` ! Vous pouvez séparer train/val/test directement dans le code avec ``random_split`` comme au chapitre 5.
+💡 **L'ordre des classes dans** ``classes.txt`` **définit les IDs** : cube=0, bouteille=1, gobelet=2.
 
 .. slide::
 
-6.2. Classe DetectionDataset complète
+4.3. Étapes pour exporter depuis Label Studio
 ~~~~~~~~~~~~~~~~~~~
 
-Voici une implémentation qui charge directement le JSON de Label Studio :
+**1. Accéder à l'export**
 
-.. warning::
+- Ouvrez votre projet dans Label Studio
+- En haut de la page, cliquez sur le bouton **"Export"**
 
-   ⚠️ **Prérequis : Nettoyage des UUID**
+**2. Choisir le format**
+
+- Dans la liste des formats d'export, sélectionnez : **"YOLO"**
+- Label Studio génère automatiquement l'archive
+
+**3. Télécharger l'archive**
+
+- Cliquez sur **"Export"** pour télécharger le fichier ZIP
+- Le fichier se nomme généralement ``project-X-at-YYYY-MM-DD-HH-MM-XX.zip``
+
+**4. Extraire l'archive**
+
+.. code-block:: bash
+
+   # Décompresser l'archive
+   unzip project-1-at-2024-01-15-14-30-00.zip -d dataset_yolo/
    
-   Avant d'utiliser ce Dataset, assurez-vous d'avoir :
+   # Vérifier le contenu
+   ls -R dataset_yolo/
    
-   1. ✅ Nettoyé le JSON avec ``clean_labelstudio_dataset()`` (section 5.2)
-   2. ✅ Renommé les images pour enlever les préfixes UUID (section 5.2)
-   3. ✅ Vérifié avec ``verify_labelstudio_dataset()`` (section 5.3)
-   
-   **Sinon**, le Dataset ne trouvera pas les images (erreur ``FileNotFoundError``) car les noms dans le JSON ne correspondront pas aux noms des fichiers sur le disque.
+   # Vous devriez voir :
+   # dataset_yolo/
+   # ├── images/
+   # ├── labels/
+   # ├── classes.txt
+   # └── notes.json
+
+.. slide::
+
+4.4. Vérifier l'export
+~~~~~~~~~~~~~~~~~~~
+
+Avant de commencer l'entraînement, vérifiez toujours que l'export est correct :
+
+.. code-block:: python
+
+   import os
+
+   def verify_yolo_export(dataset_path):
+       """Vérifie la structure d'un export YOLO."""
+       
+       images_dir = os.path.join(dataset_path, 'images')
+       labels_dir = os.path.join(dataset_path, 'labels')
+       classes_file = os.path.join(dataset_path, 'classes.txt')
+       
+       # Vérifier que les dossiers existent
+       assert os.path.exists(images_dir), "❌ Dossier 'images/' manquant"
+       assert os.path.exists(labels_dir), "❌ Dossier 'labels/' manquant"
+       assert os.path.exists(classes_file), "❌ Fichier 'classes.txt' manquant"
+       
+       # Compter les fichiers
+       images = [f for f in os.listdir(images_dir) if f.endswith(('.jpg', '.png'))]
+       labels = [f for f in os.listdir(labels_dir) if f.endswith('.txt')]
+       
+       print(f"✅ Structure YOLO valide")
+       print(f"   📁 Images : {len(images)}")
+       print(f"   📁 Labels : {len(labels)}")
+       
+       # Charger les classes
+       with open(classes_file, 'r') as f:
+           classes = [line.strip() for line in f.readlines()]
+       print(f"   📋 Classes ({len(classes)}) : {classes}")
+       
+       # Vérifier la correspondance images/labels
+       missing_labels = []
+       for img in images:
+           label_name = os.path.splitext(img)[0] + '.txt'
+           if label_name not in labels:
+               missing_labels.append(img)
+       
+       if missing_labels:
+           print(f"\n⚠️  {len(missing_labels)} images sans annotation :")
+           for img in missing_labels[:5]:
+               print(f"      - {img}")
+       else:
+           print(f"\n✅ Toutes les images ont leurs annotations")
+       
+       # Vérifier un fichier d'annotation
+       if labels:
+           sample_label = os.path.join(labels_dir, labels[0])
+           with open(sample_label, 'r') as f:
+               lines = f.readlines()
+           print(f"\n📄 Exemple d'annotation ({labels[0]}) :")
+           for line in lines[:3]:
+               print(f"      {line.strip()}")
+
+   # 🎯 UTILISATION
+   verify_yolo_export('dataset_yolo/')
+
+.. slide::
+
+📖 5. Créer un Dataset PyTorch pour le format YOLO
+----------------------
+
+Maintenant que vous avez exporté votre dataset au format YOLO, créons un Dataset PyTorch personnalisé pour le charger.
+
+5.1. Structure de dossiers YOLO
+~~~~~~~~~~~~~~~~~~~
+
+Après extraction de l'archive ZIP, votre dataset doit avoir cette structure :
+
+.. code-block:: text
+
+   dataset_yolo/
+   ├── images/              # Toutes vos images annotées
+   │   ├── frame_00001.jpg
+   │   ├── frame_00002.jpg
+   │   └── ...
+   ├── labels/              # Fichiers .txt (même nom que l'image)
+   │   ├── frame_00001.txt
+   │   ├── frame_00002.txt
+   │   └── ...
+   └── classes.txt          # Liste des classes (une par ligne)
+
+.. slide::
+
+5.2. Classe YOLODetectionDataset
+~~~~~~~~~~~~~~~~~~~
+
+Voici une implémentation complète qui charge le format YOLO et gère intelligemment le redimensionnement :
 
 .. code-block:: python
 
    import torch
    from torch.utils.data import Dataset
    from PIL import Image
-   import json
    import os
-   from torchvision.transforms import functional as F
+   from torchvision import transforms
 
-   class LabelStudioDetectionDataset(Dataset):
+   class YOLODetectionDataset(Dataset):
        """
-       Dataset PyTorch qui charge directement les annotations Label Studio.
+       Dataset PyTorch pour le format YOLO (images + labels .txt).
+       Compatible avec l'export YOLO de Label Studio.
        """
        
-       def __init__(self, json_path, images_dir, split_images=None, transforms=None):
+       def __init__(self, images_dir, labels_dir, classes_file, img_size=224, custom_transforms=None):
            """
            Args:
-               json_path: chemin vers le JSON exporté de Label Studio
                images_dir: dossier contenant les images
-               split_images: liste de noms d'images à utiliser (None = toutes)
-               transforms: transformations à appliquer (optionnel)
+               labels_dir: dossier contenant les labels .txt au format YOLO
+               classes_file: chemin vers classes.txt
+               img_size: taille de redimensionnement (défaut: 224x224)
+               custom_transforms: transformations à appliquer (optionnel)
            """
            self.images_dir = images_dir
-           self.transforms = transforms
+           self.labels_dir = labels_dir
+           self.img_size = img_size
+           self.custom_transforms = custom_transforms
            
-           # Charger le JSON
-           with open(json_path, 'r', encoding='utf-8') as f:
-               all_data = json.load(f)
+           # Pas de transformation automatique - on gérera le resize manuellement
+           # pour ajuster les coordonnées des bounding boxes en conséquence
+           self.to_tensor = transforms.ToTensor()
            
-           # Filtrer selon split_images si fourni
-           if split_images:
-               split_set = set(split_images)
-               self.data = [
-                   item for item in all_data
-                   if os.path.basename(item['data']['image']) in split_set
-               ]
-           else:
-               self.data = all_data
+           # Charger les noms de classes
+           with open(classes_file, 'r') as f:
+               self.classes = [line.strip() for line in f.readlines()]
            
-           # Extraire les noms de classes uniques
-           classes_set = set()
-           for item in self.data:
-               annotations = item.get('annotations', [])
-               if annotations:
-                   result = annotations[-1].get('result', [])
-                   for ann in result:
-                       if ann.get('type') == 'rectanglelabels':
-                           labels = ann['value'].get('rectanglelabels', [])
-                           classes_set.update(labels)
+           # Liste des images (on suppose que chaque image a son label correspondant)
+           self.image_files = sorted([f for f in os.listdir(images_dir) 
+                                      if f.endswith(('.jpg', '.jpeg', '.png'))])
            
-           self.classes = sorted(list(classes_set))
-           self.class_to_idx = {cls: idx+1 for idx, cls in enumerate(self.classes)}
-           
-           print(f"Dataset initialisé : {len(self.data)} images, "
-                 f"{len(self.classes)} classes : {self.classes}")
+           print(f"✅ Dataset YOLO initialisé:")
+           print(f"   - {len(self.image_files)} images")
+           print(f"   - {len(self.classes)} classes : {self.classes}")
        
        def __len__(self):
-           return len(self.data)
+           return len(self.image_files)
        
        def __getitem__(self, idx):
            """
-           Charge une image et ses annotations.
+           Charge une image et ses annotations au format YOLO.
            
            Returns:
                img: tensor [3, H, W]
-               target: dict avec 'boxes', 'labels', 'image_id'
+               target: dict avec 'boxes' (format [x1, y1, x2, y2] en pixels), 
+                       'labels', 'image_id'
            """
-           item = self.data[idx]
+           # Charger l'image
+           img_filename = self.image_files[idx]
+           img_path = os.path.join(self.images_dir, img_filename)
+           img = Image.open(img_path).convert('RGB')
+           orig_width, orig_height = img.size
            
-           # Extraire le nom de l'image et la charger
-           image_path_str = item['data']['image']
-           image_name = os.path.basename(image_path_str)
-           full_path = os.path.join(self.images_dir, image_name)
+           # Calculer le ratio de resize pour garder l'aspect ratio
+           scale = self.img_size / max(orig_width, orig_height)
+           new_width = int(orig_width * scale)
+           new_height = int(orig_height * scale)
            
-           img = Image.open(full_path).convert('RGB')
-           img_width, img_height = img.size
+           # Resize en gardant l'aspect ratio
+           img = img.resize((new_width, new_height), Image.BILINEAR)
            
-           # Récupérer les annotations
+           # Créer une image carrée avec padding noir
+           padded_img = Image.new('RGB', (self.img_size, self.img_size), (0, 0, 0))
+           # Centrer l'image resizée
+           paste_x = (self.img_size - new_width) // 2
+           paste_y = (self.img_size - new_height) // 2
+           padded_img.paste(img, (paste_x, paste_y))
+           
+           # Charger le label correspondant
+           label_filename = os.path.splitext(img_filename)[0] + '.txt'
+           label_path = os.path.join(self.labels_dir, label_filename)
+           
            boxes = []
            labels = []
            
-           annotations = item.get('annotations', [])
-           if annotations:
-               # Prendre la dernière version (plus récente)
-               result = annotations[-1].get('result', [])
-               
-               for ann in result:
-                   if ann.get('type') != 'rectanglelabels':
-                       continue
-                   
-                   value = ann['value']
-                   
-                   # Label Studio donne les coordonnées en pourcentages (0-100)
-                   x_percent = value['x']
-                   y_percent = value['y']
-                   w_percent = value['width']
-                   h_percent = value['height']
-                   
-                   # Convertir en pixels [x1, y1, x2, y2]
-                   x1 = (x_percent / 100.0) * img_width
-                   y1 = (y_percent / 100.0) * img_height
-                   x2 = ((x_percent + w_percent) / 100.0) * img_width
-                   y2 = ((y_percent + h_percent) / 100.0) * img_height
-                   
-                   boxes.append([x1, y1, x2, y2])
-                   
-                   # Récupérer la classe
-                   class_name = value['rectanglelabels'][0]
-                   class_idx = self.class_to_idx[class_name]
-                   labels.append(class_idx)
+           # Lire le fichier de labels si il existe
+           if os.path.exists(label_path):
+               with open(label_path, 'r') as f:
+                   for line in f:
+                       parts = line.strip().split()
+                       if len(parts) == 5:
+                           class_id = int(parts[0])
+                           x_center = float(parts[1])
+                           y_center = float(parts[2])
+                           width = float(parts[3])
+                           height = float(parts[4])
+                           
+                           # Convertir du format YOLO normalisé vers pixels dans l'image originale
+                           x_center_orig = x_center * orig_width
+                           y_center_orig = y_center * orig_height
+                           width_orig = width * orig_width
+                           height_orig = height * orig_height
+                           
+                           # Appliquer le scale et le padding
+                           x_center_scaled = x_center_orig * scale + paste_x
+                           y_center_scaled = y_center_orig * scale + paste_y
+                           width_scaled = width_orig * scale
+                           height_scaled = height_orig * scale
+                           
+                           # Convertir en format [x1, y1, x2, y2]
+                           x1 = x_center_scaled - width_scaled / 2
+                           y1 = y_center_scaled - height_scaled / 2
+                           x2 = x_center_scaled + width_scaled / 2
+                           y2 = y_center_scaled + height_scaled / 2
+                           
+                           boxes.append([x1, y1, x2, y2])
+                           labels.append(class_id + 1)  # +1 car background=0 dans certains modèles
            
            # Convertir en tenseurs
            boxes = torch.as_tensor(boxes, dtype=torch.float32)
@@ -1300,41 +1028,44 @@ Voici une implémentation qui charge directement le JSON de Label Studio :
                target['boxes'] = torch.zeros((0, 4), dtype=torch.float32)
                target['labels'] = torch.zeros((0,), dtype=torch.int64)
            
-           # Appliquer les transformations
-           if self.transforms:
-               img = self.transforms(img)
-           else:
-               img = F.to_tensor(img)
+           # Convertir l'image en tensor
+           img = self.to_tensor(padded_img)
+           
+           # Appliquer les transformations personnalisées si fournies
+           if self.custom_transforms:
+               img = self.custom_transforms(img)
            
            return img, target
        
        def get_class_name(self, class_id):
-           """Retourne le nom d'une classe depuis son ID."""
+           """Retourne le nom d'une classe depuis son ID (class_id - 1 car on a ajouté 1)."""
            return self.classes[class_id - 1]
 
 .. note::
 
-   💡 **Gestion des IDs de classes**
+   💡 **Gestion intelligente du redimensionnement**
    
-   - Les classes sont automatiquement extraites du JSON
-   - Les IDs commencent à **1** (0 est réservé au background dans torchvision)
-   - ``class_to_idx`` : dictionnaire ``{'bouteille': 1, 'gobelet': 2}``
+   - L'image est redimensionnée **proportionnellement** pour éviter toute déformation
+   - Un **padding noir** est ajouté pour créer une image carrée
+   - Les **coordonnées des bounding boxes** sont automatiquement ajustées
+   - Les IDs de classes commencent à **1** (0 réservé au background)
 
 .. slide::
 
-6.3. Créer les DataLoaders avec split automatique
+5.3. Créer les DataLoaders avec split automatique
 ~~~~~~~~~~~~~~~~~~~
 
-Si vous n'avez pas de fichier ``splits.json``, utilisez ``random_split`` comme au chapitre 5 :
+Chargez le dataset et créez les splits train/val/test :
 
 .. code-block:: python
 
    from torch.utils.data import DataLoader, random_split
 
-   # Charger le dataset complet
-   full_dataset = LabelStudioDetectionDataset(
-       json_path='data/annotations.json',
-       images_dir='data/images/'
+   # Charger le dataset YOLO
+   full_dataset = YOLODetectionDataset(
+       images_dir='dataset_yolo/images',
+       labels_dir='dataset_yolo/labels',
+       classes_file='dataset_yolo/classes.txt'
    )
 
    # Split : 70% train, 15% val, 15% test
@@ -1344,14 +1075,15 @@ Si vous n'avez pas de fichier ``splits.json``, utilisez ``random_split`` comme a
    test_size = total_size - train_size - val_size
 
    train_dataset, val_dataset, test_dataset = random_split(
-   full_dataset, 
-   [train_size, val_size, test_size],
-   generator=torch.Generator().manual_seed(42)
+       full_dataset, 
+       [train_size, val_size, test_size],
+       generator=torch.Generator().manual_seed(42)
    )
 
-   print(f"Train : {len(train_dataset)} images")
-   print(f"Val   : {len(val_dataset)} images")
-   print(f"Test  : {len(test_dataset)} images")
+   print(f"\n📂 Split du dataset :")
+   print(f"   Train : {len(train_dataset)} images")
+   print(f"   Val   : {len(val_dataset)} images")
+   print(f"   Test  : {len(test_dataset)} images")
 
    # Créer les dataloaders
    def collate_fn(batch):
@@ -1362,7 +1094,7 @@ Si vous n'avez pas de fichier ``splits.json``, utilisez ``random_split`` comme a
        train_dataset,
        batch_size=4,
        shuffle=True,
-       num_workers=4,
+       num_workers=2,
        collate_fn=collate_fn
    )
 
@@ -1370,66 +1102,87 @@ Si vous n'avez pas de fichier ``splits.json``, utilisez ``random_split`` comme a
        val_dataset,
        batch_size=4,
        shuffle=False,
-       num_workers=4,
+       num_workers=2,
        collate_fn=collate_fn
    )
 
-💡 **Avantage** : tout en un ! Pas besoin de gérer des listes de noms de fichiers séparées.
+   test_loader = DataLoader(
+       test_dataset,
+       batch_size=4,
+       shuffle=False,
+       num_workers=2,
+       collate_fn=collate_fn
+   )
+
+   print(f"\n✅ DataLoaders créés avec batch_size=4")
+
+💡 **Avantage de** ``random_split`` : pas besoin de créer manuellement les listes d'images pour chaque split !
 
 .. slide::
 
-6.5. Tester le chargement des données
+5.4. Visualiser les données chargées
 ~~~~~~~~~~~~~~~~~~~
 
-Toujours vérifier que le Dataset charge correctement :
+Toujours vérifier visuellement que le Dataset charge correctement les images et bounding boxes :
 
 .. code-block:: python
 
-   # Charger un exemple
-   img, target = train_dataset[0]
-
-   print(f"Image shape: {img.shape}")
-   print(f"Nombre d'objets: {len(target['boxes'])}")
-   print(f"Boxes:\n{target['boxes']}")
-   print(f"Labels: {target['labels']}")
-
-   # Visualiser quelques exemples
    import matplotlib.pyplot as plt
    import matplotlib.patches as patches
+   import numpy as np
 
-   def visualize_sample(dataset, idx):
-       img, target = dataset[idx]
+   def visualize_yolo_batch(dataset, num_samples=4):
+       """Affiche quelques exemples du dataset avec leurs bounding boxes."""
+       fig, axes = plt.subplots(2, 2, figsize=(12, 12))
+       axes = axes.flatten()
        
-       # Convertir le tensor en numpy pour l'affichage
-       img_np = img.permute(1, 2, 0).numpy()
-       
-       fig, ax = plt.subplots(1, figsize=(12, 8))
-       ax.imshow(img_np)
-       
-       # Dessiner chaque boîte
-       for box, label in zip(target['boxes'], target['labels']):
-           x1, y1, x2, y2 = box.tolist()
-           width = x2 - x1
-           height = y2 - y1
+       for i in range(num_samples):
+           img, target = dataset[i]
            
-           rect = patches.Rectangle(
-               (x1, y1), width, height,
-               linewidth=2, edgecolor='r', facecolor='none'
-           )
-           ax.add_patch(rect)
+           # Convertir le tensor en numpy pour l'affichage
+           img_np = img.permute(1, 2, 0).numpy()
            
-           # Ajouter le label
-           class_name = dataset.get_class_name(label.item())
-           ax.text(x1, y1-5, class_name, 
-                  bbox=dict(facecolor='red', alpha=0.5),
-                  fontsize=12, color='white')
+           ax = axes[i]
+           ax.imshow(img_np)
+           ax.axis('off')
+           
+           # Dessiner les bounding boxes
+           boxes = target['boxes'].numpy()
+           labels = target['labels'].numpy()
+           
+           for box, label in zip(boxes, labels):
+               x1, y1, x2, y2 = box
+               width = x2 - x1
+               height = y2 - y1
+               
+               # Créer le rectangle
+               rect = patches.Rectangle(
+                   (x1, y1), width, height,
+                   linewidth=2, edgecolor='red', facecolor='none'
+               )
+               ax.add_patch(rect)
+               
+               # Ajouter le label
+               class_name = dataset.dataset.get_class_name(label) if hasattr(dataset, 'dataset') else f"Classe {label}"
+               ax.text(x1, y1-5, class_name, 
+                      bbox=dict(boxstyle='round', facecolor='red', alpha=0.7),
+                      fontsize=10, color='white')
+           
+           ax.set_title(f'Image {i}')
        
-       plt.axis('off')
        plt.tight_layout()
-       plt.savefig(f'check_sample_{idx}.png')
-       print(f"✓ Visualisation sauvegardée : check_sample_{idx}.png")
+       plt.show()
 
-   # Vérifier les 5 premiers exemples
-   for i in range(5):
-       visualize_sample(train_dataset, i)
+   # Visualiser quelques exemples du train set
+   print("📸 Visualisation d'exemples du training set:\n")
+   visualize_yolo_batch(train_dataset, num_samples=4)
+
+**Points à vérifier** :
+
+- ✅ Les images sont bien carrées ($$224×224$$ par défaut)
+- ✅ Les bounding boxes englobent correctement les objets
+- ✅ Les labels affichés correspondent aux objets
+- ✅ Pas de déformation visible des objets
+
+💡 **Astuce** : si les bounding boxes ne correspondent pas aux objets, vérifiez que les fichiers ``.txt`` dans ``labels/`` ont les mêmes noms que les images.
 
