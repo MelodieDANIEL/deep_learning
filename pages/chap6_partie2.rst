@@ -48,6 +48,10 @@ Le modèle est constitué d'un **backbone CNN** (4 couches Conv2D + MaxPool) sui
    import torch.nn.functional as F
    from tqdm import tqdm # Pour les barres de progression
 
+   # Vérifier si GPU disponible
+   device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+   print(f"🔧 Device utilisé : {device}")
+
    class SimpleBBoxRegressor(nn.Module):
        """
        CNN ultra-simple qui régresse directement UNE boîte par image.
@@ -115,6 +119,7 @@ Le modèle est constitué d'un **backbone CNN** (4 couches Conv2D + MaxPool) sui
 
 .. code-block:: python
 
+   import torch.optim as optim
    # Loss simple : MSE sur les coordonnées
    criterion = nn.MSELoss()
    optimizer = optim.Adam(simple_model.parameters(), lr=1e-3)
@@ -212,10 +217,14 @@ Boucles simples d'entraînement et d'évaluation.
    
    num_epochs = 20
    best_val = float('inf')
+   history = {'train_loss': [], 'val_loss': []}
    
    for epoch in range(num_epochs):
        train_loss = train_simple_epoch(simple_model, criterion, optimizer, train_loader)
        val_loss = eval_simple_epoch(simple_model, criterion, val_loader)
+
+       history['train_loss'].append(train_loss)
+       history['val_loss'].append(val_loss)
        
        print(f"Epoch {epoch+1:02d} | Train: {train_loss:.4f} | Val: {val_loss:.4f}")
        
@@ -589,7 +598,7 @@ Nous allons maintenant utiliser **YOLOv11** (Ultralytics) pour entraîner un dé
 - ✅ **Rapide** : 30-80 FPS (temps réel)
 - ✅ **One-stage** : prédiction directe
 - ✅ **Précis** : performances supérieures à Faster R-CNN
-- ✅ **Facile à utiliser** : librairie Ultralytics très simple
+- ✅ **Facile à utiliser** : librairie Ultralytics assez simple
 
 **YOLOv11** est la dernière version stable (2024) avec des améliorations significatives par rapport à YOLOv8 (2023) : l'architecture est plus optimisée et la précision est améliorée tout en étant plus rapide. 
 
@@ -747,7 +756,7 @@ Téléchargez le dataset COCO128 via Ultralytics :
    
    - **128 images** : le nombre d'images dans le dataset
    - **80 classes** : les types d'objets que le modèle peut détecter (person, car, dog, etc.)
-   - **~20-30 classes présentes** : seulement ces classes apparaissent dans les 128 images
+   - **20-30 classes présentes** : seulement ces classes apparaissent dans les 128 images
    - Dataset téléchargé dans : ``./datasets/coco128/``
 
 .. slide::
@@ -836,16 +845,16 @@ Si vous voulez entraîner sur le dataset complet après avoir testé avec COCO12
 .. code-block:: python
 
    # Charger le meilleur modèle
-    model = YOLO('runs/detect/yolo11_coco128/weights/best.pt')
-    print("✅ Modèle chargé !")
-    
-    # Évaluer sur le validation set
-    metrics = model.val()
+   model = YOLO('runs/detect/yolo11_coco128/weights/best.pt')
+   print("✅ Modèle chargé !")
+   
+   # Évaluer sur le validation set
+   metrics = model.val()
 
-    print(f"📊 mAP@0.5: {metrics.box.map50:.3f}")
-    print(f"📊 mAP@0.5:0.95: {metrics.box.map:.3f}")
-    print(f"📊 Precision: {metrics.box.mp:.3f}")
-    print(f"📊 Recall: {metrics.box.mr:.3f}")
+   print(f"📊 mAP@0.5: {metrics.box.map50:.3f}")
+   print(f"📊 mAP@0.5:0.95: {metrics.box.map:.3f}")
+   print(f"📊 Precision: {metrics.box.mp:.3f}")
+   print(f"📊 Recall: {metrics.box.mr:.3f}")
 
 .. note::
 
