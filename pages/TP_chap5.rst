@@ -1,7 +1,7 @@
 🏋️ Travaux Pratiques 5
 =========================
 .. slide::
-Sur cette page se trouvent des exercices de TP sur le Chapitre 5. Ils sont classés par niveau de difficulté :
+Sur cette page se trouvent des exercices de TP sur le Chapitre 5. Ils sont classés par niveau de difficulté suivant :
 .. discoverList::
     * Facile : 🍀
     * Moyen : ⚖️

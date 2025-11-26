@@ -1424,5 +1424,12 @@ Maintenant que nous avons entraîné et testé les deux modèles sur **exactemen
    - ✅ **Robustesse** : gère les cas complexes (occlusions, variations)
    - ✅ Dataset **réel** avec variabilité
 
+.. slide::
 
+🏋️ Travaux Pratiques 6
+--------------------
+
+.. toctree::
+
+    TP_chap6
 
