@@ -454,4 +454,115 @@ Des méthodes plus systématiques incluent :
 - **Bayesian Optimization** : utilise des modèles probabilistes pour modéliser la fonction de performance en fonction des hyper-paramètres et guide la recherche vers les régions prometteuses de l'espace des hyper-paramètres.
 - **Hyperband** : combine la recherche aléatoire avec une stratégie d'arrêt précoce pour allouer efficacement les ressources de calcul aux configurations d'hyper-paramètres les plus prometteuses.
 
+.. slide::
 
+5.3. Exemples d'implémentation
+~~~~~~~~~~~~~~~~~~~~~~
+
+Certaines librairies proposent directement des outils pour automatiser la recherche d'hyper-paramètres, comme ``scikit-learn`` avec ``sklearn.model_selection.GridSearchCV`` et ``sklearn.model_selection.RandomizedSearchCV``.
+
+Malheureusement, ces outils sont limités aux modèles implémentés dans ``scikit-learn`` et ne sont pas adaptés aux modèles de Deep Learning plus complexes.
+D'autres librairies plus spécialisées existent pour le Deep Learning et offrent des fonctionnalités avancées pour la recherche d'hyper-paramètres, telles que :
+
+- Optuna
+- Hyperopt
+- Ray Tune
+- Scikit-Optimize
+
+.. slide::
+
+Évidement, il est aussi possible d'implémenter soi-même des stratégies de recherche d'hyper-paramètres en utilisant des boucles et des fonctions d'évaluation personnalisées. 
+
+Par exemple, une implémentation de Grid Search peut être réalisée en Python en combinant des boucles imbriquées et des fonctions d'entraînement/évaluation :
+
+.. code-block:: python
+
+    import itertools
+    
+    param_space = {
+        'lr': [0.01, 0.001, 0.0001],
+        'weight_decay': [0.0, 0.0001, 0.001],
+        'n_conv_layers': [8, 16, 32, 64],
+        'batch_size': [16, 32, 64, 128]
+    }
+
+    best_params = None
+    best_val_loss = float('inf')
+
+
+    for lr, weight_decay, n_conv_layers, batch_size in itertools.product(
+        param_space['lr'],
+        param_space['weight_decay'],
+        param_space['n_conv_layers'],
+        param_space['batch_size']
+    ):
+        model = My_Network(n_conv_layers=n_conv_layers)
+        optimizer = torch.optim.SGD(model.parameters(), lr=lr, weight_decay=weight_decay)
+
+        for epoch in range(10):
+            train_loss = train(model, optimizer, batch_size=batch_size)
+            val_loss = validate(model, batch_size=batch_size)
+
+        if val_loss < best_val_loss:
+            best_val_loss = val_loss
+            best_params = {'lr': lr, 'weight_decay': weight_decay, 'n_conv_layers': n_conv_layers, 'batch_size': batch_size}
+    print("Meilleurs hyper-paramètres :", best_params)
+
+.. slide::
+
+.. note::
+    D'une manière générale, la recherche d'hyper-paramètres commence par définir un **espace de recherche** (i.e., liste ou plage de valeurs pour chaque hyper-paramètre à tester) et une **fonction objective** qui entraîne et évalue le modèle pour une combinaison donnée d'hyper-paramètres. 
+    
+    Les différentes stratégies de recherche explorent cet espace de manière plus ou moins efficace pour trouver la combinaison optimale d'hyper-paramètres.
+
+.. slide::
+
+Nous ne présenterons pas ici toutes les librairies existantes pour la recherche d'hyper-paramètres. Chacune à sa propre API et ses spécificités. Cependant, elles partagent toutes le même principe général : un espace de recherche et une fonction objective.
+
+Voici à titre d'exemple une implémentation simple avec la librairie Hyperopt qui utilise l'algorithme TPE (Tree-structured Parzen Estimator) pour optimiser deux hyper-paramètres : le learning rate et le weight decay.
+
+.. code-block:: python
+    from hyperopt import fmin, tpe, hp, Trials, STATUS_OK
+    import torch
+    import torch.nn as nn
+    import torch.optim as optim
+
+    # Définir l'espace de recherche des hyper-paramètres
+    space = {
+        'lr': hp.loguniform('lr', -10, -1),  # Learning rate entre exp(-10) et exp(-1)
+        'weight_decay': hp.loguniform('weight_decay', -10, -1)  # Weight decay entre exp(-10) et exp(-1)
+    }
+
+    def objective(params):
+        lr = params['lr']
+        weight_decay = params['weight_decay']
+
+        # Initialiser le modèle, la perte et l'optimiseur
+        model = My_Network()
+        criterion = nn.CrossEntropyLoss()
+        optimizer = optim.SGD(model.parameters(), lr=lr, weight_decay=weight_decay)
+
+        # Entraîner le modèle (simplifié)
+        for epoch in range(10):
+            train_loss = train(model, optimizer, criterion)
+            val_loss = validate(model, criterion)
+
+        return {'loss': val_loss, 'status': STATUS_OK}
+
+    trials = Trials()
+    best = fmin(fn=objective,
+                space=space,
+                algo=tpe.suggest,
+                max_evals=50,
+                trials=trials)
+
+    print("Meilleurs hyper-paramètres :", best)
+
+
+.. slide::
+🏋️ Travaux Pratiques
+--------------------
+
+.. toctree::
+
+    TP_chap7
