@@ -19,6 +19,7 @@ Chapitre 7 - Hyperparamètres: Contrôler et optimiser son entraînement
    - Learning Rate Scheduling
    - Regularizers
    - Normalizers 
+   - Recherche d'hyper-paramètres (Hyperparameter tuning)
 
 .. slide::
 
@@ -33,6 +34,7 @@ Dans ce cours, nous examinerons quatre leviers essentiels pour optimiser un entr
 - Learning Rate Scheduling
 - Régularisations
 - Normalisations internes (BatchNorm, LayerNorm, etc.)
+- Recherche d'hyper-paramètres (Hyperparameter tuning)
 
 .. slide::
 
@@ -394,6 +396,8 @@ Les normalizers les plus courants sont :
 
 En PyTorch, ces normalizers sont disponibles dans le module ``torch.nn``. Voici un exemple d'utilisation de la Batch Normalization :
 
+.. slide::
+
 .. code-block:: python
     import torch
     import torch.nn as nn
@@ -413,3 +417,41 @@ En PyTorch, ces normalizers sont disponibles dans le module ``torch.nn``. Voici 
             x_group_norm = self.group_norm(x)  # Apply Group Normalization
 
             return x_batch_norm, x_layer_norm, x_instance_norm, x_group_norm
+
+.. slide::
+
+📖 5. Hyperparameter search/tuning
+---------------------
+
+5.1. La jungle des hyper-paramètres
+~~~~~~~~~~~~~~~~~~~~~~
+
+Tous ce que nous avons vu jusqu'à présent concerne des hyper-paramètres : early stopping (patience), learning rate scheduling (type de scheduler, paramètres), regularizers (type, coefficients), normalizers (type, paramètres).
+
+A cela s'ajoutent d'autres hyper-paramètres importants comme : le choix de l'optimiseur, le learning rate initial, la taille du batch, l'architecture du modèle (nombre de couches, nombre de neurones par couche, activations), etc.
+
+Parmi tous ces choix se cache théoriquement au moins une combinaison optimale qui maximise les performances du modèle sur un jeu de données donné. Cependant, **trouver cette combinaison optimale est un défi majeur en Deep Learning.**
+
+.. slide::
+
+L'hyperparameter search/tuning (recherche d'hyper-paramètres en français) est le processus d'optimisation des hyper-paramètres d'un modèle de Deep Learning pour améliorer ses performances. Contrairement aux paramètres appris automatiquement (poids et biais), les hyper-paramètres sont fixés avant l'entraînement et influencent profondément la performance, la stabilité et la vitesse de convergence du modèle.
+
+Ce processus est également chronophage étant donné qu'il faut éviter de tester la variation de différents hyper-paramètres sur un entraînement, au risque de ne pas savoir quel hyper-paramètre a réellement eu un impact sur la performance. Il faudrait donc lancer autant d'entraînement qu'il y a de combinaisons d'hyper-paramètres à tester.
+
+.. slide::
+5.2. Les stratégies de recherche d'hyper-paramètres 
+~~~~~~~~~~~~~~~~~~~~~~
+
+La première approche pour trouver les meilleurs hyper-paramètres est la recherche manuelle, où l'on ajuste les hyper-paramètres en fonction de l'expérience et de l'intuition. Cependant, cette méthode peut être inefficace et sujette à des biais.
+
+.. warning::
+    ⚠️ Attention à bien sauvegarder soi-même les versions testées et les performances obtenues, car les frameworks de Deep Learning ne le font pas automatiquement pour vous.
+
+Des méthodes plus systématiques incluent :
+
+- **Grid Search** : exploration exhaustive d'une grille prédéfinie d'hyper-paramètres. Bien que cette méthode soit simple, elle peut être très coûteuse en temps de calcul.
+- **Random Search** : sélection aléatoire d'hyper-paramètres dans des plages définies. Cette méthode est souvent plus efficace que la recherche en grille, surtout lorsque certains hyper-paramètres ont plus d'impact que d'autres.
+- **Bayesian Optimization** : utilise des modèles probabilistes pour modéliser la fonction de performance en fonction des hyper-paramètres et guide la recherche vers les régions prometteuses de l'espace des hyper-paramètres.
+- **Hyperband** : combine la recherche aléatoire avec une stratégie d'arrêt précoce pour allouer efficacement les ressources de calcul aux configurations d'hyper-paramètres les plus prometteuses.
+
+
