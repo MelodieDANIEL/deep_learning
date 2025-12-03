@@ -129,6 +129,6 @@ Exercice 4 : Classification d'image avec des couches de convolution
 
 2) Créez un réseau de neurones convolutif (CNN) avec maximum 3 couches pour classer ces images. Vous pouvez vous inspirer de l'architecture suivante :
 
-💡Regardez la documentation de _torch.nn.Conv2d_ pour plus de détails sur les couches de convolution.
+💡Regardez la documentation de ``torch.nn.Conv2d`` pour plus de détails sur les couches de convolution.
 
 3) Comparez les performances de ce CNN avec celles du MLP que vous aviez créé dans le TP3.

@@ -69,15 +69,16 @@ Exemple de code dans la boucle d'entraînement qui utilise l'Early Stopping :
     import numpy as np
 
     patience = 10
-    best_val_loss = np.inf
     patience_cpt = 0
+    patience_improvement = 0.001 # "Quantité" minimale d'amélioration de la loss pour considérer qu'il y a eu une amélioration
+    best_val_loss = np.inf
 
     for epoch in range(2000):
         train(...)
         val_loss = validate(...)
 
         # Il y a amélioration : on réinitialise le compteur de patience et on sauvegarde le modèle
-        if val_loss < best_val_loss: 
+        if val_loss < best_val_loss - patience_improvement: 
             best_val_loss = val_loss 
             patience_cpt = 0 
             torch.save(model.state_dict(), "best_model.pt")
@@ -105,7 +106,7 @@ Exemple de code dans la boucle d'entraînement qui utilise l'Early Stopping :
 Le learning rate (pas d'apprentissage en français) influence directement la vitesse et la stabilité de la convergence. Un scheduler modifie automatiquement sa valeur selon une stratégie.
 
 .. note::
-    **Rappel:** Le learning rate est un hyper-paramètre crucial qui détermine la taille des pas effectués lors de la mise à jour des poids du modèle pendant l'entraînement. Un learning rate trop élevé peut entraîner une divergence, tandis qu'un learning rate trop faible peut ralentir la convergence.
+    🧠 **Rappel:** Le learning rate est un hyper-paramètre crucial qui détermine la taille des pas effectués lors de la mise à jour des poids du modèle pendant l'entraînement. Un learning rate trop élevé peut entraîner une divergence, tandis qu'un learning rate trop faible peut ralentir la convergence.
 
     C'est la norme (i.e., longueur) du vecteur de mise à jour des poids.
 
@@ -310,6 +311,8 @@ où :
 .. warning::
     ⚠️ Ici c'est bien la sortie du neurone (feature map) qui est diluée, et non la valeur des poids.
     En démontrera l'implémentation où le Dropout est appliquée sur les caractéristiques (features) des données.
+
+    En un sens, on peut considérer le Dropout comme une augmentation de données qui "bruite" les activations internes du réseau pendant l'entraînement, forçant le modèle à apprendre des représentations plus robustes.
     
 .. slide::
 
@@ -557,6 +560,7 @@ Voici à titre d'exemple une implémentation simple avec la librairie Hyperopt q
                 trials=trials)
 
     print("Meilleurs hyper-paramètres :", best)
+
 
 
 .. slide::
