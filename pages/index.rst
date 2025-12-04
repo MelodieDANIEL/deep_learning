@@ -30,6 +30,8 @@ Vous pouvez télécharger le dataset utilisé dans la partie 3 du DS  ici : `|ar
 
 Les questions associées au dataset sont disponible ici : `|archive| partie3.pdf <ds/partie3.pdf>`_.
 
+The questions related to the dataset are available here : `|archive| partie3.pdf <ds/partie3eng.pdf>`_.
+
 .. slide::
 Difficulté
 -----------
