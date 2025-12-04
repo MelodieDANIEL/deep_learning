@@ -24,6 +24,7 @@ $slidey->setTitle('Deep Learning');
 // This will copy the directory "css" to the target directory
 $slidey->copy('css', 'css');
 $slidey->copy('images', 'images');
+$slidey->copy('ds', 'ds');
 
 // Adding zip files
 $slidey

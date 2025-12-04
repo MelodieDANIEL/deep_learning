@@ -24,6 +24,13 @@ Remise
 Les remises du code sont à faire sur la plateforme Moodle de l'IUT : `https://moodle.u-bordeaux.fr/course/view.php?id=23000 <https://moodle.u-bordeaux.fr/course/view.php?id=23000>`_.
 
 .. slide::
+Dataset Balle
+-------
+Vous pouvez télécharger le dataset utilisé dans la partie 3 du DS  ici : `|archive| balle.zip <ds/balle.zip>`_.
+
+Les questions associées au dataset sont disponible ici : `|archive| partie3.pdf <ds/partie3.pdf>`_.
+
+.. slide::
 Difficulté
 -----------
 
