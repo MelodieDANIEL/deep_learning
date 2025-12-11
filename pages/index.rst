@@ -26,7 +26,7 @@ Les remises du code sont à faire sur la plateforme Moodle de l'IUT : `https://m
 .. slide::
 Dataset Balle
 -------
-Vous pouvez télécharger le dataset utilisé dans la partie 3 du DS  ici : `|archive| balle.zip <ds/balle.zip>`_.
+Vous pouvez télécharger le dataset utilisé dans la partie 3 du DS  ici : `|archive| balle.zip `https://filesender.renater.fr/?s=download&token=26acb2d3-3ef7-4ee7-b040-b89f957b4294`_.
 
 Les questions associées au dataset sont disponible ici : `|archive| partie3.pdf <ds/partie3.pdf>`_.
 
