@@ -54,3 +54,4 @@ Sommaire
     chap6_partie1
     chap6_partie2
     chap7
+    chap8
