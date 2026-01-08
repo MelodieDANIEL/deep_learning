@@ -215,8 +215,8 @@ LeNet-5 est l'un des premiers modèles de réseaux de neurones convolutifs (CNN)
 .. figure:: images/lenet5.png
     :align: center
     :width: 700px
-    :alt: LeNet5 Architecture
-    **Figure 3** : Architecture de LeNet-5. Source `LeNet-5 Paper, 1998 <http://yann.lecun.com/exdb/publis/pdf/lecun-98.pdf>`_.
+    :alt: LeNet5 Modèle
+    **Figure 3** : Modèle de LeNet-5. Source `LeNet-5 Paper, 1998 <http://yann.lecun.com/exdb/publis/pdf/lecun-98.pdf>`_.
 
 Pour une image en entrée de taille 32×32×1 en niveau de gris, l'architecture de LeNet-5 comprend environ **60 000 paramètres entraînables**.
 
@@ -230,8 +230,8 @@ Comme montré dans l'image ci-dessous, l'architecture se décline en plusieurs v
 .. figure:: images/vgg.png
     :align: center
     :width: 700px
-    :alt: VGG Architecture
-    **Figure 4** : Architecture de VGG. Source `VGG Paper, 2014 <https://arxiv.org/abs/1409.1556>`_.
+    :alt: VGG Modèle
+    **Figure 4** : Modèle de VGG. Source `VGG Paper, 2014 <https://arxiv.org/abs/1409.1556>`_.
 
 VGG a été conçu pour traiter des images plus larges en RGB (224x224x3) et comprend **entre 133 et 144 millions de paramètres entraînables** selon la variante. La **capacité d'apprentissage** de VGG est donc bien plus grande que celle de LeNet-5, ce qui lui permet de capturer des caractéristiques plus complexes et variées dans les images.
 Cependant, cette augmentation de la profondeur et du nombre de paramètres entraîne également des défis en termes de temps d'entraînement et de ressources computationnelles nécessaires. 
@@ -246,8 +246,8 @@ Comme VGG, ce modèle est préposé sous différentes variantes plus ou moins pr
 .. figure:: images/resnettab.png
     :align: center
     :width: 700px
-    :alt: ResNet Architecture
-    **Figure 5** : Architecture de ResNet. Source `ResNet Paper, 2015 <https://arxiv.org/abs/1512.03385>`_.
+    :alt: ResNet Modèle
+    **Figure 5** : Modèle de ResNet. Source `ResNet Paper, 2015 <https://arxiv.org/abs/1512.03385>`_.
 
 Le modèle n'étant pas séquentiel, la représentation sous forme de tableau n'est plus forcément adaptée. Il est donc désormais également commun de représenter les modèles sous forme de graphes où les noeuds représentent des couches. Les liens représentent alors la dépendance entre les couches (qui prend en entrée la sortie de quelle couche).
 
@@ -310,6 +310,21 @@ Les poids/paramètres pré-entraînés sont souvent disponibles dans les bibliot
     # (optionnel) Pré-traitement recommandé pour ImageNet
     preprocess = ImageNet_weights.transforms()
 
+
+
+.. slide::
+
+🏋️ Exercices
+---------------------
+
+.. step::
+    1) Implémentez votre propre bloc résiduel en PyTorch.
+    
+.. step::
+    2) Implémentez votre propre modèle ResNet-18 en utilisant votre bloc résiduel, et en vous basant sur les Figures 5 et 6 de ce Chapitre.
+
+.. step::
+    3) Implémentez votre propre modèle VGG11 en vous basant sur la Figure 4 de ce Chapitre.
 
 
 .. 4.2. Modèles Student-teacher 
