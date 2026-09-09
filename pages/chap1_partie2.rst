@@ -91,92 +91,6 @@ Pour utiliser la fonction MSE dans PyTorch, on peut utiliser la classe ``nn.MSEL
     print(loss)
 
 .. slide::
-📖 16. Classification & Entropie croisée
-------------------------------------------------------------
-
-16.1. Définitions
-~~~~~~~~~~~~~~~~~~~
-
-On appelle classification le cas où le modèle doit prédire à quelle catégorie appartient la donnée parmi plusieurs possibles par exemple : "chat" ou "chien", ou bien "spam" ou "non spam", etc.
-
-Dans ce cas, la fonction de perte la plus courante est l'entropie croisée (Cross-Entropy Loss en anglais). Elle compare la probabilité prédite par le modèle et la vraie catégorie (donnée par les données d’apprentissage) :
-
-.. math::
-   L(y, \hat{y}) = -\sum_{i=1}^n y_i \log(\hat{y}_i),
-où :
-
-    - $$L$$ est la fonction de perte,
-    - $$n$$ est le nombre de classes,
-    - $$y_i$$ est la valeur attendue (target) pour la classe $$i$$ (souvent codée en *one-hot encoding*, c'est-à-dire un vecteur avec un 1 pour la bonne classe et 0 pour les autres),
-    - $$\hat{y}_i$$ est la probabilité prédite par le modèle pour la classe $$i$$.
-
-La fonction d'entropie croisée mesure la distance entre la distribution de probabilité prédite par le modèle et la distribution de probabilité réelle (la vraie classe).
-La présence de la somme permet de prendre en compte toutes les classes.   Mais, dans le cas du *one-hot encoding*, seul le terme correspondant à la vraie classe reste (puisque tous les autres $$y_i$$ valent 0).
-
-.. slide::
-16.2. Pourquoi l'entropie croisée ?
-~~~~~~~~~~~~~~~~~~~
-L'entropie croisée est utilisée car :
-
-    - Elle est adaptée aux problèmes de classification multi-classes.
-    - Elle pénalise fortement les erreurs de classification, surtout lorsque la probabilité prédite pour la classe correcte est faible.
-    - Elle est différentiable, ce qui permet de l'utiliser avec les algorithmes d'optimisation basés sur la rétropropagation.
-
-.. slide::
-16.3. Exemple d'une classification avec Cross-Entropy Loss 
-~~~~~~~~~~~~~~~~~~~~
-Prenons un exemple où on a 3 classes possibles : "Chat", "Chien", "Oiseau". Nous avons : 
-
-- La sortie du modèle suivante : $$\hat{y} = [0.7, 0.2, 0.1]$$ et
-- imaginons que la vraie classe est "Chat", donc $$y = [1, 0, 0]$$.
-
-Alors :
-
-.. math::
-
-    L = - \big( 1 \cdot \log(0.7) + 0 \cdot \log(0.2) + 0 \cdot \log(0.1) \big)
-
-Les termes multipliés par 0 disparaissent :
-
-.. math::
-
-    L = -\log(0.7)
-
-👉 La perte est faible car le modèle a donné une forte probabilité à la bonne classe.
-
-Si au contraire le modèle avait prédit : $$\hat{y} = [0.2, 0.7, 0.1]$$ :
-
-.. math::
-
-    L = -\log(0.2)
-
-👉 La perte serait plus grande, car la probabilité attribuée à la bonne classe ("Chat") est faible.
-
-
-.. slide::
-16.4. Le même exemple dans PyTorch 
-~~~~~~~~~~~~~~~~~~~~
-
-Pour utiliser la fonction Cross-Entropy Loss dans PyTorch, on peut utiliser la classe ``nn.CrossEntropyLoss()`` du module ``torch.nn``.
-
-.. code-block:: python
-
-    # Définition de la fonction de perte
-    loss_fn = nn.CrossEntropyLoss()
-
-    # Cas 1 : le modèle prédit correctement (forte valeur pour "Chat")
-    logits1 = torch.tensor([[2.0, 1.0, 0.1]])  # sortie brute du modèle qui sera convertie à l'aide d'une fonction de PyTorch en probabilités
-    y_true = torch.tensor([0])  # la vraie classe est "Chat" (indice 0)
-
-    loss1 = loss_fn(logits1, y_true)
-    print("Perte (bonne prédiction) :", loss1.item())
-
-    # Cas 2 : le modèle se trompe (forte valeur pour "Chien")
-    logits2 = torch.tensor([[0.2, 2.0, 0.1]])  # sortie brute du modèle qui sera convertie à l'aide d'une fonction de PyTorch en probabilités
-    loss2 = loss_fn(logits2, y_true)
-    print("Perte (mauvaise prédiction) :", loss2.item())
-
-.. slide::
 📖 17. Optimisation
 -----------------------
 
@@ -204,6 +118,12 @@ Imaginons une montagne :
 - La hauteur correspond à la valeur de la fonction de perte.  
 - Le but est de descendre la montagne pour atteindre la vallée (la perte minimale).  
 - Le gradient indique la pente : on suit la pente descendante pour réduire la perte.
+
+.. figure:: images/sgd.png
+   :align: center
+   :width: 400px
+   :alt: Descente de gradient 
+
 
 Formule de mise à jour des paramètres :
 
