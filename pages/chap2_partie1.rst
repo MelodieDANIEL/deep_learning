@@ -386,7 +386,9 @@ La standardisation consiste à centrer et réduire les variables : on soustrait 
 .. slide::
 4.5. Normalisation vs. Standardisation
 ~~~~~~~~~~~~~~~~~~
-   
+
+En résumé, la normalisation garantie que toutes les valeurs sont comprises dans une plage fixe (souvent [0; 1] ou [-1; 1]), tandis que la standardisation transforme les données pour qu'elles aient une moyenne de 0 et un écart-type de 1 (ce qui fonctionne mieux lorsque les données suivent une distribution normale).
+
 La standardisation est souvent préférée à la normalisation car elle est **plus robuste aux valeurs aberrantes** et permet une **convergence plus rapide** du modèle.
 
 - **Robustesse aux valeurs aberrantes** : la standardisation centre et réduit les données par rapport à la moyenne et à l’écart-type, plutôt que de les ramener dans une plage fixe comme la normalisation Min-Max. Une valeur très grande ou très petite affecte moins l’échelle globale et n’écrase pas les autres données.
