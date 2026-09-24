@@ -94,9 +94,9 @@ Il suffit donc d'adapter la couche de sortie du modèle pour qu'elle produise un
 .. slide::
 Vocabulaire : On appelle **caractéristique** (feature) les variables décrivant une donnée, et **étiquette** (label) la variable que l'on cherche à prédire.
 
-Les **caractéristiques initiales** sont celles de la données en entrée. Par exemple dans le cas d'une image de taille $$100\times100\times3$$, on a 30000 caractéristiques initiales.
+Les **caractéristiques initiales** sont celles de la données en entrée. Par exemple dans le cas d'une image de taille $$100\times100\times3$$, on a 30000 caractéristiques initiales. Dans ce cas précis, le terme "caractéristique" est un abus de langage car la donnée est brute, et chaque valeur de pixel individuel n'est pas informative pour résoudre la tâche.
 
-Chaque couche d'un réseau de neurone prend en entrée un certain nombre de caractéristiques (pour chaque donnée du batch) et en produit un autre nombre. Par exemple, une couche linéaire (fully connected) avec 128 neurones prend en entrée un tenseur de taille $$N$$ et produit un tenseur de taille $$128$$.
+Chaque couche d'un réseau de neurone prend en entrée un certain nombre de caractéristiques (pour chaque donnée du batch) qui décrivent la donnée, et en produit un autre nombre qui décrivent la prédiction. Par exemple, une couche linéaire (fully connected) avec 128 neurones prend en entrée un tenseur de taille $$N$$ et produit un tenseur de taille $$128$$. Les couches intermédiaires (dites "cachées") transforment également ces caractéristiques, de la manière programmée par le concepteur du réseau de neurones. Ces informations sont appelées **caractéristiques** ici car elles représentent bien le résultat de transformations des données avec des connaissances apprises par le réseau de neurone, et contiennent donc normalement des informations pour résoudre la tâche.
 
 
 .. slide::
