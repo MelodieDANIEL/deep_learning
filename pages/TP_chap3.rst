@@ -1,6 +1,9 @@
 🏋️ Travaux Pratiques 3
 =========================
 
+.. warning::
+  Les exercices de ce TP sont volontairement moins guidés. Il est temps de prendre un peu d'autonomie !
+
 .. slide::
 Exercice 0 : Mise en place
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -11,9 +14,7 @@ Créer un notebook Jupyter et importer les bibliothèques nécessaires. Assurez-
 - sklearn
 - pandas
 - torch
-- wandb (nécessite de se créer un compte sur wandb_)
-
-.. _wandb: https://wandb.ai/
+- (optionnel) wandb
 
 Les exercices suivants sont à réaliser dans un (ou plusieurs) notebook(s) Jupyter.
 
@@ -23,7 +24,7 @@ Exercice 1 : Classification multi-classes - Iris
 
 1) Charger le jeu de données Iris depuis sklearn et affichez le sous la forme d'un DataFrame *pandas*.
 
-Ce jeu de données contient des données de fleurs, et l'objectif est de prédire l'espèce de la fleur à partir d'observations sur ses caractéristiques (features).
+Ce jeu de données contient des données de fleurs, et l'objectif est de prédire l'espèce de la fleur à partir d'observations sur ses caractéristiques.
 
 .. code-block:: python
     import sklearn
@@ -36,7 +37,7 @@ Ce jeu de données contient des données de fleurs, et l'objectif est de prédir
 2) Répondez aux questions suivantes :
   
   - Combien y a-t-il de données ?
-  - Combien y a-t-il de features (caractéristiques) ?
+  - Combien y a-t-il de features (caractéristiques) initiales ?
   - Combien y a-t-il de classes, et quelles sont-elles ?
   - Combien y a-t-il de données par classe ? Est-ce équilibré ?
   - Quelle doit être la taille de l'entrée et de la sortie d'un réseau de neurones qui devrait classer ces données ?
@@ -46,7 +47,9 @@ Ce jeu de données contient des données de fleurs, et l'objectif est de prédir
 
 4) Créez un jeu de données PyTorch à partir des données Iris et entraînez le MLP par batch de 8 en affichant la *Loss* à chaque fin d'époque.
 
-Utilisez le code suivant pour créer un DataLoader PyTorch. A vous de trouver comment créer les tenseurs *train_X* et *train_y* (lisez la documentation de *sklearn.datasets.load_iris()*). 
+
+
+Utilisez le code suivant pour créer un DataLoader PyTorch. A vous de trouver comment créer les tenseurs *train_X* et *train_y* (lisez la documentation `sklearn.datasets.load_iris() <https://scikit-learn.org/stable/modules/generated/sklearn.datasets.load_iris.html>`__ de la bibliothèque sklearn). 
 
 .. code-block:: python
     
@@ -64,7 +67,8 @@ Utilisez le code suivant pour créer un DataLoader PyTorch. A vous de trouver co
 
 6) Affichez la matrice de confusion. Quelles sont les erreurs commises par votre modèle ?
 
-Aidez-vous de *sklearn.metrics.confusion_matrix* et *matplotlib.pyplot.imshow* (ou *matshow*).
+Aidez-vous de `sklearn.metrics.confusion_matrix() <https://scikit-learn.org/stable/modules/generated/sklearn.metrics.confusion_matrix.html>`__ et `matplotlib.pyplot.imshow() <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.imshow.html>`__ (ou `matshow <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.matshow.html>`__ ).
+
 
 .. slide::
 Exercice 2 : Classification multi-classes - Breast Cancer
@@ -79,7 +83,7 @@ Ce jeu de données contient les informations de patients, et l'objectif est de s
 2) Répondez aux questions suivantes :
   
   - Combien y a-t-il de données ?
-  - Combien y a-t-il de features (caractéristiques) ?
+  - Combien y a-t-il de features (caractéristiques) initiales ?
   - Combien y a-t-il de classes, et quelles sont-elles ?
   - Combien y a-t-il de données par classe ? Est-ce équilibré ?
   - Quelle doit être la taille de l'entrée et de la sortie d'un réseau de neurones qui devrait classer ces données ?
@@ -118,7 +122,9 @@ A chaque époque de l'entraînement :
 Exercice 3 : Classification multi-classes - Handwritten Digits
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-0) Installez et importez la bibliothèque *wandb*, créez un compte sur https://wandb.ai/.
+*Bonus: Utiliser la bibliothèque wandb pour suivre l'entraînement. L'utilisation de wandb est optionnelle.*
+
+0) Installez et importez la bibliothèque *wandb*, et créez un compte sur https://wandb.ai/.
 
 1) Charger le jeu de données Digits_ depuis sklearn et affichez le sous la forme d'un DataFrame *pandas*.
 
@@ -129,7 +135,7 @@ Ce jeu de données contient des images de chiffres manuscrits, et l'objectif est
 2) Répondez aux questions suivantes :
 
   - Combien y a-t-il de données ?
-  - Combien y a-t-il de features (caractéristiques) ?
+  - Combien y a-t-il de features (caractéristiques) initiales ?
   - Combien y a-t-il de classes, et quelles sont-elles ?
   - Combien y a-t-il de données par classe ? Est-ce équilibré ?
   - Quelle doit être la taille de l'entrée et de la sortie d'un réseau de neurones qui devrait classer ces données ?
@@ -137,7 +143,7 @@ Ce jeu de données contient des images de chiffres manuscrits, et l'objectif est
 
 3) Créez deux jeux de données distincts : un pour l'entraînement et un pour la validation du modèle. Utilisez 70% des données pour l'entraînement et 30% pour la validation.
 
-4) Créez un MLP à 5 couches pour classer ces données. Faites en sorte que le réseau ait 2 sorties : une pour les logits, et une pour les caractéristiques en sortie de l'avant dernière couche (features embedding). 
+4) Créez un MLP à 5 couches pour classer ces données. Faites en sorte que le réseau ait 2 sorties : une pour les logits, et une pour les caractéristiques en sortie de l'avant dernière couche. 
 
 5) Entraînez le réseau en utilisant la bibliothèque *wandb* pour le suivi des expériences.
 
@@ -151,7 +157,7 @@ A chaque époque de l'entraînement :
 
 6) Affichez la matrice de confusion. Quels sont les chiffres les plus souvent confondus ?
 
-7) Utilisez *sklearn.manifold.TSNE* pour réduire les dimensions des features embeddings à 2D. Affichez les points dans un nuage de points 2D en coloriant chaque point selon sa classe.
+7) Utilisez `sklearn.manifold.TSNE() <https://scikit-learn.org/stable/modules/generated/sklearn.manifold.TSNE.html>`__ pour réduire les données à 2 dimensions. Affichez les points dans un nuage de points 2D en coloriant chaque point selon sa classe.
 
 Analysez le résultat. Cela est-il cohérent avec ce que vous observez dans la matrice de confusion ?
 

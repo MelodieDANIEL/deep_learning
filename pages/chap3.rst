@@ -154,6 +154,9 @@ Etant donné un modèle d'apprentissage, on souhaite évaluer ses performances s
 - Vrai Négatif (VN) : Le modèle prédit la classe négative, et c'est correct.
 - Faux Négatif (FN) : Le modèle prédit la classe négative, mais c'est incorrect.
 
+C'est sur la base de ces 4 possibilités que sont définies les principales métriques d'évaluation en classification.
+
+
 .. figure:: images/vpfn.png
    :align: center
    :width: 400px
@@ -161,7 +164,15 @@ Etant donné un modèle d'apprentissage, on souhaite évaluer ses performances s
 
    **Figure 3** : Illustration des possibilités d'erreur en classification, Vrai Positif (VP), Faux Positif (FP), Vrai Négatif (VN), Faux Négatif (FN). 
 
-C'est sur la base de ces 4 possibilités que sont définies les principales métriques d'évaluation en classification.
+
+.. slide::
+.. figure:: images/classif_metrics.png
+   :align: center
+   :width: 800px
+   :alt: Mesures de performance en classification
+
+   **Figure 4** : Mesures de performance en classification basées sur les concepts de Vrai Positif (VP), Faux Positif (FP), Vrai Négatif (VN), et Faux Négatif (FN).
+
 
 .. slide::
 📈 **Exactitude (Accuracy)** : La proportion de prédictions correctes par rapport au nombre total de prédictions.
@@ -198,14 +209,6 @@ C'est sur la base de ces 4 possibilités que sont définies les principales mét
 - **Intérêt :** Utile lorsque les classes sont déséquilibrées et qu'il faut trouver un compromis entre éviter les faux positifs et rater les vrais positifs.
 - **Limite :** Ne distingue les faux positifs des faux négatifs. Exemple : dans un système de recommandation, un F1-score élevé indique que le modèle est bon pour recommander des éléments pertinents tout en minimisant les recommandations non pertinentes.
 
-
-.. slide::
-.. figure:: images/classif_metrics.png
-   :align: center
-   :width: 800px
-   :alt: Mesures de performance en classification
-
-   **Figure 4** : Mesures de performance en classification basées sur les concepts de Vrai Positif (VP), Faux Positif (FP), Vrai Négatif (VN), et Faux Négatif (FN).
 
 .. slide::
 ⊞ **Matrice de confusion**
