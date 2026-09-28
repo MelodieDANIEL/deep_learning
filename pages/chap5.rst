@@ -14,7 +14,6 @@ Chapitre 5 — Classification d'images avec un CNN
    - Comprendre la différence entre un MLP et les réseaux convolutifs (CNN).
    - Utiliser les couches de convolution pour le traitement d'images.
    - Appliquer les techniques de pooling pour réduire la dimensionnalité.
-   - Gérer les mini-batchs pour un entraînement efficace.
    - Sauvegarder et charger les poids d'un modèle entraîné.
    - Utiliser les datasets PyTorch pour organiser vos données.
 
@@ -167,7 +166,7 @@ La taille spatiale est préservée.
 
 .. slide::
 
-2.3 Padding
+2.3. Padding
 ~~~~~~~~~~~~~
 
 La visualisation ci-dessous montre ce qui se passe avec et sans padding :
@@ -438,148 +437,14 @@ Maintenant que nous avons vu les convolutions et le pooling, voici un exemple co
    
    💡 **Astuce** : Pour connaître la taille exacte, ajoutez ``print(x.shape)`` juste avant ``x.view()`` dans la méthode ``forward()``.
 
-.. slide::
-
-📖 4. Mini-batchs : entraînement efficace
+📖 4. Datasets, Transformations (et Augmentations) d'images
 ----------------------
 
-L'entraînement par mini-batchs est une technique fondamentale en deep learning qui combine les avantages de deux approches extrêmes.
+.. important::
+    🧠 **Rappel** : les transformations ``torch.transforms`` sont des opérations appliquées automatiquement sur les données lors de leur chargement dans un ``Dataset`` PyTorch (voir Chapitre 3).
 
-4.1. Trois approches d'entraînement
+4.1. Créer une classe Dataset personnalisée avec transformations
 ~~~~~~~~~~~~~~~~~~~
-
-**1. Batch Gradient Descent (tout le dataset)** :
-
-- Calcule le gradient sur toutes les données
-- Mise à jour stable mais très lente
-- Nécessite beaucoup de mémoire
-
-**2. Stochastic Gradient Descent (SGD, un exemple à la fois)** :
-
-- Calcule le gradient sur un seul exemple
-- Très rapide mais gradient bruité
-- Converge de manière erratique
-
-**3. Mini-Batch Gradient Descent** :
-
-- Calcule le gradient sur un petit groupe d'exemples (typiquement 32, 64, 128)
-- **Compromis idéal** : rapide et gradient raisonnablement stable
-- Exploite efficacement le parallélisme du GPU
-
-.. slide::
-
-4.2. Pourquoi les mini-batchs ?
-~~~~~~~~~~~~~~~~~~~
-
-**Avantages** :
-
-1. **Efficacité GPU** : les GPUs sont optimisés pour traiter plusieurs données en parallèle
-2. **Estimation du gradient** : le gradient calculé sur un mini-batch est une bonne approximation du gradient sur tout le dataset
-3. **Régularisation** : le bruit dans les mini-batchs peut aider à éviter les minima locaux
-4. **Gestion mémoire** : on ne charge qu'une partie du dataset en mémoire à la fois
-
-**Choix de la taille** :
-
-- Petits batchs (16-32) : gradient plus bruité, convergence plus exploratrice
-- Grands batchs (128-256) : gradient plus stable, convergence plus directe
-- Compromis courant : 32 ou 64
-
-.. slide::
-
-4.3. Mini-batchs dans PyTorch
-~~~~~~~~~~~~~~~~~~~
-
-En PyTorch, tous les tenseurs ont une dimension de batch en première position :
-
-.. code-block:: python
-
-   # Format attendu : [batch_size, channels, height, width]
-   images = torch.randn(32, 3, 224, 224)  # batch de 32 images RGB 224×224
-
-   # Les opérations sont automatiquement appliquées sur tout le batch
-   # Exemple : Convolution SANS padding (padding=0 par défaut)
-   conv = nn.Conv2d(3, 64, kernel_size=3)
-   output = conv(images)  # [32, 64, 222, 222] -> la taille diminue !
-
-**Exemple d'entraînement avec mini-batchs** :
-
-.. code-block:: python
-
-   # Supposons qu'on a des données et un modèle
-   model = CNNWithPooling()
-   optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-   criterion = nn.CrossEntropyLoss()
-
-   # Données factices
-   images = torch.randn(100, 3, 224, 224) # dataset de 100 images
-   labels = torch.randint(0, 10, (100,))
-
-   # Paramètres
-   batch_size = 32
-   num_batches = len(images) // batch_size
-
-   # Entraînement par mini-batchs
-   for epoch in range(5): # 5 époques
-       for i in range(num_batches):
-           # Extraire un mini-batch d'images et labels dans en suivant l'ordre du dataset
-           # Attention en pratique on tire les mini-batchs de manière aléatoire
-           start_idx = i * batch_size 
-           end_idx = start_idx + batch_size
-           
-           batch_images = images[start_idx:end_idx]
-           batch_labels = labels[start_idx:end_idx]
-           
-           # Forward pass
-           outputs = model(batch_images)
-           loss = criterion(outputs, batch_labels)
-           
-           # Backward pass et optimisation
-           optimizer.zero_grad()
-           loss.backward()
-           optimizer.step()
-       
-       print(f"Epoch {epoch+1}, Loss: {loss.item():.4f}")
-
-.. slide::
-
-📖 5. Datasets et DataLoaders PyTorch
-----------------------
-
-Gérer manuellement les mini-batchs comme ci-dessus devient rapidement fastidieux. PyTorch fournit ``Dataset`` et ``DataLoader`` pour automatiser ce processus.
-
-5.1. La classe Dataset
-~~~~~~~~~~~~~~~~~~~
-
-``Dataset`` est une classe abstraite qui représente votre jeu de données. Il existe deux approches :
-
-**Approche 1 : Utiliser TensorDataset (recommandé pour des tenseurs simples)**
-
-Si vos données sont déjà sous forme de tenseurs PyTorch, utilisez directement ``TensorDataset`` :
-
-.. code-block:: python
-
-   from torch.utils.data import TensorDataset
-
-   # Créer des données factices
-   num_samples = 1000
-   images = torch.randn(num_samples, 3, 64, 64)  # 1000 images RGB 64×64
-   labels = torch.randint(0, 10, (num_samples,))  # labels de 0 à 9
-   
-   # Créer un dataset avec TensorDataset (une seule ligne !)
-   dataset = TensorDataset(images, labels)
-   
-   print(f"Nombre d'exemples : {len(dataset)}")  # 1000
-   
-   # Accéder à un exemple
-   image, label = dataset[0]
-   print(f"Shape de l'image : {image.shape}")  # torch.Size([3, 64, 64])
-   print(f"Label : {label}")  # tensor(X) avec X entre 0 et 9
-
-💡 **Avantage** : Simple et direct, pas besoin de créer une classe personnalisée.
-
-.. slide::
-
-**Approche 2 : Créer une classe Dataset personnalisée avec transformations**
 
 Exemple complet avec chargement depuis des fichiers et application de transformations :
 
@@ -591,7 +456,7 @@ Exemple complet avec chargement depuis des fichiers et application de transforma
    import os
 
    class ImageFolderDataset(Dataset):
-       def __init__(self, image_paths, labels, transform=None):
+       def __init__(self, image_paths, labels, transform=None, preload=False):
            """
            Args:
                image_paths: Liste des chemins vers les images
@@ -601,21 +466,39 @@ Exemple complet avec chargement depuis des fichiers et application de transforma
            self.image_paths = image_paths
            self.labels = labels
            self.transform = transform
+           self.preload = preload
+           if(preload):
+                  # Charger toutes les données en mémoire (optionnel)
+                  # Avantage : temps d'accès à la donnée (__getitem__) plus rapide puisque la donnée est déjà en RAM
+                  # Inconvénient : consommation mémoire plus importante, puisque toutes les données sont chargées en RAM
+                  self.load_all()
        
+        def load_all(self):
+             # Charger toutes les données en mémoire (optionnel)
+             self.images = []
+             for path in self.image_paths:
+                 image = Image.open(img_path).convert('RGB')
+                 if(self.transform):
+                     image = self.transform(image)  # Appliquer les transformations si spécifiées
+                 self.images.append(image)
+
        def __len__(self):
            return len(self.image_paths)
        
        def __getitem__(self, idx):
-           # Charger l'image depuis le disque
-           img_path = self.image_paths[idx]
-           image = Image.open(img_path).convert('RGB')
-           label = self.labels[idx]
            
-           # Appliquer les transformations si spécifiées
-           if self.transform:
-               image = self.transform(image)
-           
-           return image, label
+           if self.preload:
+                return self.images[idx], self.labels[idx] # renvoyer l'image déjà chargée en mémoire
+            else: # Charger, transformer, renvoyer l'image depuis le disque
+                img_path = self.image_paths[idx]
+                image = Image.open(img_path).convert('RGB')
+                label = self.labels[idx]
+                
+                # Appliquer les transformations si spécifiées
+                if self.transform:
+                    image = self.transform(image)
+                
+                return image, label
 
    # Exemple d'utilisation avec transformations
    train_paths = ['img1.jpg', 'img2.jpg', 'img3.jpg']  # Chemins vers vos images
@@ -648,7 +531,7 @@ Exemple complet avec chargement depuis des fichiers et application de transforma
    val_dataset = ImageFolderDataset(val_paths, val_labels, transform=val_transform)
 
 .. slide::
-**À propos des transformations** :
+**Transformations** :
 
 Les transformations permettent de modifier les images avant de les donner au réseau. Elles ont deux rôles :
 
@@ -665,115 +548,7 @@ Les transformations permettent de modifier les images avant de les donner au ré
 
 💡 **Pourquoi pas d'augmentation pour validation/test ?** On veut évaluer le modèle sur les vraies images, pas sur des versions modifiées artificiellement.
 
-.. slide::
-
-5.2. La classe DataLoader
-~~~~~~~~~~~~~~~~~~~
-
-``DataLoader`` encapsule un ``Dataset`` et fournit :
-
-- Le découpage automatique en mini-batchs
-- Le mélange des données (shuffle)
-- Le chargement parallèle (multiprocessing)
-- La gestion du dernier batch incomplet
-
-.. code-block:: python
-
-   from torch.utils.data import DataLoader
-
-   # Créer le dataset
-   ...
-
-   # Créer le dataloader
-   dataloader = DataLoader(
-       dataset,
-       batch_size=32,        # taille des batchs
-       shuffle=True,         # mélanger les données à chaque epoch (recommandé pour l'entraînement)
-       num_workers=4,        # nombre de processus parallèles pour charger les données (0 = chargement dans le processus principal, >0 = chargement en parallèle pour accélérer)
-       drop_last=True       # si True, ignore le dernier batch s'il est incomplet (utile quand la taille du batch doit être fixe, par exemple pour le batch normalization)
-   )
-
-   # Itération sur les batchs
-   for batch_idx, (images, labels) in enumerate(dataloader):
-       print(f"Batch {batch_idx}: images shape = {images.shape}, labels shape = {labels.shape}")
-       # Batch 0: images shape = torch.Size([32, 3, 64, 64]), labels shape = torch.Size([32])
-
-.. slide::
-
-5.3. Diviser en ensembles d'entraînement et de validation
-~~~~~~~~~~~~~~~~~~~
-
-Avant de créer des DataLoaders, il est essentiel de bien diviser vos données en trois ensembles distincts : **train**, **validation** et **test**.
-
-PyTorch fournit ``random_split`` qui divise automatiquement un dataset et mélange les données :
-
-.. code-block:: python
-
-   from torch.utils.data import TensorDataset, random_split
-   
-   # 1. Créer ou charger toutes les données
-   all_images = torch.randn(1000, 3, 64, 64)
-   all_labels = torch.randint(0, 10, (1000,))
-   
-   # 2. Créer un dataset avec toutes les données
-   full_dataset = TensorDataset(all_images, all_labels)
-   
-   # 3. Définir les tailles de chaque ensemble (70% train, 15% val, 15% test)
-   train_size = int(0.70 * len(full_dataset))  # 700
-   val_size = int(0.15 * len(full_dataset))     # 150
-   test_size = len(full_dataset) - train_size - val_size  # 150
-   
-   # 4. Diviser le dataset automatiquement (avec mélange aléatoire)
-   train_dataset, val_dataset, test_dataset = random_split(
-       full_dataset,
-       [train_size, val_size, test_size]
-   )
-   
-   # 5. Créer les DataLoaders
-   # shuffle=True pour train : mélanger les données à chaque epoch évite que le modèle apprenne l'ordre des exemples
-   # shuffle=False pour val/test : l'ordre n'a pas d'importance pour l'évaluation, et garder le même ordre permet de reproduire les résultats
-   train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
-   val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False)
-   test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
-   
-   print(f"Train: {len(train_dataset)} exemples, {len(train_loader)} batches")
-   print(f"Validation: {len(val_dataset)} exemples, {len(val_loader)} batches")
-   print(f"Test: {len(test_dataset)} exemples, {len(test_loader)} batches")
-
-💡 **Avantages** : ``random_split`` mélange automatiquement les données et crée des sous-ensembles du dataset original sans dupliquer les données en mémoire.
-
-.. slide::
-
-**À quoi servent ces trois ensembles ?**
-
-1. **Train (70-80%)** : Utilisé pour entraîner le modèle
-   
-   - Calcul du gradient et mise à jour des poids
-   - Apprentissage des patterns dans les données
-
-2. **Validation (10-15%)** : Utilisé pendant l'entraînement pour :
-   
-   - Surveiller les performances sur des données non vues
-   - Détecter le surapprentissage (overfitting)
-   - Choisir les meilleurs hyperparamètres
-   - Décider quand arrêter l'entraînement
-   - Sauvegarder le meilleur modèle
-
-3. **Test (10-15%)** : Utilisé **uniquement à la fin** pour :
-   
-   - Évaluer les performances finales du modèle
-   - Obtenir des métriques non biaisées
-   - Tester sur des données complètement nouvelles
-
-.. warning::
-
-   ⚠️ **Ne JAMAIS utiliser le test set pendant l'entraînement !**
-   
-   Le test set doit rester totalement invisible jusqu'à l'évaluation finale, sinon vous risquez de sur-optimiser votre modèle sur ces données (data leakage).
-
-.. slide::
-
-5.4. Datasets PyTorch intégrés
+4.2. Datasets d'image PyTorch intégrés
 ~~~~~~~~~~~~~~~~~~~
 
 PyTorch fournit de nombreux datasets prêts à l'emploi dans ``torchvision.datasets`` :
@@ -808,12 +583,12 @@ PyTorch fournit de nombreux datasets prêts à l'emploi dans ``torchvision.datas
 
 .. slide::
 
-📖 6. Sauvegarder et charger les poids d'un modèle
+📖 5. Sauvegarder et charger les poids d'un modèle
 ----------------------
 
 Après avoir entraîné un modèle pendant des heures, il est essentiel de pouvoir sauvegarder son état pour le réutiliser plus tard sans avoir à tout ré-entraîner. Il est aussi possible de sauvegarder périodiquement pendant l'entraînement pour éviter de tout perdre en cas d'interruption. Aussi on peut reprendre l'entraînement plus tard. 
 
-6.1. Sauvegarder un modèle complet
+5.1. Sauvegarder un modèle complet
 ~~~~~~~~~~~~~~~~~~~
 
 PyTorch offre deux approches pour sauvegarder un modèle :
@@ -839,7 +614,7 @@ PyTorch offre deux approches pour sauvegarder un modèle :
 
 .. slide::
 
-6.2. Sauvegarder uniquement les poids (méthode recommandée)
+5.2. Sauvegarder uniquement les poids (méthode recommandée)
 ~~~~~~~~~~~~~~~~~~~
 
 **Méthode 2 : Sauvegarder uniquement les paramètres (state_dict)**
@@ -875,7 +650,7 @@ PyTorch offre deux approches pour sauvegarder un modèle :
 
 .. slide::
 
-6.3. Sauvegarder l'état complet de l'entraînement
+5.3. Sauvegarder l'état complet de l'entraînement
 ~~~~~~~~~~~~~~~~~~~
 
 Pour reprendre l'entraînement exactement où vous l'aviez arrêté, sauvegardez également l'optimiseur et l'epoch :
@@ -938,10 +713,10 @@ Pour reprendre l'entraînement exactement où vous l'aviez arrêté, sauvegardez
 
 .. slide::
 
-📖 7. Récapitulatif 
+📖 6. Récapitulatif 
 ----------------------
 
-7.1. Pipeline complet d'entraînement
+6.1. Pipeline complet d'entraînement
 ~~~~~~~~~~~~~~~~~~~
 
 Voici le pipeline standard pour entraîner un CNN avec toutes les techniques vues :
@@ -1132,7 +907,7 @@ Voici le pipeline standard pour entraîner un CNN avec toutes les techniques vue
 
 .. slide::
 
-7.2. Pipeline complet d'inférence (test final)
+6.2. Pipeline complet d'inférence (test final)
 ~~~~~~~~~~~
 
 Après l'entraînement, évaluez le modèle sur le test set pour obtenir les performances finales :
@@ -1199,7 +974,7 @@ Après l'entraînement, évaluez le modèle sur le test set pour obtenir les per
 
 .. slide::
 
-7.3. Bonnes pratiques
+6.3. Bonnes pratiques
 ~~~~~~~~~~~~~~~~~~~
 
 **Organisation des données** :

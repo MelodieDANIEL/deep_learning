@@ -1,23 +1,503 @@
 
 .. slide::
 
-Chapitre 3 - Classification
+Chapitre 3 - Boucle d'apprentissage complète & Classification
 ================
 
 🎯 Objectifs du Chapitre
 ----------------------
 
-
 .. important::
 
    À la fin de ce chapitre, vous saurez : 
 
+   - Réaliser une boucle d'apprentissage complète avec PyTorch.
    - Définir un probleme de classification.
    - Mettre en place un pipeline de classification avec PyTorch.
    - Évaluer les performances d'un modèle de classification.   
 
+
+Jusqu'à présent, nous avons vu comment créer en entraîner un modèle en Deep learning avec PyTorch. 
+Mais nous n'avons pas encore abordé la question de la gestion des données (jusqu'à présent, nous utilisions des tableaux numpy ou des tenseurs PyTorch générés directement).
+
+En Deep Learning, il est courant d'entraîner un modèle sur de très grands jeux de données, ce qui peut nécessiter de nourrir le réseau avec des **batchs** de données plutôt que de lui fournir toutes les données d'un coup. 
+Pour créer et gérer ces batchs de données, PyTorch propose des classes et des fonctions dédiées : les **Datasets** et les **DataLoaders**.
+
+En outre: Les **Datasets** permettent de (télé)charger et mettre en forme les données (pré-traitement, normalisation, conversion en tenseur PyTorch, etc.), puis les **DataLoaders** permettent de créer des **batchs** de données automatiquement à partir de ces datasets, en gérant le mélange aléatoire des données et la parallélisation du chargement des données.
+
 .. slide::
-📖 1. Classification - Définition
+📖 1. Mini-batchs : entraînement efficace
+----------------------
+L'entraînement par mini-batchs est une technique fondamentale en deep learning qui combine les avantages de deux approches extrêmes.
+
+1.1. Trois approches d'entraînement
+~~~~~~~~~~~~~~~~~~~
+
+**1. Batch Gradient Descent (tout le dataset)** :
+
+- Calcule le gradient sur toutes les données
+- Mise à jour stable mais très lente
+- Nécessite beaucoup de mémoire
+
+**2. Stochastic Gradient Descent (SGD, un exemple à la fois)** :
+
+- Calcule le gradient sur un seul exemple
+- Très rapide mais gradient bruité
+- Converge de manière erratique
+
+**3. Mini-Batch Gradient Descent** :
+
+- Calcule le gradient sur un petit groupe d'exemples (typiquement 32, 64, 128)
+- **Compromis idéal** : rapide et gradient raisonnablement stable
+- Exploite efficacement le parallélisme du GPU
+
+.. slide::
+
+1.2. Pourquoi les mini-batchs ?
+~~~~~~~~~~~~~~~~~~~
+
+**Avantages** :
+
+1. **Efficacité GPU** : les GPUs sont optimisés pour traiter plusieurs données en parallèle
+2. **Estimation du gradient** : le gradient calculé sur un mini-batch est une bonne approximation du gradient sur tout le dataset
+3. **Régularisation** : le bruit dans les mini-batchs peut aider à éviter les minima locaux
+4. **Gestion mémoire** : on ne charge qu'une partie du dataset en mémoire à la fois
+
+**Choix de la taille** :
+
+- Petits batchs (16-32) : gradient plus bruité, convergence plus exploratrice
+- Grands batchs (128-256) : gradient plus stable, convergence plus directe
+- Compromis courant : 32 ou 64
+
+.. slide::
+
+1.3. Mini-batchs dans PyTorch
+~~~~~~~~~~~~~~~~~~~
+
+En PyTorch, tous les tenseurs ont une dimension de batch en première position :
+
+.. code-block:: python
+
+   # Format attendu : [batch_size, n_inputs]
+   data = torch.randn(32, 4)  # batch de 32 données avec 4 entrées chacune
+
+   # Les opérations sont automatiquement appliquées sur tout le batch
+   # Exemple : Lineaire pour 4 entrées 
+   fc = nn.Linear(4, 1)  # couche linéaire pour 4 entrées et 1 sortie
+   output = fc(data)  # [32, 1] -> le batch reste !
+
+**Exemple d'entraînement avec mini-batchs** :
+
+.. code-block:: python
+
+   # Supposons qu'on a des données et un modèle
+   model = SimpleMLP()
+   optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+   criterion = nn.MSELoss()
+
+   # Données factices
+   data = torch.randn(100, 10) # dataset de 100 images
+   labels = torch.randint(0, 10, (1,))
+
+   # Paramètres
+   batch_size = 32
+   num_batches = len(data) // batch_size
+
+   # Entraînement par mini-batchs
+   for epoch in range(5): # 5 époques
+       for i in range(num_batches):
+           # Extraire un mini-batch d'images et labels dans en suivant l'ordre du dataset
+           # Attention en pratique on tire les mini-batchs de manière aléatoire
+           start_idx = i * batch_size 
+           end_idx = start_idx + batch_size
+           
+           batch_images = data[start_idx:end_idx]
+           batch_labels = labels[start_idx:end_idx]
+           
+           # Forward pass
+           outputs = model(batch_images)
+           loss = criterion(outputs, batch_labels)
+           
+           # Backward pass et optimisation
+           optimizer.zero_grad()
+           loss.backward()
+           optimizer.step()
+       
+       print(f"Epoch {epoch+1}, Loss: {loss.item():.4f}")
+
+
+.. slide::
+📖 2. Datasets et DataLoaders PyTorch
+----------------------
+
+Gérer manuellement les mini-batchs comme ci-dessus devient rapidement fastidieux. PyTorch fournit ``Dataset`` et ``DataLoader`` pour automatiser ce processus.
+
+2.1. La classe Dataset
+~~~~~~~~~~~~~~~~~~~
+
+``Dataset`` est une classe abstraite qui représente votre jeu de données. Il existe deux approches :
+
+**Approche 1 : Utiliser TensorDataset (recommandé pour des tenseurs simples)**
+
+Si vos données sont déjà sous forme de tenseurs PyTorch, utilisez directement ``TensorDataset`` :
+
+.. code-block:: python
+
+   from torch.utils.data import TensorDataset
+
+   # Créer des données factices
+   num_samples = 1000
+   data = torch.randn(num_samples, 10)  # données de 10 caractéristiques
+   labels = torch.randint(0, 10, (num_samples,))  # labels de 0 à 9
+   
+   # Créer un dataset avec TensorDataset (une seule ligne !)
+   dataset = TensorDataset(data, labels)
+   
+   print(f"Nombre d'exemples : {len(dataset)}")  # 1000
+   
+   # Accéder à un exemple
+   datum, label = dataset[0]
+   print(f"Shape des données : {datum.shape}")  # torch.Size([10])
+   print(f"Label : {label}")  # tensor(X) avec X entre 0 et 9
+
+💡 **Avantage** : Simple et direct, pas besoin de créer une classe personnalisée.
+
+.. slide::
+
+**Approche 2 : Créer une classe Dataset personnalisée avec transformations**
+
+Exemple complet avec chargement depuis des fichiers et application de transformations :
+
+.. code-block:: python
+
+   from torch.utils.data import Dataset
+   from torchvision import transforms
+   from PIL import Image
+   import os
+
+   class MyFirstDataset(Dataset): # héritage de Dataset
+       def __init__(self, data_paths, labels, transform=None, preload=False):
+           """
+           Args:
+               data_paths: Liste des chemins vers les données
+               labels: Liste des labels correspondants
+               transform: Transformations à appliquer (optionnel)
+           """
+           self.data_paths = data_paths
+           self.labels = labels
+           self.transform = transform
+           self.preload = preload
+           if(preload):
+                  # Charger toutes les données en mémoire (optionnel)
+                  # Avantage : temps d'accès à la donnée (__getitem__) plus rapide puisque la donnée est déjà en RAM
+                  # Inconvénient : consommation mémoire plus importante, puisque toutes les données sont chargées en RAM
+                  self.load_all()
+
+      def load_all(self):
+             # Charger toutes les données en mémoire (optionnel)
+             self.data = []
+             for path in self.data_paths:
+                 datum = torch.load(path)  # Charger la donnée depuis le fichier
+                 if(self.transform):
+                     datum = self.transform(datum)  # Appliquer les transformations si spécifiées
+                 self.data.append(datum)
+
+       def __len__(self): # OBLIGATOIRE !
+           return len(self.data_paths)
+       
+       def __getitem__(self, idx):  # OBLIGATOIRE !
+           if(self.preload):
+               datum = self.data[idx]  # si les données sont déjà en RAM, on les récupère directement
+           else: # sinon, on la charge a la volée
+               datum_path = self.data_paths[idx]
+               datum = torch.load(datum_path)  
+               if self.transform:   # Appliquer les transformations si spécifiées
+                     datum = self.transform(datum)
+           
+           label = self.labels[idx]
+           return datum, label
+
+   #==================================================
+
+   # Exemple d'utilisation avec transformations
+   data_paths = ['data1.npy', 'data2.npy', 'data3.npy']  # Chemins vers vos données
+   labels = [0, 1, 2]  # Labels correspondants
+
+   # Définir les transformations pour l'entraînement
+   transform = transforms.Compose([
+       transforms.ToTensor(),                # Convertir en tenseur
+       transforms.Normalize(mean=[0.5], std=[0.5]) # Attention a la shape de mean et std (doit correspondre à la dernière dimension des données)
+   ])
+
+   # Créer le dataset en passant les transformations
+   train_dataset = MyFirstDataset(data_paths, labels, transform=transform)
+
+   # Utiliser le dataset
+   datum, label = train_dataset[0] # appelle __getitem__ automatiquement
+
+
+.. slide::
+**À propos des transformations** :
+
+Les transformations permettent de modifier les images avant de les donner au réseau. Elles ont deux rôles :
+
+1. **Prétraitement (toujours nécessaire)** : 
+   
+   - ``ToTensor()`` : convertit une image PIL ou numpy en tenseur PyTorch
+   - ``Normalize(mean, std)`` : centre les valeurs autour de 0 pour faciliter l'apprentissage
+
+2. **Augmentation de données (uniquement pour l'entraînement)** :
+   
+   Certaines transformations sont utilisées pour augmenter artificiellement la taille du dataset et améliorer la robustesse du modèle. Par exemple :
+   - **Ajout de bruit aléatoire (jittering)** : ajouter un léger bruit gaussien aux variables numériques continues.
+   - **Swap noise (bruit d'échange)** : remplacer aléatoirement la valeur d'une colonne par celle d'une autre ligne du dataset.
+   - **Interpolation / Mixup** : combiner linéairement deux exemples existants (ou utiliser des méthodes comme SMOTE pour les classes minoritaires).
+   - **Masquage de variables (feature dropout)** : masquer temporairement certaines colonnes en les remplaçant par zéro, la moyenne ou une valeur manquante.
+
+.. slide::
+
+2.2. La classe DataLoader
+~~~~~~~~~~~~~~~~~~~
+
+``DataLoader`` encapsule un ``Dataset`` et fournit :
+
+- Le découpage automatique en mini-batchs
+- Le mélange des données (shuffle)
+- Le chargement parallèle (multiprocessing)
+- La gestion du dernier batch incomplet
+
+.. code-block:: python
+
+   from torch.utils.data import DataLoader
+
+   # Créer le dataset
+   ...
+
+   # Créer le dataloader
+   dataloader = DataLoader(
+       dataset,
+       batch_size=32,        # taille des batchs
+       shuffle=True,         # mélanger les données à chaque epoch (recommandé pour l'entraînement)
+       num_workers=4,        # nombre de processus parallèles pour charger les données (0 = chargement dans le processus principal, >0 = chargement en parallèle pour accélérer)
+       drop_last=True       # si True, ignore le dernier batch s'il est incomplet (utile quand la taille du batch doit être fixe, par exemple pour le batch normalization)
+   )
+
+   # Itération sur les batchs
+   for batch_idx, (batch_data, batch_labels) in enumerate(dataloader):
+       print(f"Batch {batch_idx}: data shape = {batch_data.shape}, labels shape = {batch_labels.shape}")
+
+
+.. slide::
+Pendant un entraînement, on itèrera désormais sur le DataLoader dans chaque époque pour récupérer des batchs de données et labels :
+
+.. code-block:: python
+
+   model = ...
+   optimizer = ...
+   loss = ...
+
+   dataset = ...
+   
+   batch_size = 32
+   data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+
+   epoch = 500
+   for i_epoch in range(epoch):
+      for batch_idx, (batch_data, batch_labels) in enumerate(data_loader):
+          optimizer.zero_grad()
+
+          # Forward pass
+          outputs = model(batch_data)
+          loss_value = loss(outputs, batch_labels)
+          
+          # Backward pass
+          loss_value.backward()
+          optimizer.step()
+
+.. slide::
+
+📖 3. Boucle d'entraînement complète
+----------------------
+
+3.1. Séparation des données en ensembles Train/Val/Test
+~~~~~~~~~~~~~~~~~~~
+
+En deep learning, le but principal d'un modèle n'est pas de mémoriser les exemples connus, mais d'être capable de **généraliser** à de nouvelles observations. La séparation des données en trois sous-ensembles indépendants (**Train**, **Validation**, **Test**) est indispensable pour :
+
+- **Évaluer la généralisation** : s'assurer que le réseau apprend des représentations utiles et transférables plutôt que d'apprendre par cœur le bruit des données.
+- **Prévenir et détecter le surapprentissage (*overfitting*)** : suivre les performances au fil des époques pour ajuster les hyperparamètres et arrêter l'entraînement avant la dégradation des résultats.
+- **Obtenir une évaluation finale non biaisée** : tester le modèle final sur un ensemble strictement intouché afin de mesurer ses performances en conditions réelles.
+
+.. slide::
+**À quoi servent ces trois ensembles ?**
+
+1. **Train (70-80%)** : Utilisé pour entraîner le modèle
+   
+   - Calcul du gradient et mise à jour des poids
+   - Apprentissage des patterns dans les données
+
+2. **Validation (10-15%)** : Utilisé pendant l'entraînement pour :
+   
+   - Surveiller les performances sur des données non vues
+   - Détecter le surapprentissage (overfitting)
+   - Choisir les meilleurs hyperparamètres
+   - Décider quand arrêter l'entraînement
+   - Sauvegarder le meilleur modèle
+
+3. **Test (10-15%)** : Utilisé **uniquement à la fin** (après entraînement) pour :
+   
+   - Évaluer les performances finales du modèle
+   - Obtenir des métriques non biaisées
+   - Tester sur des données complètement nouvelles
+
+.. warning::
+
+   ⚠️ **Ne JAMAIS utiliser le test set pendant l'entraînement !**
+   
+   Le test set doit rester totalement invisible jusqu'à l'évaluation finale, sinon vous risquez de sur-optimiser votre modèle sur ces données (data leakage).
+
+   ⚠️ **Ne JAMAIS faire de l'augmentation pour validation/test !** 
+   
+   On veut évaluer le modèle sur les vraies données, pas sur des versions modifiées artificiellement.
+
+.. slide::
+En pratique, PyTorch fournit ``random_split`` qui divise automatiquement un dataset et mélange les données :
+
+.. code-block:: python
+
+   from torch.utils.data import TensorDataset, random_split
+   
+   # 1. Créer ou charger toutes les données
+   all_data = torch.randn(1000, 5)
+   all_labels = torch.randint(0, 10, (1000,))
+   
+   # 2. Créer un dataset avec toutes les données
+   full_dataset = TensorDataset(all_data, all_labels)
+   
+   # 3. Définir les tailles de chaque ensemble (70% train, 15% val, 15% test)
+   train_size = int(0.70 * len(full_dataset))  # 700
+   val_size = int(0.15 * len(full_dataset))     # 150
+   test_size = len(full_dataset) - train_size - val_size  # 150
+   
+   # 4. Diviser le dataset automatiquement (avec mélange aléatoire)
+   train_dataset, val_dataset, test_dataset = random_split(
+       full_dataset,
+       [train_size, val_size, test_size]
+   )
+   
+   # 5. Créer les DataLoaders
+   # shuffle=True pour train : mélanger les données à chaque epoch évite que le modèle apprenne l'ordre des exemples
+   # shuffle=False pour val/test : l'ordre n'a pas d'importance pour l'évaluation, et garder le même ordre permet de reproduire les résultats
+   batch_size = 32
+   train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+   val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+   test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+   
+   print(f"Train: {len(train_dataset)} exemples, {len(train_loader)} batches")
+   print(f"Validation: {len(val_dataset)} exemples, {len(val_loader)} batches")
+   print(f"Test: {len(test_dataset)} exemples, {len(test_loader)} batches")
+
+💡 **Avantages** : ``random_split`` mélange automatiquement les données et crée des sous-ensembles du dataset original sans dupliquer les données en mémoire.
+
+.. slide::
+Pendant l'entraînement, il faudra bien spécifier explicitement le passage du modèle en mode entraînement ou évaluation avec ``model.train()`` et ``model.eval()``. Cela permet d'activer ou désactiver certaines fonctionnalités spécifiques à l'entraînement, comme le dropout ou la normalisation par batch (batch normalization).
+
+.. code-block:: python
+   epoch = 500
+   for i_epoch in range(epoch):
+      # Phase d'entraînement
+      model.train()  # Activer le mode entraînement (dropout, batchnorm, etc.)
+      for batch_idx, (batch_data, batch_labels) in enumerate(train_loader):
+          ... # comme d'habitude
+
+      # Phase de validation
+      model.eval()  # Activer le mode évaluation (désactiver dropout, batchnorm, etc.)
+      with torch.no_grad():  # Pas de calcul de gradient pour la validation
+          val_loss = 0
+          for batch_idx, (batch_data, batch_labels) in enumerate(val_loader):
+              outputs = model(batch_data)
+              loss_value = loss(outputs, batch_labels)
+              val_loss += loss_value.item()
+          val_loss /= len(val_loader)  # Moyenne sur tous les batches de validation
+          print(f"Epoch {i_epoch+1}, Validation Loss: {val_loss:.4f}")
+
+.. slide::
+3.2. Putting it all together
+~~~~~~~~~~~~~~~~~~~
+
+Ça y est ! Nous avons maintenant tous les éléments pour créer une boucle d'entraînement complète avec PyTorch :
+
+- Charger les données avec ``Dataset`` et ``DataLoader``
+- Séparer les données en ensembles Train/Validation/Test
+- Définir un modèle avec ``torch.nn.Module``
+- Définir une fonction de coût (loss function) et un optimiseur
+- Entraîner et tester un modèle
+
+.. figure:: images/loop.png
+   :align: center
+   :width: 100%
+   :alt: Schéma d'une boucle d'entraînement complète.
+
+   **Figure 1** : Schéma d'une boucle d'entraînement complète.
+
+Code d'une boucle complète :
+
+.. code-block:: python
+   # A paramétrer !
+   model = ...
+   optimizer = ... # Adam ? SGD ?
+   loss = ... # MSE ? MAE ? 
+   
+   max_epoch = ... # 500 ? 1000 ?
+   batch_size = ... # 32 ?
+
+   dataset = ...
+   train_proportion = ... # 0.80 ?
+   val_proportion = ... # 0.10 ?
+   test_proportion = 1 - train_proportion - val_proportion
+   assert train_proportion + val_proportion + test_proportion == 1, "Les proportions doivent totaliser 1"
+   #==========================
+
+   train_size = int(train_proportion * len(dataset))
+   val_size = int(val_proportion * len(dataset))
+   test_size = len(dataset) - train_size - val_size
+   train_dataset, val_dataset, test_dataset = random_split(dataset, [train_size, val_size, test_size])
+
+
+   train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+   val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+   test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+
+   
+   for i_epoch in range(max_epoch):
+      # Phase d'entraînement
+      model.train()  # Activer le mode entraînement (dropout, batchnorm, etc.)
+      for batch_idx, (batch_data, batch_labels) in enumerate(train_loader):
+          optimizer.zero_grad()
+
+          #Forward
+          outputs = model(batch_data)
+          loss_value = loss(outputs, batch_labels)
+
+          #Backward
+          loss_value.backward()
+          optimizer.step()
+          print(f"Epoch {i_epoch+1}, Batch {batch_idx+1}, Loss: {loss_value.item():.4f}")
+
+      # Phase de validation
+      model.eval()  # Activer le mode évaluation (désactiver dropout, batchnorm, etc.)
+      with torch.no_grad():  # Pas de calcul de gradient pour la validation
+          val_loss = 0
+          for batch_idx, (batch_data, batch_labels) in enumerate(val_loader):
+              outputs = model(batch_data)
+              loss_value = loss(outputs, batch_labels)
+              val_loss += loss_value.item()
+          val_loss /= len(val_loader)  # Moyenne sur tous les batches de validation
+          print(f"Epoch {i_epoch+1}, Validation Loss: {val_loss:.4f}")
+
+
+.. slide::
+📖 4. Classification - Définition
 ----------------------
 La classification est une tâche fondamentale en apprentissage supervisé où l'objectif est de prédire une catégorie ou une classe à laquelle appartient une observation donnée, en se basant sur des données d'entrée. Contrairement à la régression, qui vise à prédire une valeur dans un domaine continu, la classification prédit une valeur discrète.
 
@@ -26,7 +506,7 @@ Là où la régression revient à trouver une courbe reliant tous les points, la
 Discrète ? Pas tout à fait ! En réalité, un modèle de classification ne prédit pas directement une classe, mais plutôt une probabilité pour chaque classe possible. Par exemple, dans un problème de classification binaire (deux classes), le modèle peut prédire une probabilité de 0.8 pour la classe 1 et 0.2 pour la classe 0. La classe finale est ensuite déterminée en appliquant un seuil (par exemple, 0.5) : si la probabilité de la classe 1 est supérieure à 0.5, l'observation est classée dans la classe 1, sinon dans la classe 0.
 
 .. slide::
-📖 2. Prédire une classe - One-Hot Encoding
+📖 5. Prédire une classe - One-Hot Encoding
 ----------------------
 Imaginon un problème de classification à 3 classes... Comment représenter la variable cible ?
 
@@ -42,7 +522,7 @@ Cependant, cette modélisation comporte au moins deux problèmes majeurs :
 - On ne saurait pas comment interpréter des valeurs flotantes intermédiaires (1.5).
 
 .. slide::
-Le One-Hot Encoding est une technique de prétraitement des données utilisée pour convertir des variables catégorielles en un format numérique que les algorithmes d'apprentissage automatique peuvent comprendre. Cette méthode est particulièrement utile lorsque les catégories n'ont pas d'ordre intrinsèque, comme les couleurs, les types de fruits, ou les classes dans un problème de classification (voir Figure 1).
+Le One-Hot Encoding est une technique de prétraitement des données utilisée pour convertir des variables catégorielles en un format numérique que les algorithmes d'apprentissage automatique peuvent comprendre. Cette méthode est particulièrement utile lorsque les catégories n'ont pas d'ordre intrinsèque, comme les couleurs, les types de fruits, ou les classes dans un problème de classification (voir Figure 2).
 
 Le principe du One-Hot Encoding est de créer une nouvelle colonne pour chaque catégorie unique dans la variable catégorielle. Pour chaque observation, la colonne correspondant à la catégorie de cette observation est marquée par un 1 (indiquant la présence de cette catégorie), tandis que toutes les autres colonnes sont marquées par un 0 (indiquant l'absence de ces catégories). Par exemple, si nous avons une variable "Animal" avec les catégories "Chien", "Oiseau", et "Chat", le One-Hot Encoding produira trois nouvelles colonnes : "Animal_Chien", "Animal_Oiseau", et "Animal_Chat".
 
@@ -51,7 +531,7 @@ Le principe du One-Hot Encoding est de créer une nouvelle colonne pour chaque c
    :width: 400px
    :alt: Illustration du One-Hot Encoding
 
-   **Figure 1** : Illustration du One-Hot Encoding.
+   **Figure 2** : Illustration du One-Hot Encoding.
 
 .. slide::
 On demande alors au modèle d'apprentissage de prédire une probabilité qu'une donnée appartienne à chaque classe. Par exemple, pour une observation donnée, le modèle pourrait prédire les probabilités suivantes :
@@ -61,7 +541,7 @@ On demande alors au modèle d'apprentissage de prédire une probabilité qu'une 
    :width: 400px
    :alt: Illustration d'une classification
 
-   **Figure 2** : Exemple d'une classification pour un modèle d'apprentissage supervisé.
+   **Figure 3** : Exemple d'une classification pour un modèle d'apprentissage supervisé.
 
 Ici, le modèle prédit une probabilité de 0.3 pour la classe Chien, 0.6 pour la classe Oiseau, et 0.1 pour la classe Chat. La classe finale *prédite* est déterminée en choisissant la classe avec la probabilité la plus élevée (dans ce cas, Oiseau).
 
@@ -100,14 +580,14 @@ Chaque couche d'un réseau de neurone prend en entrée un certain nombre de cara
 
 
 .. slide::
-📖 3. Optimiser et évaluer un modèle de classification supervisé
+📖 6. Optimiser et évaluer un modèle de classification supervisé
 ----------------------
 
 Traditionnellement, on dissocie les métriques d'optimisation de celles d'évaluation en classification. En effet, les fonctions de coût utilisées pour entraîner un modèle de classification ne sont pas nécessairement les mêmes que celles utilisées pour évaluer ses performances. 
 Cette distinction est nécessaire car le modèle d'apprentissage a besoin d'une fonction de coût différentiable pour ajuster ses poids via la rétropropagation, tandis que les métriques d'évaluation peuvent être non différentiables et plus adaptées à la tâche spécifique. En l'occurance, les métriques d'évaluation en classification sont souvent basées sur des seuils (par exemple, déterminer si une probabilité est supérieure à 0.5 pour classer une observation dans une classe particulière), ce qui n'est pas différentiable.
 
 .. slide::
-3.1. Optimiser un modèle de classification (fonction de coût)
+6.1. Optimiser un modèle de classification (fonction de coût)
 ~~~~~~~~~~~~~~~~~~~
 
 En classification, la fonction de coût la plus couramment utilisée est la **Cross-Entropy Loss** (ou entropie croisée). Cette fonction continue mesure la différence entre les distributions de probabilité prédites par le modèle et les vraies distributions (celles des étiquettes réelles).
@@ -144,7 +624,7 @@ Voici comment l'utiliser dans un pipeline de classification :
 ⚠️ Notez que les labels doivent être fournis sous forme d'indices de classes (entiers) et non sous forme de vecteurs one-hot. La fonction *CrossEntropyLoss* de PyTorch s'occupe à la fois de convertir les logits en probabilités (softmax) et de convertir les labels en vecteurs one-hot.
 
 .. slide::
-3.2. Évaluer les performances d'un modèle de classification
+6.2. Évaluer les performances d'un modèle de classification
 ~~~~~~~~~~~~~~~~~~~
 
 Etant donné un modèle d'apprentissage, on souhaite évaluer ses performances sur des données qu'il n'a jamais vues auparavant. Pour chaque échantillon, il y a donc 4 possibilités :
@@ -162,7 +642,7 @@ C'est sur la base de ces 4 possibilités que sont définies les principales mét
    :width: 400px
    :alt: Illustration des possibilités d'erreur en classification
 
-   **Figure 3** : Illustration des possibilités d'erreur en classification, Vrai Positif (VP), Faux Positif (FP), Vrai Négatif (VN), Faux Négatif (FN). 
+   **Figure 4** : Illustration des possibilités d'erreur en classification, Vrai Positif (VP), Faux Positif (FP), Vrai Négatif (VN), Faux Négatif (FN). 
 
 
 .. slide::
@@ -171,7 +651,7 @@ C'est sur la base de ces 4 possibilités que sont définies les principales mét
    :width: 800px
    :alt: Mesures de performance en classification
 
-   **Figure 4** : Mesures de performance en classification basées sur les concepts de Vrai Positif (VP), Faux Positif (FP), Vrai Négatif (VN), et Faux Négatif (FN).
+   **Figure 5** : Mesures de performance en classification basées sur les concepts de Vrai Positif (VP), Faux Positif (FP), Vrai Négatif (VN), et Faux Négatif (FN).
 
 
 .. slide::
@@ -225,9 +705,9 @@ Une méthode classique pour visualiser la performance globale en classification 
    :width: 600px
    :alt: Matrice de confusion
 
-   **Figure 5** : Matrice de confusion d'un modèle d'apprentissage sur un problème de classification d'images à 10 classes, sur un jeu de données équilibré (avec 1000 images par classe).
+   **Figure 6** : Matrice de confusion d'un modèle d'apprentissage sur un problème de classification d'images à 10 classes, sur un jeu de données équilibré (avec 1000 images par classe).
 
-Chaque ligne de la matrice représente les instances dans une classe réelle, tandis que chaque colonne représente les instances dans une classe prédite. La diagonale principale (de haut en gauche à bas en droite) montre le nombre d'instances correctement classées pour chaque classe, tandis que les autres cellules montrent les erreurs de classification. Dans la Figure 5, on voit donc que 337 images de "Chat" ont été incorrectement classées comme "Chien". En revanche, les chiens ne sont pas considérés comme des chats.
+Chaque ligne de la matrice représente les instances dans une classe réelle, tandis que chaque colonne représente les instances dans une classe prédite. La diagonale principale (de haut en gauche à bas en droite) montre le nombre d'instances correctement classées pour chaque classe, tandis que les autres cellules montrent les erreurs de classification. Dans la Figure 6, on voit donc que 337 images de "Chat" ont été incorrectement classées comme "Chien". En revanche, les chiens ne sont pas considérés comme des chats.
 
 Cette technique permet de voir les classes qui sont souvent confondues entre elles, ce qui peut aider à identifier les faiblesses du modèle et à orienter les efforts d'amélioration.
 
@@ -252,17 +732,17 @@ La projection en 2D, réalisée avec des algorithmes comme t-SNE (t-Distributed 
    :width: 600px
    :alt: Projection 2D des données
 
-   **Figure 6** : Projection 2D des données d'un modèle d'apprentissage sur un problème de classification d'images à 10 classes, sur un jeu de données équilibré (avec 1000 images par classe).
+   **Figure 7** : Projection 2D des données d'un modèle d'apprentissage sur un problème de classification d'images à 10 classes, sur un jeu de données équilibré (avec 1000 images par classe).
 
-Dans la Figure 6, chaque point correspond à une image. La couleur du point détermine la classe réelle de l'image (vérité terrain). On peut ainsi observer des groupes de données bien séparés des autres, ainsi que des groupes qui ont tendance à se mélanger (par exemple "Chien" et "Chat"). Grâce à cette visualisation, on peut identifier les classes les mieux discriminées ainsi que les erreurs de classification.
+Dans la Figure 7, chaque point correspond à une image. La couleur du point détermine la classe réelle de l'image (vérité terrain). On peut ainsi observer des groupes de données bien séparés des autres, ainsi que des groupes qui ont tendance à se mélanger (par exemple "Chien" et "Chat"). Grâce à cette visualisation, on peut identifier les classes les mieux discriminées ainsi que les erreurs de classification.
 
 .. slide::
-📖 4. Jeux de données
+📖 7. Jeux de données
 ----------------------
 Dans tout apprentissage, supervisé ou non, la qualité et la quantité des données jouent un rôle crucial dans la performance du modèle. En classification, plusieurs défis spécifiques liés aux jeux de données peuvent influencer les résultats.
 
 .. slide::
-4.1. Généralisation et Validation
+7.1. Généralisation et Validation
 ~~~~~~~~~~~~~~~~~~~
 Bien qu'un modèle d'apprentissage puisse atteindre de bonnes performances sur son jeu d'entraînement, il est essentiel de s'assurer qu'il possède également une bonne capacité à **généraliser** son apprentissage à de nouvelles données.
 On distingue alors les données *In distribution* (que le modèle a déjà vues pendant son entraînement) des données *Out of distribution* (que le modèle n'a jamais vues auparavant). Un bon modèle de classification doit être capable de bien performer sur les deux types de données.
@@ -273,7 +753,7 @@ La validation croisée est une technique utilisée pour évaluer la capacité de
 Cette approche permet de s'assurer que le modèle est capable de généraliser son apprentissage à de nouvelles données, en le testant sur des exemples qu'il n'a pas vus pendant l'entraînement. Cela aide à détecter les problèmes de surapprentissage (overfitting) et à ajuster les hyperparamètres du modèle pour améliorer sa performance sur des données non vues.
 
 .. slide::
-4.1.1. K-fold, Leave-K-Out (LKO), Leave-One-Out (LOO)
+7.1.1. K-fold, Leave-K-Out (LKO), Leave-One-Out (LOO)
 ~~~~~~~~~~~~~~~~~~~
 
 Une première famille de méthodes de validation est appelée **validation croisée** (cross-validation). Elle consiste à diviser le jeu de données en plusieurs sous-ensembles, puis à entraîner et évaluer le modèle plusieurs fois, en utilisant un sous-ensemble différent pour l'évaluation à chaque itération. Voici les principales variantes :
@@ -289,7 +769,7 @@ Ces méthodes sont notamment utilisées en Machine Learning, avec de petits mod�
 En Deep Learning, on préfèrera plus souvent utiliser une validation Hold-Out.
 
 .. slide::
-4.1.2. Hold-Out
+7.1.2. Hold-Out
 ~~~~~~~~~~~~~~~~~~~
 
 La validation Hold-Out est une méthode simple et largement utilisée pour évaluer la performance d'un modèle d'apprentissage. Elle consiste à diviser le jeu de données en deux à troies parties distinctes : 
@@ -356,7 +836,7 @@ En PyTorch, cela se traduit par la création de trois DataLoaders distincts, un 
 
 
 .. slide::
-4.2. Déséquilibrage des classes
+7.2. Déséquilibrage des classes
 ~~~~~~~~~~~~~~~~~~~
 
 Dans un problème de classification, il peut arriver que certaines classes soient beaucoup plus représentées que d'autres dans le jeu de données. Par exemple, dans un jeu de données médical, il peut y avoir beaucoup plus de patients en bonne santé que de patients atteints d'une maladie rare. Ce déséquilibre peut poser plusieurs problèmes lors de l'entraînement d'un modèle de classification :
@@ -371,7 +851,7 @@ Pour gérer le déséquilibre des classes, plusieurs techniques peuvent être ut
 - **Utilisation de métriques adaptées** : On peut utiliser des métriques d'évaluation qui tiennent compte du déséquilibre des classes, comme le F1-score.
 
 .. slide::
-4.3. Augmentation des données
+7.3. Augmentation des données
 ~~~~~~~~~~~~~~~~~~~
 
 L'augmentation des données est une technique utilisée pour augmenter la taille et la diversité d'un jeu de données en appliquant des transformations aux exemples existants. En classification, l'augmentation des données peut aider à améliorer la performance du modèle en lui fournissant plus d'exemples variés à apprendre, ce qui peut réduire le surapprentissage et améliorer la capacité de généralisation.
@@ -386,13 +866,13 @@ Les techniques courantes d'augmentation des données incluent :
 Ces techniques peuvent être appliquées de manière aléatoire pendant l'entraînement, de sorte que chaque époque voit une version légèrement différente des données. Cela permet au modèle d'apprendre des caractéristiques de mieux généraliser à de nouvelles données et d'être plus robustes aux petites variations d'environnement communes lors de la mise en production.
 
 .. slide::
-📖 5. Classification avancée
+📖 8. Classification avancée
 ----------------------
 
 Jusqu'à présent, nous avons principalement abordé les problèmes de classification binaire (une classe vraie parmi deux) et multi-classes (une classe vraie parmi plusieurs). Cependant, il existe d'autres types de problèmes de classification qui présentent des défis supplémentaires.
 
 .. slide::
-5.1. Classification multi-label
+8.1. Classification multi-label
 ~~~~~~~~~~~~~~~~~~~
 
 Dans un problème de classification multi-label, chaque donnée peut être associée à plusieurs classes simultanément. Par exemple, dans la classification d'images, une image peut contenir à la fois un chat et un chien. Pour traiter ce type de problème, plusieurs approches peuvent être utilisées :
@@ -405,7 +885,7 @@ Dans un problème de classification multi-label, chaque donnée peut être assoc
 où $$z$$ est le tenseur de sortie du modèle, et $$z_i$$ est le score brut (*logit*) pour la classe $$i$$ dans ce tenseur.
 
 .. slide::
-5.1. Classification hiérarchique
+8.2. Classification hiérarchique
 ~~~~~~~~~~~~~~~~~~~
 
 Dans un problème de classification hiérarchique, les classes sont organisées en une structure arborescente où certaines classes sont des sous-classes d'autres. Par exemple, dans la classification d'images, une image peut être classée comme "animal", puis comme "mammifère", puis comme "chien". Pour traiter ce type de problème, plusieurs approches peuvent être utilisées :
