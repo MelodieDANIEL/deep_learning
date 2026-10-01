@@ -96,7 +96,7 @@ En PyTorch, tous les tenseurs ont une dimension de batch en première position :
    criterion = nn.MSELoss()
 
    # Données factices
-   data = torch.randn(100, 10) # dataset de 100 images
+   data = torch.randn(100, 10) # dataset de 100 données à 10 variables
    labels = torch.randint(0, 10, (1,))
 
    # Paramètres
@@ -106,16 +106,16 @@ En PyTorch, tous les tenseurs ont une dimension de batch en première position :
    # Entraînement par mini-batchs
    for epoch in range(5): # 5 époques
        for i in range(num_batches):
-           # Extraire un mini-batch d'images et labels dans en suivant l'ordre du dataset
+           # Extraire un mini-batch de données et labels dans en suivant l'ordre du dataset
            # Attention en pratique on tire les mini-batchs de manière aléatoire
            start_idx = i * batch_size 
            end_idx = start_idx + batch_size
            
-           batch_images = data[start_idx:end_idx]
+           batch_data = data[start_idx:end_idx]
            batch_labels = labels[start_idx:end_idx]
            
            # Forward pass
-           outputs = model(batch_images)
+           outputs = model(batch_data)
            loss = criterion(outputs, batch_labels)
            
            # Backward pass et optimisation
@@ -172,7 +172,6 @@ Exemple complet avec chargement depuis des fichiers et application de transforma
 
    from torch.utils.data import Dataset
    from torchvision import transforms
-   from PIL import Image
    import os
 
    class MyFirstDataset(Dataset): # héritage de Dataset
@@ -239,11 +238,11 @@ Exemple complet avec chargement depuis des fichiers et application de transforma
 .. slide::
 **À propos des transformations** :
 
-Les transformations permettent de modifier les images avant de les donner au réseau. Elles ont deux rôles :
+Les transformations permettent de modifier les données avant de les donner au réseau. Elles ont deux rôles :
 
 1. **Prétraitement (toujours nécessaire)** : 
    
-   - ``ToTensor()`` : convertit une image PIL ou numpy en tenseur PyTorch
+   - ``ToTensor()`` : convertit un itérable (tableau numpy, liste python, etc.) en tenseur PyTorch
    - ``Normalize(mean, std)`` : centre les valeurs autour de 0 pour faciliter l'apprentissage
 
 2. **Augmentation de données (uniquement pour l'entraînement)** :
