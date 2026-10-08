@@ -57,7 +57,9 @@ Sommaire
     chap2_partie2
     chap2_abs
     chap3
-    chap4
+    chap4_partie1
+    chap4_partie2
+    chap4_abs
     chap5
     chap5_abs
     chap6_partie1

@@ -22,6 +22,8 @@ Résumé des concepts clés du chapitre 5
 **Les filtres de convolution** :
 
 - Petites matrices apprenables ($$3×3$$, $$5×5$$, $$7×7$$)
+- **Calcul** : le filtre glisse sur l'image et calcule à chaque position la **somme pondérée** des pixels recouverts
+- Les valeurs du filtre déterminent ce qu'il détecte : **flou** (somme = 1), **contours** avec Sobel (somme = 0), etc.
 - Apprennent automatiquement : contours, formes, objets complexes, etc.
 
 .. slide::
@@ -59,54 +61,16 @@ Résumé des concepts clés du chapitre 5
 
 .. slide::
 
-📖 4. Mini-batchs
+📖 4. Datasets et transformations d'images
 -------------------
 
-**Trois approches** :
+🧠 **Rappel (chapitre 3)** : mini-batchs, ``Dataset``, ``DataLoader`` et séparation train/validation/test.
 
-1. **Batch Gradient Descent** : tout le dataset (lent mais stable)
-2. **SGD** : un exemple à la fois (rapide mais bruité)
-3. **Mini-Batch** : compromis idéal (32 ou 64 exemples) ✓
-
-**Avantages** : exploite le GPU, estime bien le gradient, régularisation naturelle.
-
-.. slide::
-
-📖 5. Datasets et DataLoaders
--------------------
-
-**Dataset** : classe pour organiser vos données
+**Dataset d'images** :
 
 - Doit implémenter ``__len__`` et ``__getitem__``
-- Peut charger des images depuis le disque et appliquer des transformations si nécessaire.
-
-**DataLoader** : automatise le chargement
-
-- Découpage en mini-batchs
-- Mélange des données (``shuffle=True`` pour train, ``False`` pour val/test)
-- Chargement parallèle (``num_workers``)
-
-✓ **Bonnes pratiques** : Toujours utiliser ``Dataset`` et ``DataLoader`` pour gérer les données
-
-.. slide::
-
-📖 6. Train/Val/Test
--------------------
-
-**Proportions recommandées** :
-
-- **Train** (70-80%) : entraînement du modèle
-- **Validation** (10-15%) : surveillance et sélection du meilleur modèle pendant l'entraînement
-- **Test** (10-15%) : évaluation finale uniquement
-
-⚠️ **Règle d'or** : Ne JAMAIS utiliser le test set pendant l'entraînement !
-
-✓ **Bonnes pratiques** : Utiliser ``random_split`` pour diviser automatiquement et toujours séparer les trois ensembles
-
-.. slide::
-
-📖 7. Transformations d'images
--------------------
+- Charge les images depuis le disque (ou depuis la mémoire avec ``preload``) et applique les transformations dans ``__getitem__``, pour que les augmentations aléatoires changent à chaque époque
+- ``torchvision.datasets`` fournit des datasets prêts à l'emploi (MNIST, CIFAR-10, etc.)
 
 **Prétraitement (toujours nécessaire)** :
 
@@ -125,12 +89,12 @@ Résumé des concepts clés du chapitre 5
 
 .. slide::
 
-📖 8. Sauvegarde de modèles
+📖 5. Sauvegarde de modèles
 -------------------
 
 **Trois méthodes** :
 
-1. **Tout le modèle** : ``torch.save(model, 'model.pth')`` (éviter si possible)
+1. **Tout le modèle** : ``torch.save(model, 'model.pth')`` (éviter si possible ; pour le recharger, ``torch.load(..., weights_only=False)``)
 
 2. **Poids uniquement** (recommandé ✓) : ``torch.save(model.state_dict(), 'weights.pth')``
 

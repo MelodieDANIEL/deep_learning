@@ -12,6 +12,7 @@ Chapitre 5 — Classification d'images avec un CNN
    À la fin de ce chapitre, vous saurez : 
 
    - Comprendre la différence entre un MLP et les réseaux convolutifs (CNN).
+   - Calculer une convolution 2D et interpréter ce que détecte un filtre.
    - Utiliser les couches de convolution pour le traitement d'images.
    - Appliquer les techniques de pooling pour réduire la dimensionnalité.
    - Sauvegarder et charger les poids d'un modèle entraîné.
@@ -65,7 +66,101 @@ Un filtre (aussi appelé *kernel* ou *noyau*) est une petite matrice de poids ap
 
 .. slide::
 
-1.4. À quoi servent les filtres ?
+1.4. Comment calcule-t-on une convolution ?
+~~~~~~~~~~~~~~~~~~~
+
+**En 1D** : une convolution consiste à faire **glisser le filtre** sur un signal, et à calculer à chaque position la **somme pondérée** des valeurs recouvertes par le filtre.
+
+.. figure:: images/sig_conv.png
+   :align: center
+   :width: 450px
+   :alt: Convolution d'un signal 1D
+
+   **Figure 1** : Convolution d'un signal 1D par le filtre [1, 2, 1].
+
+Dans la Figure 1, le filtre $$[1, 2, 1]$$ est d'abord aligné avec les valeurs $$[9, 4, 1]$$ du signal : $$9 \times 1 + 4 \times 2 + 1 \times 1 = 18$$. On décale ensuite le filtre d'un cran : $$4 \times 1 + 1 \times 2 + 0 \times 1 = 6$$, et ainsi de suite. Le signal convolué complet vaut $$[18, 6, 2, 6, 18]$$.
+
+Une convolution n'est donc rien de plus qu'une **succession de sommes pondérées** ! On remarque que le signal convolué est plus court que le signal d'origine : $$7 - 3 + 1 = 5$$ valeurs.
+
+.. slide::
+
+**En 2D** : pour une image, c'est exactement la même chose. Le filtre est une petite **matrice** (souvent 3 × 3) qui glisse sur l'image, de gauche à droite et de haut en bas. À chaque position, on multiplie chaque valeur du filtre par le pixel qu'elle recouvre, et on fait la somme.
+
+**Exemple** : une image 5 × 5 avec une partie sombre (10) à gauche et une partie claire (80) à droite, et un filtre 3 × 3 :
+
+.. code-block:: text
+
+   Image (5×5)                    Filtre (3×3)
+
+    10  10  10  80  80             -1   0   1
+    10  10  10  80  80             -1   0   1
+    10  10  10  80  80             -1   0   1
+    10  10  10  80  80
+    10  10  10  80  80
+
+   Filtre centré sur la ligne 1, colonne 2 (pixels entre crochets) :
+
+    10 [10  10  80] 80
+    10 [10  10  80] 80     ->   (-1×10) + (0×10) + (1×80)
+    10 [10  10  80] 80        + (-1×10) + (0×10) + (1×80)
+    10  10  10  80  80        + (-1×10) + (0×10) + (1×80)  =  210
+    10  10  10  80  80
+
+   En répétant le calcul pour toutes les positions possibles, on obtient la sortie (3×3) :
+
+     0  210  210
+     0  210  210
+     0  210  210
+
+.. slide::
+
+**Interprétation** : la sortie vaut 0 là où l'image est uniforme, et une grande valeur (210) là où l'image passe brusquement du sombre au clair. Ce filtre est donc un **détecteur de contours verticaux** !
+
+Avec le même principe, le filtre « moyenne » ci-dessous (toutes les valeurs valent 1/9) remplace chaque pixel par la moyenne de ses 9 voisins :
+
+.. code-block:: text
+
+   Filtre (3×3)                Sortie (3×3)
+
+   1/9  1/9  1/9               10.0   33.3   56.7
+   1/9  1/9  1/9               10.0   33.3   56.7
+   1/9  1/9  1/9               10.0   33.3   56.7
+
+Le passage brutal de 10 à 80 devient progressif (10 → 33,3 → 56,7) : l'image est **floutée**.
+
+👉 **À retenir** : ce sont les valeurs du filtre qui déterminent ce que la convolution détecte.
+
+.. slide::
+
+**Vérification avec PyTorch** : la fonction ``torch.nn.functional.conv2d`` applique une convolution avec un filtre que l'on choisit soi-même. Elle attend des tenseurs **à 4 dimensions** :
+
+- l'entrée : $$(N, C_{in}, H, W)$$ -> un batch d'images,
+- le filtre : $$(C_{out}, C_{in}, k_H, k_W)$$ -> $$C_{out}$$ filtres de taille $$k_H \times k_W$$, chacun appliqué sur les $$C_{in}$$ canaux.
+
+.. code-block:: python
+
+   import torch
+   import torch.nn.functional as F
+
+   image = torch.tensor([[10., 10, 10, 80, 80]] * 5)    # (5, 5) : 5 fois la même ligne
+   filtre = torch.tensor([[-1., 0, 1],
+                          [-1., 0, 1],
+                          [-1., 0, 1]])                  # (3, 3)
+
+   x = image.reshape(1, 1, 5, 5)     # 1 image, 1 canal
+   k = filtre.reshape(1, 1, 3, 3)    # 1 filtre, appliqué sur 1 canal
+
+   print(F.conv2d(x, k))             # tensor([[[[  0., 210., 210.], ...]]]) -> forme (1, 1, 3, 3)
+
+Les paramètres ``padding`` et ``stride``, qui contrôlent la taille de la sortie, sont détaillés dans la section 2.
+
+.. note::
+
+   En toute rigueur, la convolution mathématique retourne le filtre avant de le faire glisser. PyTorch (comme toutes les bibliothèques de Deep Learning) calcule en réalité une *corrélation croisée*, sans retourner le filtre. Pour des filtres symétriques cela ne change rien, et dans un CNN les valeurs des filtres sont apprises : cela n'a donc aucune importance en pratique.
+
+.. slide::
+
+1.5. À quoi servent les filtres ?
 ~~~~~~~~~~~~~~~~~~~
 
 Chaque filtre peut être spécialisé dans la détection d'un type de motif :
@@ -83,7 +178,60 @@ Les filtres s'organisent de manière hiérarchique :
 
 .. slide::
 
-1.5. Qu'est-ce qui détermine quel filtre fait quoi ?
+**Quelques filtres classiques** : avant le Deep Learning, les filtres étaient choisis à la main par des spécialistes du traitement d'images. En voici quelques-uns :
+
+.. code-block:: text
+
+   Identité          Flou moyen            Flou gaussien             Accentuation
+
+   0  0  0           1/9  1/9  1/9         1/16  2/16  1/16          0  -1   0
+   0  1  0           1/9  1/9  1/9         2/16  4/16  2/16         -1   5  -1
+   0  0  0           1/9  1/9  1/9         1/16  2/16  1/16          0  -1   0
+
+
+   Sobel x (contours verticaux)        Sobel y (contours horizontaux)
+
+   -1   0   1                          -1  -2  -1
+   -2   0   2                           0   0   0
+   -1   0   1                           1   2   1
+
+.. figure:: images/chap5/chap5_filtres_convolution.png
+   :align: center
+   :width: 100%
+   :alt: Filtres de convolution classiques
+
+   **Figure 2** : Effet de différents filtres de convolution sur une partie de l'image ``ballon.jpg`` du chapitre 4, en niveaux de gris (les flous utilisent ici des filtres 7 × 7 pour que l'effet soit bien visible).
+
+.. slide::
+
+Quelques remarques sur la Figure 2 :
+
+- Les filtres de **flou** ont une somme égale à 1 : la luminosité moyenne de l'image est conservée. Le flou gaussien donne plus de poids au pixel central et donne un résultat plus naturel que le flou moyen.
+- Les filtres de **Sobel** ont une somme égale à 0 : les zones uniformes donnent 0. Le résultat est positif (rouge) ou négatif (bleu) selon que l'on passe du sombre au clair ou du clair au sombre.
+- En combinant Sobel x et Sobel y, on obtient tous les **contours** de l'image : le ballon et les lignes ressortent nettement, alors que l'herbe (texture fine) donne des valeurs plus faibles.
+
+Pour reproduire le filtre de Sobel x sur l'image `ballon.jpg <images/chap4/ballon.jpg>`_ :
+
+.. code-block:: python
+
+   import matplotlib.pyplot as plt
+   from PIL import Image
+   from torchvision import transforms
+
+   gris = transforms.ToTensor()(Image.open('ballon.jpg').convert('L'))   # (1, 482, 644), valeurs dans [0, 1]
+   x = gris.unsqueeze(0)                                                  # (1, 1, 482, 644) : ajout de la dimension du batch
+
+   sobel_x = torch.tensor([[-1., 0, 1],
+                           [-2., 0, 2],
+                           [-1., 0, 1]]).reshape(1, 1, 3, 3)
+
+   contours = F.conv2d(x, sobel_x, padding=1)                             # (1, 1, 482, 644)
+   plt.imshow(contours[0, 0], cmap='gray')
+   plt.show()
+
+.. slide::
+
+1.6. Qu'est-ce qui détermine quel filtre fait quoi ?
 ~~~~~~~~~~~~~~~~~~~
 
 C'est l'entraînement qui détermine la spécialisation de chaque filtre ! Voici comment :
@@ -99,11 +247,13 @@ C'est l'entraînement qui détermine la spécialisation de chaque filtre ! Voici
 
 4. **Pas de programmation manuelle** : on ne dit jamais explicitement à un filtre "tu dois détecter les contours verticaux". C'est le réseau qui découvre lui-même quels motifs sont importants !
 
+Fait remarquable : les premières couches d'un CNN entraîné apprennent souvent des filtres qui ressemblent aux filtres de flou et de contours de la Figure 2. Le réseau redécouvre seul ce que les spécialistes du traitement d'images avaient conçu à la main !
+
 💡 **Analogie** : c'est comme apprendre à reconnaître des champignons comestibles. Au début, vous ne savez pas quoi regarder. Après avoir vu des centaines d'exemples, votre cerveau apprend automatiquement à repérer les indices pertinents (couleur du chapeau, forme du pied, présence d'un anneau, etc.). Les filtres font exactement pareil !
 
 .. slide::
 
-1.6. Avantages des convolutions
+1.7. Avantages des convolutions
 ~~~~~~~~~~~~~~~~~~~
 
 1. **Partage de poids** : le même filtre est appliqué sur toute l'image, réduisant drastiquement le nombre de paramètres.
@@ -122,7 +272,7 @@ Comparé aux 77 millions de paramètres du MLP, c'est une réduction spectaculai
 📖 2. Les couches de convolution dans PyTorch
 ----------------------
 
-Comme nous l'avons vu au chapitre 4, une convolution 2D applique un filtre sur une image en le faisant glisser sur toute la surface. PyTorch fournit ``nn.Conv2d`` pour créer ces couches convolutives.
+Comme nous l'avons vu dans la section 1.4, une convolution 2D applique un filtre sur une image en le faisant glisser sur toute la surface. Dans un CNN, on ne choisit pas les valeurs des filtres : PyTorch fournit ``nn.Conv2d`` pour créer des couches convolutives dont les filtres sont **appris** pendant l'entraînement.
 
 2.1. Syntaxe de base
 ~~~~~~~~~~~~~~~~~~~
@@ -163,6 +313,23 @@ Comme nous l'avons vu au chapitre 4, une convolution 2D applique un filtre sur u
    H_{out} = \left\lfloor \frac{224 + 2 - 3}{1} \right\rfloor + 1 = 224
 
 La taille spatiale est préservée.
+
+.. slide::
+
+**Exemple avec padding=1, kernel_size=3, stride=2 sur une image 5×5** :
+
+.. math::
+
+   H_{out} = \left\lfloor \frac{5 + 2 - 3}{2} \right\rfloor + 1 = 3
+
+Avec un stride de 2, le filtre saute une position sur deux : la sortie est environ **2 fois plus petite** dans chaque direction.
+
+.. figure:: images/conv_img.gif
+   :align: center
+   :width: 300px
+   :alt: Convolution avec padding et stride
+
+   **Figure 3** : Convolution d'une image 5 × 5 (en bleu) avec un padding de 1 (carrés en pointillés, de valeur nulle) et un stride de 2 dans les deux directions. Le filtre 3 × 3 est représenté en gris et la sortie 3 × 3 en vert.
 
 .. slide::
 
@@ -437,11 +604,13 @@ Maintenant que nous avons vu les convolutions et le pooling, voici un exemple co
    
    💡 **Astuce** : Pour connaître la taille exacte, ajoutez ``print(x.shape)`` juste avant ``x.view()`` dans la méthode ``forward()``.
 
+.. slide::
+
 📖 4. Datasets, Transformations (et Augmentations) d'images
 ----------------------
 
 .. important::
-    🧠 **Rappel** : les transformations ``torch.transforms`` sont des opérations appliquées automatiquement sur les données lors de leur chargement dans un ``Dataset`` PyTorch (voir Chapitre 3).
+    🧠 **Rappel** : les transformations ``torchvision.transforms`` (voir chapitre 4) sont des opérations appliquées automatiquement sur les images lors de leur chargement dans un ``Dataset`` PyTorch (voir chapitre 3).
 
 4.1. Créer une classe Dataset personnalisée avec transformations
 ~~~~~~~~~~~~~~~~~~~
@@ -462,43 +631,33 @@ Exemple complet avec chargement depuis des fichiers et application de transforma
                image_paths: Liste des chemins vers les images
                labels: Liste des labels correspondants
                transform: Transformations à appliquer (optionnel)
+               preload: Si True, toutes les images sont chargées en mémoire dès la création du dataset (optionnel)
            """
            self.image_paths = image_paths
            self.labels = labels
            self.transform = transform
            self.preload = preload
-           if(preload):
-                  # Charger toutes les données en mémoire (optionnel)
-                  # Avantage : temps d'accès à la donnée (__getitem__) plus rapide puisque la donnée est déjà en RAM
-                  # Inconvénient : consommation mémoire plus importante, puisque toutes les données sont chargées en RAM
-                  self.load_all()
-       
-        def load_all(self):
-             # Charger toutes les données en mémoire (optionnel)
-             self.images = []
-             for path in self.image_paths:
-                 image = Image.open(img_path).convert('RGB')
-                 if(self.transform):
-                     image = self.transform(image)  # Appliquer les transformations si spécifiées
-                 self.images.append(image)
+           if preload:
+               # Avantage : accès plus rapide aux images dans __getitem__, car elles sont déjà en RAM
+               # Inconvénient : consommation mémoire plus importante, car toutes les images sont chargées en RAM
+               self.images = [Image.open(path).convert('RGB') for path in image_paths]
 
        def __len__(self):
            return len(self.image_paths)
-       
+
        def __getitem__(self, idx):
-           
            if self.preload:
-                return self.images[idx], self.labels[idx] # renvoyer l'image déjà chargée en mémoire
-            else: # Charger, transformer, renvoyer l'image depuis le disque
-                img_path = self.image_paths[idx]
-                image = Image.open(img_path).convert('RGB')
-                label = self.labels[idx]
-                
-                # Appliquer les transformations si spécifiées
-                if self.transform:
-                    image = self.transform(image)
-                
-                return image, label
+               image = self.images[idx]                                  # image déjà chargée en mémoire
+           else:
+               image = Image.open(self.image_paths[idx]).convert('RGB')  # chargement depuis le disque
+           label = self.labels[idx]
+
+           # Les transformations sont appliquées ici, à chaque appel, et pas au préchargement :
+           # ainsi les augmentations aléatoires (RandomHorizontalFlip, etc.) changent à chaque époque
+           if self.transform:
+               image = self.transform(image)
+
+           return image, label
 
    # Exemple d'utilisation avec transformations
    train_paths = ['img1.jpg', 'img2.jpg', 'img3.jpg']  # Chemins vers vos images
@@ -548,6 +707,8 @@ Les transformations permettent de modifier les images avant de les donner au ré
 
 💡 **Pourquoi pas d'augmentation pour validation/test ?** On veut évaluer le modèle sur les vraies images, pas sur des versions modifiées artificiellement.
 
+.. slide::
+
 4.2. Datasets d'image PyTorch intégrés
 ~~~~~~~~~~~~~~~~~~~
 
@@ -556,6 +717,7 @@ PyTorch fournit de nombreux datasets prêts à l'emploi dans ``torchvision.datas
 .. code-block:: python
 
    from torchvision import datasets, transforms
+   from torch.utils.data import DataLoader
 
    # MNIST (chiffres manuscrits 0-9 en noir et blanc, images 28×28)
    mnist_train = datasets.MNIST(
@@ -607,10 +769,12 @@ PyTorch offre deux approches pour sauvegarder un modèle :
    torch.save(model, 'model_complet.pth')
 
    # Charger le modèle complet
-   model_charge = torch.load('model_complet.pth')
+   # weights_only=False est obligatoire depuis PyTorch 2.6 pour charger autre chose que des poids
+   # (à utiliser uniquement avec des fichiers dont vous connaissez la provenance)
+   model_charge = torch.load('model_complet.pth', weights_only=False)
    model_charge.eval()  # passer en mode évaluation
 
-**⚠️ Attention** : cette méthode sauvegarde toute la structure du modèle. Si vous modifiez la définition de la classe, le chargement peut échouer.
+**⚠️ Attention** : cette méthode sauvegarde toute la structure du modèle. Si vous modifiez la définition de la classe, le chargement peut échouer. De plus, depuis PyTorch 2.6, ``torch.load`` refuse par défaut de charger un modèle complet (``UnpicklingError``) : il faut ajouter ``weights_only=False``.
 
 .. slide::
 
@@ -730,7 +894,6 @@ Voici le pipeline standard pour entraîner un CNN avec toutes les techniques vue
    from torchvision import transforms
    from PIL import Image
    import os
-   from torch.utils.data import random_split
 
    # 1. Définir le Dataset
    class CustomDataset(Dataset):
@@ -792,39 +955,34 @@ Voici le pipeline standard pour entraîner un CNN avec toutes les techniques vue
    ])
    
    # Charger toutes les données (à adapter selon votre cas)
-   all_paths = None # Il faut spécifier le chemin, par exemple : ['path/img/image1.jpg', 'path/img/image2.jpg', ...].
-   all_labels = None # Il  faut spécifier le chemin, par exemple : [0, 1, 2, ...].
+   all_paths = None  # Il faut spécifier les chemins, par exemple : ['path/img/image1.jpg', 'path/img/image2.jpg', ...]
+   all_labels = None # Il faut spécifier les labels, par exemple : [0, 1, 2, ...]
 
-   # Créer le dataset complet
-   full_dataset = CustomDataset(all_paths, all_labels, transform=None)
-   
-   # Diviser le dataset, par exemple, en train (70%), validation (15%) et test (15%)
-   
-   train_size = int(0.70 * len(full_dataset))
-   val_size = int(0.15 * len(full_dataset))
-   test_size = len(full_dataset) - train_size - val_size
-   
-   train_dataset, val_dataset, test_dataset = random_split(
-       full_dataset,
-       [train_size, val_size, test_size]
-   )
-   
-   # Appliquer les transformations appropriées à chaque subset
-   # Note: random_split crée des Subset qui utilisent le transform du dataset parent
-   # Pour des transformations différentes, on doit créer les datasets séparément:
+   # Diviser les données, par exemple, en train (70%), validation (15%) et test (15%)
+   # On mélange les indices une seule fois, puis on crée un Dataset par ensemble :
+   # cela permet d'appliquer des transformations différentes (augmentation uniquement pour le train).
+   # (random_split, vu au chapitre 3, renverrait des sous-ensembles qui partagent tous le même transform)
+   n = len(all_paths)
+   train_size = int(0.70 * n)
+   val_size = int(0.15 * n)
+   indices = torch.randperm(n).tolist()   # indices mélangés aléatoirement
+   train_idx = indices[:train_size]
+   val_idx = indices[train_size:train_size + val_size]
+   test_idx = indices[train_size + val_size:]
+
    train_dataset = CustomDataset(
-       all_paths[:train_size], 
-       all_labels[:train_size], 
+       [all_paths[i] for i in train_idx],
+       [all_labels[i] for i in train_idx],
        transform=train_transform
    )
    val_dataset = CustomDataset(
-       all_paths[train_size:train_size+val_size],
-       all_labels[train_size:train_size+val_size],
+       [all_paths[i] for i in val_idx],
+       [all_labels[i] for i in val_idx],
        transform=val_transform
    )
    test_dataset = CustomDataset(
-       all_paths[train_size+val_size:],
-       all_labels[train_size+val_size:],
+       [all_paths[i] for i in test_idx],
+       [all_labels[i] for i in test_idx],
        transform=val_transform  # pas d'augmentation pour test comme pour val
    )
    
