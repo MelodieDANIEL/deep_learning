@@ -244,38 +244,106 @@ def rotation_visible(pil):
     return transforms.RandomRotation(30)(pil)
 
 
+def fig_resize():
+    # Reproduit exactement le code de la section 5.1 du chapitre 4
+    img_pil = Image.open(IMG_PATH)
+    petite = transforms.Resize((64, 64))(img_pil)
+    petite2 = img_pil.resize((128, 64))
+    proportionnelle = transforms.Resize(240)(img_pil)
+
+    fig, axes = plt.subplots(1, 4, figsize=(20, 4))
+    axes[0].imshow(img_pil)
+    axes[0].set_title("img_pil (644 × 482)")
+    axes[1].imshow(petite)
+    axes[1].set_title("petite (64 × 64)")
+    axes[2].imshow(petite2)
+    axes[2].set_title("petite2 (128 × 64)")
+    axes[3].imshow(proportionnelle)
+    axes[3].set_title("proportionnelle (320 × 240)")
+    save(fig, "chap4_resize.png")
+
+
+def fig_normalize():
+    # Reproduit exactement le code de la section 5.3 du chapitre 4
+    img_t = transforms.ToTensor()(Image.open(IMG_PATH))
+    img_norm = transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])(img_t)
+
+    fig, axes = plt.subplots(1, 3, figsize=(18, 4))
+    axes[0].imshow(img_t.permute(1, 2, 0))
+    axes[0].set_title("img_t : valeurs dans [0, 1]")
+    axes[1].imshow(img_norm.permute(1, 2, 0).clamp(0, 1))   # même rendu que l'affichage direct, sans l'avertissement
+    axes[1].set_title("img_norm affichée directement")
+    axes[2].hist(img_t.flatten(), bins=100, alpha=0.5, label="img_t")
+    axes[2].hist(img_norm.flatten(), bins=100, alpha=0.5, label="img_norm")
+    axes[2].set_title("Valeurs des pixels (3 canaux)")
+    axes[2].legend()
+    save(fig, "chap4_normalize.png")
+
+
+def fig_batch():
+    # Reproduit exactement le code de la section 6.1 du chapitre 4
+    pretraitement = transforms.Compose([transforms.Resize((224, 224)), transforms.ToTensor()])
+    images = [pretraitement(Image.open(IMG_PATH).convert("RGB")) for _ in range(4)]
+    batch = torch.stack(images)
+    fig, axes = plt.subplots(1, 4, figsize=(16, 4))
+    for i in range(4):
+        axes[i].imshow(batch[i].permute(1, 2, 0))
+        axes[i].set_title(f"batch[{i}]")
+    save(fig, "chap4_batch.png")
+
+
 def fig_transforms():
+    # Même code que dans la section 5.2 du chapitre 4, avec des graines fixées pour des tirages lisibles
     pil = Image.open(IMG_PATH).convert("RGB")
+    # Les tirages aléatoires sont faits dans cet ordre pour garder des résultats lisibles,
+    # puis les images sont affichées dans l'ordre de la liste de la section 5.2
     torch.manual_seed(0)
+    crop = transforms.CenterCrop(300)(pil)
+    rotation = rotation_visible(pil)
+    flip = transforms.RandomHorizontalFlip(p=1.0)(pil)
+    jitter = transforms.ColorJitter(brightness=0.8, contrast=0.5, saturation=0.8)(pil)
+    gris = transforms.Grayscale()(pil)
+    resized_crop = transforms.RandomResizedCrop(224, scale=(0.2, 0.5))(pil)
+    flou = transforms.GaussianBlur(kernel_size=15, sigma=5)(pil)
+    torch.manual_seed(5)  # avec cette graine, le carré tiré contient le ballon
+    random_crop = transforms.RandomCrop(224)(pil)
     vues = [
         (pil, "Originale (644 × 482)"),
-        (transforms.Resize((64, 64))(pil), "Resize((64, 64))"),
-        (transforms.CenterCrop(300)(pil), "CenterCrop(300)"),
-        (rotation_visible(pil), "RandomRotation(30)"),
-        (transforms.RandomHorizontalFlip(p=1.0)(pil), "RandomHorizontalFlip(p=1.0)"),
-        (transforms.ColorJitter(brightness=0.8, contrast=0.5, saturation=0.8)(pil), "ColorJitter(...)"),
-        (transforms.Grayscale()(pil), "Grayscale()"),
-        (transforms.RandomResizedCrop(224, scale=(0.2, 0.5))(pil), "RandomResizedCrop(224)"),
+        (crop, "CenterCrop(300)"),
+        (random_crop, "RandomCrop(224)"),
+        (resized_crop, "RandomResizedCrop(224)"),
+        (flip, "RandomHorizontalFlip(p=1.0)"),
+        (rotation, "RandomRotation(30)"),
+        (jitter, "ColorJitter(...)"),
+        (gris, "Grayscale()"),
+        (flou, "GaussianBlur(15, sigma=5)"),
     ]
-    fig, axes = plt.subplots(2, 4, figsize=(17, 7.4))
+    fig, axes = plt.subplots(3, 3, figsize=(14, 11))
     for ax, (v, titre) in zip(axes.ravel(), vues):
         ax.imshow(v, cmap="gray" if v.mode == "L" else None)
-        ax.set_title(titre, fontsize=11)
+        ax.set_title(titre, fontsize=12)
         ax.axis("off")
     save(fig, "chap4_transforms.png")
 
+    # Même code que dans la section 5.4 du chapitre 4 (augmentation, puis Normalize annulée pour l'affichage)
     augmentation = transforms.Compose([
         transforms.RandomResizedCrop(224, scale=(0.4, 1.0)),
         transforms.RandomHorizontalFlip(),
         transforms.RandomRotation(15),
         transforms.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
     ])
+    mean = torch.tensor([0.5, 0.5, 0.5]).view(3, 1, 1)
+    std = torch.tensor([0.5, 0.5, 0.5]).view(3, 1, 1)
     torch.manual_seed(1)
     fig, axes = plt.subplots(1, 6, figsize=(18, 3.3))
-    for i, ax in enumerate(axes):
-        ax.imshow(augmentation(pil))
-        ax.set_title(f"tirage n°{i + 1}", fontsize=11)
-        ax.axis("off")
+    for i in range(6):
+        x = augmentation(pil)
+        x_affichable = x * std + mean
+        axes[i].imshow(x_affichable.permute(1, 2, 0))
+        axes[i].set_title(f"tirage n°{i + 1}")
+        axes[i].axis("off")
     save(fig, "chap4_augmentations.png")
 
 
@@ -367,6 +435,9 @@ if __name__ == "__main__":
     fig_patchs(img)
     fig_operations(img, gray)
     fig_histogramme(img, gray)
+    fig_resize()
     fig_transforms()
+    fig_normalize()
+    fig_batch()
     fig_filtres(gray)
     fig_taches(img)
