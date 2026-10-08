@@ -51,12 +51,3 @@ Sommaire
     chap4_partie1
     chap4_partie2
     chap4_abs
-
-..
-    Chapitres masqués pour le moment : pour les publier, les remettre dans le toctree ci-dessus.
-    chap5
-    chap5_abs
-    chap6_partie1
-    chap6_partie2
-    chap7
-    chap8
