@@ -292,6 +292,48 @@ def fig_batch():
     save(fig, "chap4_batch.png")
 
 
+def fig_batch_operations():
+    # Reproduit exactement le code de la section 6.2 du chapitre 4
+    pretraitement = transforms.Compose([transforms.Resize((224, 224)), transforms.ToTensor()])
+    batch = torch.stack([pretraitement(Image.open(IMG_PATH).convert("RGB")) for _ in range(4)])
+    miroirs = batch.flip(dims=[3])
+    gris = (0.299 * batch[:, 0] + 0.587 * batch[:, 1] + 0.114 * batch[:, 2]).unsqueeze(1)
+    petits = F.interpolate(batch, size=(64, 64), mode="bilinear")
+
+    fig, axes = plt.subplots(1, 5, figsize=(20, 4))
+    axes[0].imshow(batch[0].permute(1, 2, 0))
+    axes[0].set_title("batch[0]")
+    axes[1].imshow(batch[0, 0], cmap="gray", vmin=0, vmax=1)
+    axes[1].set_title("batch[0, 0] (canal rouge)")
+    axes[2].imshow(miroirs[0].permute(1, 2, 0))
+    axes[2].set_title("miroirs[0]")
+    axes[3].imshow(gris[0, 0], cmap="gray", vmin=0, vmax=1)
+    axes[3].set_title("gris[0, 0]")
+    axes[4].imshow(petits[0].permute(1, 2, 0))
+    axes[4].set_title("petits[0] (64 × 64)")
+    save(fig, "chap4_batch_operations.png")
+
+
+def fig_interpolation():
+    # Les tableaux de l'exemple d'interpolation de la section 6.2 du chapitre 4
+    t = torch.tensor([[[[0., 100.], [200., 40.]]]])
+    vues = [
+        (t[0, 0], "Image d'origine (2 × 2)"),
+        (F.interpolate(t, size=(4, 4), mode="nearest")[0, 0], "mode='nearest' (4 × 4)"),
+        (F.interpolate(t, size=(4, 4), mode="bilinear")[0, 0], "mode='bilinear' (4 × 4)"),
+    ]
+    fig, axes = plt.subplots(1, 3, figsize=(13, 4.4))
+    for ax, (v, titre) in zip(axes, vues):
+        ax.imshow(v, cmap="gray", vmin=0, vmax=200)
+        for (i, j), val in np.ndenumerate(v.numpy()):
+            ax.text(j, i, f"{val:g}", ha="center", va="center", fontsize=11,
+                    color="black" if val > 100 else "white")
+        ax.set_title(titre)
+        ax.set_xticks([])
+        ax.set_yticks([])
+    save(fig, "chap4_interpolation.png")
+
+
 def fig_transforms():
     # Même code que dans la section 5.2 du chapitre 4, avec des graines fixées pour des tirages lisibles
     pil = Image.open(IMG_PATH).convert("RGB")
@@ -439,5 +481,7 @@ if __name__ == "__main__":
     fig_transforms()
     fig_normalize()
     fig_batch()
+    fig_batch_operations()
+    fig_interpolation()
     fig_filtres(gray)
     fig_taches(img)

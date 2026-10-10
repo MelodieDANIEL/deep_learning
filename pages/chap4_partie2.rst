@@ -227,10 +227,22 @@ Redimensionner les images est presque toujours nécessaire en Deep Learning :
 
 .. slide::
 
+``Resize`` s'applique aussi à un **tenseur** $$(C, H, W)$$ (ou à un batch $$(N, C, H, W)$$). On peut alors calculer la nouvelle taille à partir de la forme du tenseur, par exemple pour diviser la hauteur et la largeur par 4 :
+
+.. code-block:: python
+
+   img_t = transforms.ToTensor()(img_pil)                  # tenseur (3, 482, 644)
+   C, H, W = img_t.shape                                   # C = 3, H = 482, W = 644
+
+   reduite = transforms.Resize((H // 4, W // 4))(img_t)    # // : division entière (482 // 4 = 120)
+   print(reduite.shape)                                    # torch.Size([3, 120, 161])
+
+⚠️ La taille donnée à ``Resize`` doit être un nombre **entier** de pixels : avec ``H / 4`` (qui vaut 120.5), on obtient l'erreur ``TypeError: expected size to be one of int or Tuple[int] ...``.
+
 Quelques points d'attention :
 
 - **Déformation** : passer de 644 × 482 à 64 × 64 ne respecte pas les proportions, l'image est « écrasée » (Figure 11). Pour l'éviter, on peut redimensionner le plus petit côté puis recadrer (``Resize`` puis ``CenterCrop``).
-- **Interpolation** : pour calculer les nouveaux pixels, on utilise les pixels voisins. Par défaut, torchvision utilise une interpolation **bilinéaire** (moyenne pondérée des 4 voisins). L'interpolation **au plus proche voisin** (*nearest*) copie simplement le pixel le plus proche : c'est plus rapide, mais l'image paraît pixelisée.
+- **Interpolation** : pour calculer les nouveaux pixels, on utilise les pixels voisins. Par défaut, torchvision utilise une interpolation **bilinéaire** (moyenne pondérée des 4 voisins, voir l'exemple détaillé de la section 6.2). L'interpolation **au plus proche voisin** (*nearest*) copie simplement le pixel le plus proche : c'est plus rapide, mais l'image paraît pixelisée.
 - **Perte d'information** : réduire une image supprime des détails. Un ballon de 10 pixels de large dans l'image d'origine n'en fera plus que 1 ou 2 après une réduction par 8 !
 
 💡 Pour redimensionner directement un batch de tenseurs, on peut aussi utiliser ``torch.nn.functional.interpolate(batch, size=(64, 64), mode='bilinear')``, qui attend un tenseur ``float`` de forme $$(N, C, H, W)$$.
@@ -474,8 +486,8 @@ Pour profiter de la puissance du GPU, on ne traite pas les images une par une, m
    ⚠️ Toutes les images doivent avoir **exactement la même forme** pour être empilées, sinon :
    ``RuntimeError: stack expects each tensor to be equal size``. D'où l'importance de :
 
-   - redimensionner toutes les images à la même taille,
-   - convertir toutes les images dans le même mode avec ``.convert('RGB')`` : un PNG peut être en RGBA (4 canaux) ou en niveaux de gris (1 canal) !
+   - redimensionner les images à la même taille si elles ne le sont pas déjà : beaucoup de datasets prêts à l'emploi (MNIST, CIFAR-10…) contiennent des images de même taille, mais des photos que vous collectez vous-même ont souvent des tailles différentes,
+   - convertir les images dans un même mode si ce n'est pas déjà le cas : un même dossier peut mélanger des images RGB (3 canaux), RGBA (4 canaux, fréquent avec les PNG) et en niveaux de gris (1 canal). Le mode choisi importe peu, il faut seulement qu'il soit le même pour toutes : par exemple toutes en RGB avec ``.convert('RGB')``, ou toutes en niveaux de gris avec ``.convert('L')``. Une image en niveaux de gris convertie en RGB garde son apparence : sa valeur de gris est simplement recopiée dans les 3 canaux (un pixel de valeur 55 devient ``[55, 55, 55]``).
 
 💡 **Et le DataLoader du chapitre 3 ?** Pendant un entraînement, c'est le ``DataLoader`` qui construit les batchs pour vous : il récupère chaque image avec le ``__getitem__`` du ``Dataset``, puis les empile avec ``torch.stack``. C'est pour cela que votre ``Dataset`` d'images doit toujours renvoyer des images de même taille et avec le même nombre de canaux ! Savoir construire un batch soi-même reste utile pour tester un modèle ou faire une prédiction sur quelques images.
 
@@ -519,12 +531,75 @@ Toutes les opérations vues dans ce chapitre s'appliquent à **toutes les images
    gris = gris.unsqueeze(1)                # (4, 1, 224, 224) : on garde une dimension pour le canal
 
    import torch.nn.functional as F
-   petits = F.interpolate(batch, size=(64, 64), mode='bilinear')   # (4, 3, 64, 64)
+   petits = F.interpolate(batch, size=(64, 64), mode='bilinear')   # (4, 3, 64, 64), interpolation expliquée plus loin
 
    device = 'cuda' if torch.cuda.is_available() else 'cpu'
    batch = batch.to(device)                # tout le batch sur le GPU en une ligne
 
-💡 Le paramètre ``dim`` indique les dimensions sur lesquelles on calcule : ``dim=(0, 2, 3)`` fait la moyenne sur les images, les lignes et les colonnes, et garde donc une valeur par canal.
+💡 **Pourquoi** ``dim=(0, 2, 3)`` **?** Le batch a la forme $$(N, C, H, W) = (4, 3, 224, 224)$$ : la dimension 0 numérote les images, la dimension 1 les canaux, la dimension 2 les lignes et la dimension 3 les colonnes. On veut **une moyenne par canal**, calculée sur tous les pixels de toutes les images. On fait donc la moyenne le long des dimensions 0 (toutes les images), 2 (toutes les lignes) et 3 (toutes les colonnes) : ces dimensions disparaissent et seule la dimension 1 (les canaux) reste. C'est le même principe que ``dim=(1, 2)`` pour une seule image $$(C, H, W)$$ dans la section 5.3 : dans un batch, la dimension des images s'ajoute devant, donc les lignes et les colonnes deviennent les dimensions 2 et 3.
+
+.. slide::
+
+Pour visualiser le résultat, on affiche la **première image** de chaque résultat (les 3 autres images du batch ont subi exactement les mêmes opérations) :
+
+.. code-block:: python
+
+   fig, axes = plt.subplots(1, 5, figsize=(20, 4))
+   axes[0].imshow(batch[0].cpu().permute(1, 2, 0))              # .cpu() : Matplotlib ne sait pas lire un tenseur sur GPU
+   axes[0].set_title('batch[0]')
+   axes[1].imshow(batch[0, 0].cpu(), cmap='gray', vmin=0, vmax=1)   # image 0, canal 0 (rouge)
+   axes[1].set_title('batch[0, 0] (canal rouge)')
+   axes[2].imshow(miroirs[0].permute(1, 2, 0))
+   axes[2].set_title('miroirs[0]')
+   axes[3].imshow(gris[0, 0], cmap='gray', vmin=0, vmax=1)      # image 0, canal 0 : (224, 224)
+   axes[3].set_title('gris[0, 0]')
+   axes[4].imshow(petits[0].permute(1, 2, 0))
+   axes[4].set_title('petits[0] (64 × 64)')
+   plt.show()
+
+.. figure:: images/chap4/chap4_batch_operations.png
+   :align: center
+   :width: 100%
+   :alt: Résultat des opérations sur la première image du batch
+
+   **Figure 16** : Résultat du code ci-dessus. Les graduations des axes montrent que ``petits[0]`` ne fait plus que 64 × 64 pixels.
+
+.. slide::
+
+**Comment l'interpolation calcule-t-elle les nouveaux pixels ?**
+
+Quand on change la taille d'une image, les nouveaux pixels ne tombent pas exactement sur les pixels d'origine : il faut calculer leur valeur à partir des pixels voisins. Par exemple, agrandissons une image de 2 × 2 pixels en 4 × 4 pixels :
+
+.. code-block:: python
+
+   t = torch.tensor([[[[  0., 100.],
+                       [200.,  40.]]]])     # (1, 1, 2, 2) : 1 image, 1 canal, 2 × 2 pixels
+
+   print(F.interpolate(t, size=(4, 4), mode='nearest')[0, 0])
+   # tensor([[  0.,   0., 100., 100.],
+   #         [  0.,   0., 100., 100.],
+   #         [200., 200.,  40.,  40.],
+   #         [200., 200.,  40.,  40.]])
+
+   print(F.interpolate(t, size=(4, 4), mode='bilinear')[0, 0])
+   # tensor([[  0.0000,  25.0000,  75.0000, 100.0000],
+   #         [ 50.0000,  58.7500,  76.2500,  85.0000],
+   #         [150.0000, 126.2500,  78.7500,  55.0000],
+   #         [200.0000, 160.0000,  80.0000,  40.0000]])
+
+.. slide::
+
+.. figure:: images/chap4/chap4_interpolation.png
+   :align: center
+   :width: 80%
+   :alt: Interpolation au plus proche voisin et bilinéaire
+
+   **Figure 17** : Les tableaux de la diapo précédente affichés en niveaux de gris (0 = noir, 200 = blanc).
+
+- **Au plus proche voisin** (``mode='nearest'``) : chaque nouveau pixel recopie la valeur du pixel d'origine le plus proche. Ici, chaque pixel est simplement dupliqué en un carré de 2 × 2 pixels.
+- **Bilinéaire** (``mode='bilinear'``) : chaque nouveau pixel est une **moyenne pondérée des 4 pixels d'origine les plus proches** : plus un pixel d'origine est proche, plus son poids est grand. Sur la première ligne, entre 0 et 100, on obtient 25 (plus proche de 0) puis 75 (plus proche de 100). De même, 58.75 = 0.5625 × 0 + 0.1875 × 100 + 0.1875 × 200 + 0.0625 × 40 : le pixel de valeur 0, le plus proche, a le plus grand poids. Les valeurs varient progressivement, l'image est plus lisse.
+
+Pour une réduction comme ``petits`` (224 → 64 pixels), c'est le même principe : chaque pixel de ``petits`` est une moyenne pondérée des 4 pixels de ``batch`` les plus proches de sa position.
 
 .. slide::
 
@@ -542,7 +617,7 @@ Maintenant que nous savons manipuler des images, voyons ce que l'on peut demande
    :width: 100%
    :alt: Classification, détection et segmentation
 
-   **Figure 16** : Les trois grandes tâches de la vision par ordinateur sur la même image. La segmentation présentée ici a été obtenue automatiquement avec des masques sur les couleurs (comme dans la section 4.3), elle est donc approximative.
+   **Figure 18** : Les trois grandes tâches de la vision par ordinateur sur la même image. La segmentation présentée ici a été obtenue automatiquement avec des masques sur les couleurs (comme dans la section 4.3), elle est donc approximative.
 
 .. slide::
 
@@ -551,8 +626,6 @@ Pour entraîner un modèle de manière supervisée, il faut des images **annoté
 - **Classification** : une étiquette par image (rapide à annoter).
 - **Détection** : les coordonnées d'une boîte et une étiquette pour chaque objet (plus long).
 - **Segmentation** : un masque précis au pixel près pour chaque objet (très long).
-
-La **qualité des annotations** a un impact direct sur les performances du modèle : un modèle entraîné sur des annotations fausses ou incohérentes apprendra des erreurs. Au chapitre 6, vous annoterez vous-même des images avec l'outil **Label Studio**.
 
 .. slide::
 
@@ -606,8 +679,8 @@ Dans cet exercice, vous allez comparer la réduction de résolution par slicing 
 **Astuce :**
 .. spoiler::
     .. discoverList::
-        1. ``torch.from_numpy(img).permute(2, 0, 1)`` donne un tenseur $$(C, H, W)$$ (section 2.3 du cours)
-        2. ``transforms.Resize`` prend la nouvelle taille $$(H, W)$$ en paramètre (section 5.1 du cours)
+        1. ``transforms.ToTensor()(img)`` donne un tenseur $$(C, H, W)$$ (section 2.3 du cours). Comme ``img`` est déjà en réels entre 0 et 1, ``ToTensor`` ne modifie pas ses valeurs
+        2. ``transforms.Resize((hauteur, largeur))`` s'applique aussi à un tenseur : divisez la hauteur et la largeur de l'image par 20 avec la division entière ``//`` (section 5.1 du cours)
         3. Pour afficher un tenseur $$(C, H, W)$$ avec Matplotlib : ``plt.imshow(img_t.permute(1, 2, 0))``
 
 
@@ -690,10 +763,16 @@ Dans cet exercice, vous allez appliquer les mêmes traitements à plusieurs imag
 
 **Objectif :** Regrouper plusieurs images en un batch $$(N, C, H, W)$$ et leur appliquer des traitements en une seule instruction.
 
+.. note::
+
+   En plus de ``elephants.png``, téléchargez les images `chien.jpg <images/tp4/chien.jpg>`_, `chat.jpg <images/tp4/chat.jpg>`_ et `cheval.jpg <images/tp4/cheval.jpg>`_ et placez-les dans le même dossier que votre notebook Jupyter.
+
+   Les images n'ont pas toutes le même format de fichier (PNG et JPEG) : ce n'est pas un problème, car ``Image.open`` lit les deux formats, et une fois chargée, une image n'est plus qu'un tableau de pixels. Pour former un batch, il faut en revanche qu'elles aient toutes la même taille et le même nombre de canaux (voir la question 6).
+
 **Consigne :** Écrire un programme qui :
 
 .. step::
-    1) Utilise une image de chien, une image de chat et une image de cheval récupérées sur internet (au format JPEG ou PNG), en plus de ``elephants.png``.
+    1) Utilise les images ``elephants.png``, ``chien.jpg``, ``chat.jpg`` et ``cheval.jpg``. Vous pouvez aussi utiliser vos propres images (au format JPEG ou PNG).
 
 .. step::
     2) Charge les 4 images, les redimensionne en 256 × 256 pixels et les empile en un seul tenseur de forme $$(4, 3, 256, 256)$$.
@@ -750,69 +829,10 @@ Dans cet exercice, vous allez appliquer les mêmes traitements à plusieurs imag
 - Recadrage : ``torch.Size([4, 3, 128, 128])``
 - Moyenne et écart-type : 3 valeurs chacun (une par canal)
 
-
-.. slide::
-🌶️ Exercice 7 : Créer son propre Dataset d'images
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Dans cet exercice, vous allez créer un ``Dataset`` PyTorch qui charge, prétraite et étiquette automatiquement vos images de l'exercice 6.
-
-**Objectif :** Préparer des images pour l'entraînement d'un réseau de neurones avec un ``Dataset`` et un ``DataLoader``.
-
-**Consigne :** Écrire un programme qui :
-
-.. step::
-    1) Crée une classe ``MyDataset`` qui hérite de ``torch.utils.data.Dataset`` et qui prend en paramètres une liste de chemins d'images, une liste de labels et une transformation.
-
-.. step::
-    2) Prétraite automatiquement chaque image de la manière suivante :
-
-    - redimensionnement à 64 × 64 pixels,
-    - lissage avec un flou gaussien,
-    - conversion en tenseur,
-    - normalisation des valeurs de chaque canal entre −0.5 et 0.5.
-
-.. step::
-    3) Associe un label (aussi appelé étiquette ou vérité terrain) à chaque image : 0 pour l'éléphant, 1 pour le chien, 2 pour le chat et 3 pour le cheval.
-
-.. step::
-    4) Crée un ``DataLoader`` avec des batchs de 2 images mélangées, le parcourt en affichant la forme des images et les labels de chaque batch, puis affiche les images du dernier batch.
-
-.. step::
-    5) Crée une seconde version du dataset pour l'entraînement, avec de l'augmentation de données (miroir horizontal et rotation aléatoires), et vérifie que deux appels à ``dataset[0]`` renvoient des images différentes.
-
-.. warning::
-
-   ⚠️ Votre classe doit bien **hériter** de ``torch.utils.data.Dataset``, et il est impératif d'implémenter les méthodes ``__len__()`` et ``__getitem__()``.
-
-
-**Questions :**
-
-.. step::
-    6) Quelles valeurs de ``mean`` et de ``std`` faut-il donner à ``transforms.Normalize`` pour obtenir des valeurs entre −0.5 et 0.5 ?
-
-.. step::
-    7) Pourquoi faut-il appliquer les transformations dans ``__getitem__``, et pas une seule fois au chargement des images ?
-
-.. step::
-    8) Pourquoi ne faut-il pas utiliser d'augmentation de données pour la validation et le test ?
-
-
-**Astuce :**
-.. spoiler::
-    .. discoverList::
-        1. Revoyez la classe ``Dataset`` au chapitre 3 et ``transforms.Compose`` dans la section 5.4 du cours
-        2. ``transforms.ToTensor()`` donne des valeurs dans [0, 1], et ``transforms.Normalize`` calcule ``(x - mean) / std``
-        3. Pour afficher une image normalisée, il faut d'abord annuler la normalisation (section 5.3 du cours)
-        4. ``torch.equal(a, b)`` vérifie si deux tenseurs sont identiques
-
-
-**Résultat attendu :**
-
-- ``len(dataset)`` vaut 4
-- ``dataset[0]`` renvoie une image de forme ``torch.Size([3, 64, 64])``, avec des valeurs entre −0.5 et 0.5, et le label 0
-- Chaque batch du ``DataLoader`` contient des images de forme ``torch.Size([2, 3, 64, 64])`` et 2 labels
-- Avec l'augmentation, ``torch.equal(dataset_train[0][0], dataset_train[0][0])`` renvoie le plus souvent ``False``
+.. image:: images/tp4/tp4_exo6_batch.png
+    :alt: Les 4 images du batch et le résultat de chaque traitement
+    :align: center
+    :width: 80%
 
 
 .. slide::

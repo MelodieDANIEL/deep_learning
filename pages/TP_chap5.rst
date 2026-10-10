@@ -359,6 +359,74 @@ Cet exercice vous guide d'un CNN et l'utilisation de data augmentation pour amé
 
 
 .. slide::
+🌶️ Exercice 4 : Créer son propre Dataset d'images
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Dans cet exercice, vous allez créer un ``Dataset`` PyTorch qui charge, prétraite et étiquette automatiquement des images.
+
+.. note::
+
+   Cet exercice utilise les images de l'exercice 6 du chapitre 4 : `elephants.png <images/tp4/elephants.png>`_, `chien.jpg <images/tp4/chien.jpg>`_, `chat.jpg <images/tp4/chat.jpg>`_ et `cheval.jpg <images/tp4/cheval.jpg>`_. Placez-les dans le même dossier que votre notebook Jupyter.
+
+**Objectif :** Préparer des images pour l'entraînement d'un réseau de neurones avec un ``Dataset`` et un ``DataLoader``.
+
+**Consigne :** Écrire un programme qui :
+
+.. step::
+    1) Crée une classe ``MyDataset`` qui hérite de ``torch.utils.data.Dataset`` et qui prend en paramètres une liste de chemins d'images, une liste de labels et une transformation.
+
+.. step::
+    2) Prétraite automatiquement chaque image de la manière suivante :
+
+    - redimensionnement à 64 × 64 pixels,
+    - lissage avec un flou gaussien,
+    - conversion en tenseur,
+    - normalisation des valeurs de chaque canal entre −0.5 et 0.5.
+
+.. step::
+    3) Associe un label (aussi appelé étiquette ou vérité terrain) à chaque image : 0 pour l'éléphant, 1 pour le chien, 2 pour le chat et 3 pour le cheval.
+
+.. step::
+    4) Crée un ``DataLoader`` avec des batchs de 2 images mélangées, le parcourt en affichant la forme des images et les labels de chaque batch, puis affiche les images du dernier batch.
+
+.. step::
+    5) Crée une seconde version du dataset pour l'entraînement, avec de l'augmentation de données (miroir horizontal et rotation aléatoires), et vérifie que deux appels à ``dataset[0]`` renvoient des images différentes.
+
+.. warning::
+
+   ⚠️ Votre classe doit bien **hériter** de ``torch.utils.data.Dataset``, et il est impératif d'implémenter les méthodes ``__len__()`` et ``__getitem__()``.
+
+
+**Questions :**
+
+.. step::
+    6) Quelles valeurs de ``mean`` et de ``std`` faut-il donner à ``transforms.Normalize`` pour obtenir des valeurs entre −0.5 et 0.5 ?
+
+.. step::
+    7) Pourquoi faut-il appliquer les transformations dans ``__getitem__``, et pas une seule fois au chargement des images ?
+
+.. step::
+    8) Pourquoi ne faut-il pas utiliser d'augmentation de données pour la validation et le test ?
+
+
+**Astuce :**
+.. spoiler::
+    .. discoverList::
+        1. Revoyez la classe ``ImageFolderDataset`` de la section 4.1 du cours, et ``transforms.Compose`` dans la section 5.4 du chapitre 4
+        2. ``transforms.ToTensor()`` donne des valeurs dans [0, 1], et ``transforms.Normalize`` calcule ``(x - mean) / std``
+        3. Pour afficher une image normalisée, il faut d'abord annuler la normalisation (section 5.3 du chapitre 4)
+        4. ``torch.equal(a, b)`` vérifie si deux tenseurs sont identiques
+
+
+**Résultat attendu :**
+
+- ``len(dataset)`` vaut 4
+- ``dataset[0]`` renvoie une image de forme ``torch.Size([3, 64, 64])``, avec des valeurs entre −0.5 et 0.5, et le label 0
+- Chaque batch du ``DataLoader`` contient des images de forme ``torch.Size([2, 3, 64, 64])`` et 2 labels
+- Avec l'augmentation, ``torch.equal(dataset_train[0][0], dataset_train[0][0])`` renvoie le plus souvent ``False``
+
+
+.. slide::
 🏋️ Exercices supplémentaires 5
 ===============================
 Dans cette section, il y a des exercices supplémentaires pour vous entraîner. Ils suivent le même classement de difficulté que précédemment.
