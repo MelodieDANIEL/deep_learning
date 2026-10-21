@@ -195,39 +195,71 @@ Les filtres s'organisent de manière hiérarchique :
    -2   0   2                           0   0   0
    -1   0   1                           1   2   1
 
+💡 Le flou gaussien 3 × 3 est le produit de la colonne $$[1, 2, 1]$$ par la ligne $$[1, 2, 1]$$, divisé par 16 pour que la somme des valeurs vaille 1. On peut construire un flou gaussien plus grand de la même façon, par exemple en 7 × 7 avec $$[1, 6, 15, 20, 15, 6, 1]$$ (de somme 64).
+
+.. slide::
+
+Appliquons ces filtres sur une partie de l'image `ballon.jpg <images/chap4/ballon.jpg>`_ du chapitre 4 (placez-la dans le même dossier que votre notebook Jupyter). Les flous utilisent ici des filtres 7 × 7 pour que l'effet soit bien visible :
+
+.. code-block:: python
+
+   import torch
+   import torch.nn.functional as F
+   import matplotlib.pyplot as plt
+   from PIL import Image
+   from torchvision import transforms
+
+   gris = transforms.ToTensor()(Image.open('ballon.jpg').convert('L'))   # (1, 482, 644), valeurs dans [0, 1]
+   x = gris[:, 40:320, 260:600].unsqueeze(0)                            # (1, 1, 280, 340) : zone du ballon + dimension du batch
+
+   ligne = torch.tensor([1., 6, 15, 20, 15, 6, 1])                     # coefficients du flou gaussien 7 × 7 (somme = 64)
+   filtres = {
+       'Identité': torch.tensor([[0., 0, 0], [0, 1, 0], [0, 0, 0]]),
+       'Flou moyen (7×7)': torch.ones(7, 7) / 49,
+       'Flou gaussien (7×7)': ligne.reshape(7, 1) * ligne.reshape(1, 7) / 64**2,   # (7, 1) * (1, 7) -> (7, 7) par broadcasting
+       'Accentuation': torch.tensor([[0., -1, 0], [-1, 5, -1], [0, -1, 0]]),
+       'Sobel x': torch.tensor([[-1., 0, 1], [-2, 0, 2], [-1, 0, 1]]),
+       'Sobel y': torch.tensor([[-1., -2, -1], [0, 0, 0], [1, 2, 1]]),
+   }
+
+   sorties = {}
+   for nom, filtre in filtres.items():
+       n = filtre.shape[0]                                              # taille du filtre : 3 ou 7
+       sorties[nom] = F.conv2d(x, filtre.reshape(1, 1, n, n))[0, 0]     # image 2D, plus petite de n - 1 pixels (pas de padding)
+   sorties['Norme du gradient'] = torch.sqrt(sorties['Sobel x']**2 + sorties['Sobel y']**2)   # combine Sobel x et Sobel y
+
+   fig, axes = plt.subplots(2, 4, figsize=(17, 7.6))
+   for k, (nom, sortie) in enumerate(sorties.items()):
+       ax = axes[k // 4, k % 4]
+       if nom.startswith('Sobel'):
+           lim = sortie.abs().max().item()
+           ax.imshow(sortie, cmap='seismic', vmin=-lim, vmax=lim)       # rouge : > 0, blanc : 0, bleu : < 0
+       elif nom == 'Norme du gradient':
+           ax.imshow(sortie, cmap='gray')
+       else:
+           ax.imshow(sortie, cmap='gray', vmin=0, vmax=1)               # valeurs < 0 en noir et > 1 en blanc
+       ax.set_title(nom)
+       ax.axis('off')
+   axes[1, 3].axis('off')                                               # 8e case vide
+   plt.show()
+
+.. slide::
+
 .. figure:: images/chap5/chap5_filtres_convolution.png
    :align: center
    :width: 100%
    :alt: Filtres de convolution classiques
 
-   **Figure 2** : Effet de différents filtres de convolution sur une partie de l'image ``ballon.jpg`` du chapitre 4, en niveaux de gris (les flous utilisent ici des filtres 7 × 7 pour que l'effet soit bien visible).
+   **Figure 2** : Résultat du code ci-dessus : effet de différents filtres de convolution sur une partie de l'image ``ballon.jpg`` du chapitre 4, en niveaux de gris.
 
 .. slide::
 
 Quelques remarques sur la Figure 2 :
 
 - Les filtres de **flou** ont une somme égale à 1 : la luminosité moyenne de l'image est conservée. Le flou gaussien donne plus de poids au pixel central et donne un résultat plus naturel que le flou moyen.
-- Les filtres de **Sobel** ont une somme égale à 0 : les zones uniformes donnent 0. Le résultat est positif (rouge) ou négatif (bleu) selon que l'on passe du sombre au clair ou du clair au sombre.
-- En combinant Sobel x et Sobel y, on obtient tous les **contours** de l'image : le ballon et les lignes ressortent nettement, alors que l'herbe (texture fine) donne des valeurs plus faibles.
-
-Pour reproduire le filtre de Sobel x sur l'image `ballon.jpg <images/chap4/ballon.jpg>`_ :
-
-.. code-block:: python
-
-   import matplotlib.pyplot as plt
-   from PIL import Image
-   from torchvision import transforms
-
-   gris = transforms.ToTensor()(Image.open('ballon.jpg').convert('L'))   # (1, 482, 644), valeurs dans [0, 1]
-   x = gris.unsqueeze(0)                                                  # (1, 1, 482, 644) : ajout de la dimension du batch
-
-   sobel_x = torch.tensor([[-1., 0, 1],
-                           [-2., 0, 2],
-                           [-1., 0, 1]]).reshape(1, 1, 3, 3)
-
-   contours = F.conv2d(x, sobel_x, padding=1)                             # (1, 1, 482, 644)
-   plt.imshow(contours[0, 0], cmap='gray')
-   plt.show()
+- Le filtre d'**accentuation** renforce les différences entre un pixel et ses voisins : l'image paraît plus nette.
+- Les filtres de **Sobel** ont une somme égale à 0 : les zones uniformes donnent 0 (en blanc). Le résultat est positif (rouge) ou négatif (bleu) selon que l'on passe du sombre au clair ou du clair au sombre.
+- En combinant Sobel x et Sobel y avec la **norme du gradient** $$\sqrt{(\text{Sobel x})^2 + (\text{Sobel y})^2}$$, on obtient tous les **contours** de l'image, quelle que soit leur direction : le ballon et les lignes ressortent nettement, alors que l'herbe (texture fine) donne des valeurs plus faibles.
 
 .. slide::
 
@@ -296,6 +328,8 @@ Comme nous l'avons vu dans la section 1.4, une convolution 2D applique un filtre
    x = torch.randn(1, 3, 224, 224)  # batch_size=1, canaux=3, Height=224, Width=224
    y = conv(x)
    print(y.shape)  # torch.Size([1, 64, 224, 224])
+
+La sortie ``y`` contient 64 images de 224 × 224, une par filtre. On les appelle des **cartes de caractéristiques** (*feature maps* en anglais) : chaque carte indique **où** le motif détecté par son filtre apparaît dans l'image. Ces 64 cartes deviennent les 64 canaux d'entrée de la couche suivante.
 
 .. slide::
 
@@ -529,48 +563,41 @@ L'average pooling calcule la moyenne de chaque région.
 3.3. Exemple d'un CNN qui peut-être utilisé pour la classification d'images
 ~~~~~~~~~~~~~~~~~~~
 
-Maintenant que nous avons vu les convolutions et le pooling, voici un exemple complet de CNN pour la classification d'images RGB de taille $$224×224$$ pixels en 10 classes :
+Maintenant que nous avons vu les convolutions et le pooling, voici un exemple complet de CNN pour la classification d'images RGB de taille $$224×224$$ pixels en 10 classes. Comme au chapitre 2, on enchaîne les couches avec ``nn.Sequential``, en deux blocs :
+
+- un bloc ``convolutions`` qui extrait les caractéristiques de l'image (convolutions + ReLU + pooling),
+- un bloc ``classification`` qui calcule le score de chaque classe à partir de ces caractéristiques (couches fully-connected).
 
 .. code-block:: python
 
    class CNNWithPooling(nn.Module):
        def __init__(self, num_classes=10):
-           super(CNNWithPooling, self).__init__()
-           
-           # Première couche convolutive : 3 canaux → 32 filtres
-           self.conv1 = nn.Conv2d(3, 32, kernel_size=3, padding=1)
-           
-           # Deuxième couche convolutive : 32 canaux → 64 filtres
-           self.conv2 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
-           
-           # Couches fully-connected pour la classification
-           self.fc1 = nn.Linear(64 * 56 * 56, 128)
-           self.fc2 = nn.Linear(128, num_classes)
-       
+           super().__init__()
+           # Entrée : [batch, 3, 224, 224] - images RGB
+           self.convolutions = nn.Sequential(
+               nn.Conv2d(3, 32, kernel_size=3, padding=1),   # [batch, 32, 224, 224] - applique 32 filtres
+               nn.ReLU(),
+               nn.MaxPool2d(kernel_size=2),                  # [batch, 32, 112, 112] - divise la taille par 2
+               nn.Conv2d(32, 64, kernel_size=3, padding=1),  # [batch, 64, 112, 112] - applique 64 filtres
+               nn.ReLU(),
+               nn.MaxPool2d(kernel_size=2),                  # [batch, 64, 56, 56] - divise encore par 2
+           )
+           self.classification = nn.Sequential(
+               nn.Flatten(),                                 # [batch, 64*56*56] = [batch, 200704]
+               nn.Linear(64 * 56 * 56, 128),                 # [batch, 128]
+               nn.ReLU(),
+               nn.Linear(128, num_classes),                  # [batch, num_classes] - scores pour chaque classe
+           )
+
        def forward(self, x):
-           # x: [batch_size, 3, 224, 224] - image RGB d'entrée
-           
-           # Bloc 1 : Convolution + ReLU + Max Pooling
-           x = F.relu(self.conv1(x))           # [batch, 32, 224, 224] - applique 32 filtres
-           x = F.max_pool2d(x, kernel_size=2)  # [batch, 32, 112, 112] - divise la taille par 2
-           # Quand on ne précise pas le stride, PyTorch utilise par défaut la même valeur que kernel_size, donc ici stride=2 également.
-           
-           # Bloc 2 : Convolution + ReLU + Max Pooling
-           x = F.relu(self.conv2(x))           # [batch, 64, 112, 112] - applique 64 filtres
-           x = F.max_pool2d(x, kernel_size=2)  # [batch, 64, 56, 56] - divise encore par 2
-           
-           # Aplatir les features maps pour les couches fully-connected
-           # Note : on peut utiliser view() plutôt que flatten() pour plus de contrôle
-           # - x.view(x.size(0), -1) : préserve la dimension du batch, aplatit le reste
-           # - x.flatten(1) : équivalent mais moins explicite (le 1 signifie "à partir de la dimension 1")
-           # - Le -1 signifie "calcule automatiquement cette dimension"
-           x = x.view(x.size(0), -1)       # [batch, 64*56*56] = [batch, 200704]
-           
-           # Classification avec couches fully-connected
-           x = F.relu(self.fc1(x))         # [batch, 128]
-           x = self.fc2(x)                 # [batch, num_classes] - scores pour chaque classe
-           
+           x = self.convolutions(x)
+           x = self.classification(x)
            return x
+
+Quelques remarques sur ce code :
+
+- ``nn.MaxPool2d`` est la version « couche » de ``F.max_pool2d`` (section 3.1), utilisable dans un ``nn.Sequential``. Quand on ne précise pas le ``stride``, PyTorch utilise la même valeur que ``kernel_size`` : ici ``stride=2``.
+- ``nn.Flatten()`` aplatit tout sauf la dimension du batch : c'est l'équivalent de ``x.view(x.size(0), -1)``. Il transforme les 64 cartes de caractéristiques de 56 × 56 en un vecteur de 200 704 valeurs par image, que l'on peut donner aux couches ``nn.Linear``.
 
 .. slide::
 
@@ -601,16 +628,22 @@ Maintenant que nous avons vu les convolutions et le pooling, voici un exemple co
    
    - Utilisez la formule : ``nn.Linear(nombre_de_filtres * (H_final) * (W_final), ...)``
    - Où ``H_final`` et ``W_final`` sont les dimensions spatiales après toutes les convolutions et poolings
-   
-   💡 **Astuce** : Pour connaître la taille exacte, ajoutez ``print(x.shape)`` juste avant ``x.view()`` dans la méthode ``forward()``.
+
+   💡 **Astuce** : Pour connaître la taille exacte, donnez une image au hasard au seul bloc ``convolutions`` : ``print(model.convolutions(torch.randn(1, 3, 224, 224)).shape)`` affiche ``torch.Size([1, 64, 56, 56])``.
 
 .. slide::
 
-📖 4. Datasets, Transformations (et Augmentations) d'images
+📖 4. Datasets d'images et transformations
 ----------------------
 
 .. important::
-    🧠 **Rappel** : les transformations ``torchvision.transforms`` (voir chapitre 4) sont des opérations appliquées automatiquement sur les images lors de leur chargement dans un ``Dataset`` PyTorch (voir chapitre 3).
+
+    🧠 **Rappel** :
+
+    - au chapitre 3, vous avez créé des ``Dataset`` et des ``DataLoader`` pour organiser vos données ;
+    - au chapitre 4 (section 5.4), vous avez enchaîné des transformations avec ``transforms.Compose`` : un **prétraitement** (``Resize``, ``ToTensor``, ``Normalize``) pour toutes les images, et une **augmentation de données** (transformations aléatoires) uniquement pour les images d'entraînement.
+
+    Ici, on combine les deux : le ``Dataset`` applique les transformations à chaque chargement d'image.
 
 4.1. Créer une classe Dataset personnalisée avec transformations
 ~~~~~~~~~~~~~~~~~~~
@@ -689,23 +722,7 @@ Exemple complet avec chargement depuis des fichiers et application de transforma
    ])
    val_dataset = ImageFolderDataset(val_paths, val_labels, transform=val_transform)
 
-.. slide::
-**Transformations** :
-
-Les transformations permettent de modifier les images avant de les donner au réseau. Elles ont deux rôles :
-
-1. **Prétraitement (toujours nécessaire)** : 
-   
-   - ``ToTensor()`` : convertit une image PIL ou numpy en tenseur PyTorch
-   - ``Normalize(mean, std)`` : centre les valeurs autour de 0 pour faciliter l'apprentissage
-
-2. **Augmentation de données (uniquement pour l'entraînement)** :
-   
-   - ``RandomHorizontalFlip()`` : retourne l'image horizontalement de manière aléatoire
-   - ``RandomRotation()`` : fait pivoter l'image d'un angle aléatoire
-   - ``ColorJitter()`` : modifie la luminosité, le contraste, etc.
-
-💡 **Pourquoi pas d'augmentation pour validation/test ?** On veut évaluer le modèle sur les vraies images, pas sur des versions modifiées artificiellement.
+💡 **Pourquoi pas d'augmentation pour la validation et le test ?** On veut évaluer le modèle sur les vraies images, pas sur des versions modifiées artificiellement (chapitre 4, section 5.4).
 
 .. slide::
 
@@ -806,7 +823,12 @@ PyTorch offre deux approches pour sauvegarder un modèle :
    
    new_model = CNNWithPooling(num_classes=5)  # nouveau modèle avec 5 classes
    state_dict = torch.load('model_10classes.pth')
-   del state_dict['fc2.weight'], state_dict['fc2.bias']  # supprimer les poids incompatibles
+   print(state_dict.keys())  # noms des poids : 'convolutions.0.weight', ..., 'classification.3.weight', 'classification.3.bias'
+
+   # Les couches d'un nn.Sequential sont numérotées à partir de 0 : dans le bloc classification,
+   # Flatten = 0, Linear = 1, ReLU = 2 et Linear = 3 (la dernière couche).
+   # Cette dernière couche a 10 sorties au lieu de 5 : ses poids sont incompatibles
+   del state_dict['classification.3.weight'], state_dict['classification.3.bias']
    new_model.load_state_dict(state_dict, strict=False)  # charger en ignorant les couches manquantes
 
 .. warning::
@@ -926,17 +948,24 @@ Voici le pipeline standard pour entraîner un CNN avec toutes les techniques vue
    # 2. Définir le modèle avec convolutions et pooling
    class CNN(nn.Module):
        def __init__(self, num_classes):
-           super(CNN, self).__init__()
-           self.conv1 = nn.Conv2d(3, 32, kernel_size=3, padding=1)
-           self.pool = nn.MaxPool2d(2, 2)
-           self.conv2 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
-           self.fc = nn.Linear(64 * 16 * 16, num_classes)
-       
+           super().__init__()
+           # Entrée : [batch, 3, 64, 64] (images redimensionnées en 64×64 par les transformations)
+           self.convolutions = nn.Sequential(
+               nn.Conv2d(3, 32, kernel_size=3, padding=1),   # [batch, 32, 64, 64]
+               nn.ReLU(),
+               nn.MaxPool2d(2),                              # [batch, 32, 32, 32]
+               nn.Conv2d(32, 64, kernel_size=3, padding=1),  # [batch, 64, 32, 32]
+               nn.ReLU(),
+               nn.MaxPool2d(2),                              # [batch, 64, 16, 16]
+           )
+           self.classification = nn.Sequential(
+               nn.Flatten(),                                 # [batch, 64*16*16]
+               nn.Linear(64 * 16 * 16, num_classes),         # [batch, num_classes]
+           )
+
        def forward(self, x):
-           x = self.pool(torch.relu(self.conv1(x)))
-           x = self.pool(torch.relu(self.conv2(x)))
-           x = x.view(x.size(0), -1)
-           x = self.fc(x)
+           x = self.convolutions(x)
+           x = self.classification(x)
            return x
 
    # 3. Préparer les données avec DataLoader
@@ -1120,6 +1149,7 @@ Après l'entraînement, évaluez le modèle sur le test set pour obtenir les per
    print("="*50)
    
    # Optionnel : Matrice de confusion et rapport de classification
+   # (nécessite scikit-learn : pip install scikit-learn dans votre environnement virtuel)
    from sklearn.metrics import classification_report, confusion_matrix
    import numpy as np
    
@@ -1145,8 +1175,7 @@ Après l'entraînement, évaluez le modèle sur le test set pour obtenir les per
 
 1. Utiliser des convolutions pour les images (pas de MLP)
 2. Alterner convolutions et pooling pour réduire progressivement la taille
-3. Ajouter du batch normalization pour stabiliser l'entraînement
-4. Utiliser ReLU comme activation dans les couches cachées
+3. Utiliser ReLU comme activation dans les couches cachées
 
 **Entraînement** :
 

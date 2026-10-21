@@ -24,10 +24,10 @@ Chapitre 6 — Détection d'objets avec des boîtes englobantes (partie 1)
 📖 1. Classification vs Détection : comprendre la différence
 ----------------------
 
-1.1. Classification d'images (chapitres précédents)
+1.1. Classification d'images (chapitre 5)
 ~~~~~~~~~~~~~~~~~~~
 
-Dans les chapitres précédents, nous avons travaillé sur la **classification d'images** : le modèle devait répondre à la question *"Qu'est-ce qu'il y a dans cette image ?"*
+Au chapitre 5, nous avons travaillé sur la **classification d'images** : le modèle devait répondre à la question *"Qu'est-ce qu'il y a dans cette image ?"* (voir aussi les grandes tâches de la vision par ordinateur au chapitre 4, section 7).
 
 **Exemple** : 
 
@@ -92,7 +92,7 @@ Une **boîte englobante** est un rectangle défini par 4 valeurs. Il existe plus
 
 .. code-block:: text
 
-   Exemple d'une image $$640×480$$ pixels avec un objet :
+   Exemple d'une image 640×480 pixels avec un objet :
    
    Format PyTorch : [100, 50, 300, 250]
    → Rectangle du pixel (100,50) au pixel (300,250)
@@ -109,7 +109,7 @@ Une **boîte englobante** est un rectangle défini par 4 valeurs. Il existe plus
    
    Dans la suite de ce chapitre, nous utiliserons le **Format 3 (YOLO)** avec des coordonnées normalisées. C'est le format standard pour la détection d'objets, compatible avec YOLO et la plupart des frameworks modernes.
 
-.. slide:
+.. slide::
 
 1.4. Applications concrètes de la détection
 ~~~~~~~~~~~~~~~~~~~
@@ -408,6 +408,8 @@ Voici les deux approches :
    # Exemple : extraire 1 frame/seconde en 224×224 (format standard CNN)
    extraire_frames_crop_redimensionner('ma_video.mp4', 'frames/', 
                                        intervalle=30, target_size=224)
+
+💡 C'est le même principe que ``transforms.CenterCrop`` suivi de ``transforms.Resize`` (chapitre 4, sections 5.1 et 5.2), appliqué ici avec le slicing (chapitre 4, section 3.3) et ``cv2.resize``. Une frame lue par OpenCV est en effet un tableau NumPy de forme (H, W, 3).
 
 
 .. slide::
@@ -1116,7 +1118,7 @@ Chargez le dataset et créez les splits train/val/test :
 
    print(f"\n✅ DataLoaders créés avec batch_size=4")
 
-💡 **Avantage de** ``random_split`` : pas besoin de créer manuellement les listes d'images pour chaque split !
+💡 **Avantage de** ``random_split`` : pas besoin de créer manuellement les listes d'images pour chaque split ! Ici, c'est possible car les trois ensembles utilisent le même prétraitement, sans augmentation de données. Avec de l'augmentation pour l'entraînement, il faut des transformations différentes pour la validation et le test (voir chapitre 5, section 6.1).
 
 .. slide::
 

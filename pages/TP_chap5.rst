@@ -41,7 +41,7 @@ On va travailler avec les données MNIST :
 .. step:: 
     1) Crée deux modèles différents :
     
-    - **MLP classique** : aplatit l'image ($$28×28$$ → 784), puis 2 couches fully-connected de 128 neurones avec ReLU, sortie 10 classes
+    - **MLP classique** : aplatit l'image ($$1×28×28$$ → 784), puis 2 couches fully-connected de 128 neurones avec ReLU, sortie 10 classes
     - **CNN simple** : 
         
         - 1 couche convolutive (1→16 filtres, kernel $$3×3$$, padding=1)
@@ -82,7 +82,7 @@ On va travailler avec les données MNIST :
 **Astuce :**
 .. spoiler::
     .. discoverList::
-        1. Pour le MLP, utiliser ``x.view(x.size(0), -1)`` pour aplatir l'image
+        1. Construisez chaque modèle avec ``nn.Sequential``, comme dans la section 3.3 du cours : ``nn.Flatten()`` aplatit les images ($$1×28×28$$ → 784) sans toucher à la dimension du batch
         2. Pour calculer la taille après convolution et pooling : avec 2 pooling $$2×2$$, une image $$28×28$$ devient $$7×7$$  
         3. Pour l'accuracy : ``(predicted == labels).sum().item() / len(labels)``
         4. Utiliser ``torch.no_grad()`` lors de l'évaluation pour économiser la mémoire
@@ -130,7 +130,7 @@ On va travailler avec les données MNIST :
                 for i in range(min(num_examples, len(indices))):
                     idx = indices[i]
                     axes[i].imshow(images[idx].squeeze(), cmap='gray')
-                    axes[i].set_title(f'Vrai: {labels[idx]}\\nPrédit: {predictions[idx]}', 
+                    axes[i].set_title(f'Vrai : {labels[idx]}\nPrédit : {predictions[idx]}', 
                                     color=title_color, fontweight='bold')
                     axes[i].axis('off')
                 
@@ -144,18 +144,18 @@ On va travailler avec les données MNIST :
 
 **Résultat attendu :** 
 
-- MLP : environ 100k paramètres, accuracy ~97%
-- CNN : environ 20k paramètres, accuracy ~98-99%
+- MLP : 118 282 paramètres, accuracy sur le test set d'environ 97-98 %
+- CNN : 20 490 paramètres (presque 6 fois moins), accuracy sur le test set d'environ 98,5-99 %
 
 
 .. slide::
 ⚖️ Exercice 2 : Comprendre l'effet du padding et du stride
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Dans cet exercice, vous allez explorer comment les paramètres ``padding`` et ``stride`` affectent la taille des feature maps dans un CNN.
+Dans cet exercice, vous allez explorer comment les paramètres ``padding`` et ``stride`` affectent la taille des cartes de caractéristiques (*feature maps*) produites par une convolution.
 
 **Objectif :**  
-Comprendre l'impact du padding et du stride sur les dimensions spatiales et visualiser les feature maps.
+Comprendre l'impact du padding et du stride sur les dimensions spatiales et visualiser les cartes de caractéristiques.
 
 On va créer un mini-dataset synthétique avec des formes géométriques :
 
@@ -199,7 +199,7 @@ On va créer un mini-dataset synthétique avec des formes géométriques :
     - Vérifie avec la formule : $$H_{out} = \lfloor \frac{H_{in} + 2 \times padding - kernel\_size}{stride} \rfloor + 1$$
 
 .. step::
-    4) Visualise les 8 feature maps obtenues pour chaque configuration
+    4) Visualise les 8 cartes de caractéristiques obtenues pour chaque configuration (une par filtre)
 
 .. step::
     5) Applique ensuite un MaxPooling $$2×2$$ après la convolution et observe la nouvelle taille
@@ -224,7 +224,7 @@ On va créer un mini-dataset synthétique avec des formes géométriques :
 .. spoiler::
     .. discoverList::
         1. Utiliser ``nn.Conv2d(1, 8, kernel_size=k, stride=s, padding=p)``
-        2. Pour visualiser : ``plt.imshow(feature_map[0, i].detach(), cmap='viridis')``
+        2. Pour visualiser la carte n°``i`` : ``plt.imshow(cartes[0, i].detach(), cmap='viridis')``, où ``cartes`` est la sortie de la convolution (``.detach()`` est nécessaire car les poids de ``nn.Conv2d`` ont ``requires_grad=True``)
         3. Config B (padding=1, stride=1, kernel=3) préserve la taille : $$28×28$$ → $$28×28$$
         4. Sans padding, chaque convolution réduit la taille de (kernel_size - 1)
         5. padding=1 avec kernel=3 est un choix standard car il préserve la taille
@@ -260,11 +260,11 @@ Cet exercice vous guide d'un CNN et l'utilisation de data augmentation pour amé
 .. step:: 
     1) Charge le dataset CIFAR-10 avec deux types de transformations :
     
-    - **Sans augmentation** : seulement ToTensor et Normalize
-    - **Avec augmentation** : RandomHorizontalFlip, RandomCrop(32, padding=4), ToTensor, Normalize
+    - **Sans augmentation** : seulement ``ToTensor`` et ``Normalize``
+    - **Avec augmentation** : ``RandomHorizontalFlip``, ``RandomCrop(32, padding=4)``, ``ToTensor``, ``Normalize``
 
 .. step::
-    2) Divise le training set en train (80%) et validation (20%) avec ``random_split``
+    2) Divise le training set en train (80 %) et validation (20 %) avec ``random_split``. ⚠️ Les images de validation ne doivent **pas** être augmentées, même pour le modèle B.
 
 .. step::
     3) Crée un CNN avec l'architecture suivante :
@@ -340,21 +340,24 @@ Cet exercice vous guide d'un CNN et l'utilisation de data augmentation pour amé
 **Astuce :**
 .. spoiler::
     .. discoverList::
-    1. Pour CIFAR-10 : ``transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])``
-    2. Pour la matrice de confusion : ``from sklearn.metrics import confusion_matrix, classification_report``
-    3. Utiliser ``model.train()`` avant l'entraînement et ``model.eval()`` avant l'évaluation
-    4. Sauvegarder avec : ``torch.save({'model_state_dict': model.state_dict(), 'accuracy': best_acc}, 'best_model.pth')``
-    5. Le dropout aide aussi à éviter l'overfitting en désactivant aléatoirement 50% des neurones pendant l'entraînement
+        1. Pour CIFAR-10 : ``transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])``
+        2. ``RandomCrop(32, padding=4)`` ajoute 4 pixels noirs autour de l'image (32 × 32 → 40 × 40), puis découpe au hasard un carré de 32 × 32 : l'image est légèrement décalée
+        3. Pour une validation sans augmentation, chargez aussi le training set sans augmentation, puis appliquez ``random_split`` aux deux versions avec la même graine : ``generator=torch.Generator().manual_seed(42)``. Les mêmes images se retrouvent alors dans chaque sous-ensemble
+        4. Construisez le modèle avec deux blocs ``nn.Sequential`` (``convolutions`` et ``classification``), comme dans la section 3.3 du cours ; ``nn.Dropout(0.5)`` se place dans le bloc ``classification``
+        5. Pour la matrice de confusion : ``from sklearn.metrics import confusion_matrix, classification_report``
+        6. Utiliser ``model.train()`` avant l'entraînement et ``model.eval()`` avant l'évaluation
+        7. Sauvegarder avec : ``torch.save({'model_state_dict': model.state_dict(), 'accuracy': best_acc}, 'best_model.pth')``
+        8. Le dropout aide aussi à éviter l'overfitting en désactivant aléatoirement 50 % des neurones pendant l'entraînement
 
 
 **Résultats attendus :**
 
-- **Modèle A** (sans augmentation) : test accuracy ~76-77%, **mais fort overfitting** (gap train/val de ~12-13%)
-- **Modèle B** (avec augmentation) : test accuracy ~76-77%, **excellente généralisation** (gap train/val de seulement ~2%)
+- **Modèle A** (sans augmentation) : test accuracy ~78 %, **mais fort overfitting** (gap train/val d'environ 13 % à la fin)
+- **Modèle B** (avec augmentation) : test accuracy ~78-79 %, **excellente généralisation** (gap train/val proche de 0 : la train accuracy est mesurée sur des images augmentées, plus difficiles, et avec le dropout actif)
 - **Observation importante** : Avec seulement 10 epochs, les deux modèles peuvent avoir des test accuracy similaires, **mais le Modèle B généralise beaucoup mieux**
-- Le Modèle A montre des signes clairs d'overfitting après l'epoch 5 (train accuracy continue à monter, val accuracy stagne)
-- Le Modèle B a une meilleure loss sur le test set (~0.70 vs ~0.79), indiquant des prédictions plus confiantes
-- **Avec plus d'epochs (20-30)**, le Modèle B dépasserait clairement A en test accuracy
+- Le Modèle A montre des signes clairs d'overfitting à partir de l'epoch 6 environ (la train accuracy continue à monter, la val accuracy stagne et la val loss remonte)
+- Le Modèle B a une meilleure loss sur le test set (~0.64 vs ~0.72) : il se trompe moins souvent avec une forte confiance
+- **Avec plus d'epochs (20-30)**, le Modèle B devrait dépasser nettement A en test accuracy
 - **Leçon importante** : L'accuracy seule ne suffit pas ! Analysez toujours le gap train/val pour évaluer la vraie qualité du modèle
 
 
@@ -450,15 +453,22 @@ Cet exercice propose de visualiser ce que les filtres convolutifs ont appris apr
         class SimpleCNN(nn.Module):
             def __init__(self):
                 super().__init__()
-                self.conv1 = nn.Conv2d(1, 16, kernel_size=3, padding=1)
-                self.conv2 = nn.Conv2d(16, 32, kernel_size=3, padding=1)
-                self.fc = nn.Linear(32 * 7 * 7, 10)
-            
+                self.convolutions = nn.Sequential(
+                    nn.Conv2d(1, 16, kernel_size=3, padding=1),   # couche n°0 : [batch, 16, 28, 28]
+                    nn.ReLU(),                                    # couche n°1
+                    nn.MaxPool2d(2),                              # couche n°2 : [batch, 16, 14, 14]
+                    nn.Conv2d(16, 32, kernel_size=3, padding=1),  # couche n°3 : [batch, 32, 14, 14]
+                    nn.ReLU(),                                    # couche n°4
+                    nn.MaxPool2d(2),                              # couche n°5 : [batch, 32, 7, 7]
+                )
+                self.classification = nn.Sequential(
+                    nn.Flatten(),
+                    nn.Linear(32 * 7 * 7, 10),
+                )
+
             def forward(self, x):
-                x = F.max_pool2d(F.relu(self.conv1(x)), 2)
-                x = F.max_pool2d(F.relu(self.conv2(x)), 2)
-                x = x.view(x.size(0), -1)
-                x = self.fc(x)
+                x = self.convolutions(x)
+                x = self.classification(x)
                 return x
 
 .. step::
@@ -466,28 +476,28 @@ Cet exercice propose de visualiser ce que les filtres convolutifs ont appris apr
 
     .. code-block:: python
     
-        filters = model.conv1.weight.data  # shape: [16, 1, 3, 3]
+        filtres = model.convolutions[0].weight.data  # première couche convolutive : forme [16, 1, 3, 3]
 
 .. step::
     3) Visualiser les 16 filtres $$3×3$$ de la première couche sur une grille $$4×4$$
 
 .. step::
-    4) Prendre une image de test et visualiser les feature maps produites par la première couche convolutive :
+    4) Prendre une image de test et visualiser les cartes de caractéristiques produites par la première couche convolutive :
     
-    - Appliquer ``model.conv1(image)`` puis ``F.relu()``
-    - Afficher les 16 feature maps obtenues
+    - Appliquer les 2 premières couches du modèle (convolution + ReLU) : ``model.convolutions[:2](image)``
+    - Afficher les 16 cartes de caractéristiques obtenues
 
 .. step::
-    5) Faire de même pour la deuxième couche convolutive (afficher 32 feature maps sur une grille 4×8)
+    5) Faire de même pour la deuxième couche convolutive avec ``model.convolutions[:5](image)`` (afficher les 32 cartes de caractéristiques sur une grille 4×8)
 
 
 **Questions :**
 
 .. step::
-6) Que détectent les filtres de la première couche ? (contours, textures, ...)
+    6) Que détectent les filtres de la première couche ? (contours, textures, ...)
 
 .. step::
-    7) Les feature maps de la deuxième couche sont-elles plus abstraites que celles de la première ?
+    7) Les cartes de caractéristiques de la deuxième couche sont-elles plus abstraites que celles de la première ?
 
 .. step::
     8) Comment évoluent les patterns détectés entre les couches ?
@@ -496,8 +506,8 @@ Cet exercice propose de visualiser ce que les filtres convolutifs ont appris apr
 **Astuce :**
 .. spoiler::
     .. discoverList::
-        1. Pour visualiser : ``plt.imshow(filters[i, 0].cpu(), cmap='gray')``
-        2. Pour obtenir les feature maps : ``with torch.no_grad(): features = F.relu(model.conv1(image))``
+        1. Pour visualiser le filtre n°``i`` : ``plt.imshow(filtres[i, 0].cpu(), cmap='gray')``
+        2. Les couches d'un ``nn.Sequential`` sont numérotées à partir de 0, et ``model.convolutions[:2]`` est un ``nn.Sequential`` qui ne contient que les couches n°0 et n°1. Pour obtenir les cartes : ``with torch.no_grad(): cartes = model.convolutions[:2](image)``, avec ``image`` de forme ``[1, 1, 28, 28]``
         3. Les premiers filtres détectent souvent des contours horizontaux, verticaux, diagonaux
         4. Les couches profondes détectent des motifs plus complexes et abstraits
         5. Utiliser ``plt.subplots()`` pour créer une grille de visualisation
@@ -506,9 +516,9 @@ Cet exercice propose de visualiser ce que les filtres convolutifs ont appris apr
 **Résultats attendus :**
 
 - Une grille montrant les 16 filtres $$3×3$$ de la première couche
-- Une grille montrant les 16 feature maps activées par une image
+- Une grille montrant les 16 cartes de caractéristiques obtenues pour une image
 - Les filtres de la première couche devraient ressembler à des détecteurs de contours
-- Les feature maps montrent quelles parties de l'image activent chaque filtre
+- Les cartes de caractéristiques montrent quelles parties de l'image activent chaque filtre
 
 
 .. slide::
@@ -527,7 +537,7 @@ Dans cet exercice, vous allez utiliser un modèle pré-entraîné (ResNet18) et 
     - 💾 Sauvegarder régulièrement les modèles pour reprendre plus tard
 
 .. note::
-    **ResNet18** est une architecture CNN de 18 couches qui a gagné le concours ImageNet en 2015. **ImageNet** est une immense base de 1.2 million d'images réparties en 1000 classes (animaux, véhicules, objets du quotidien). Le **transfer learning** consiste à réutiliser les filtres appris sur ImageNet (qui détectent contours, textures, formes génériques) pour classifier CIFAR-10 (10 classes seulement) : au lieu de tout réapprendre depuis zéro, on adapte juste la dernière couche !
+    **ResNet18** est la plus petite version (18 couches) de l'architecture ResNet, qui a gagné le concours ImageNet en 2015. **ImageNet** est une immense base de 1.2 million d'images réparties en 1000 classes (animaux, véhicules, objets du quotidien). Le **transfer learning** consiste à réutiliser les filtres appris sur ImageNet (qui détectent contours, textures, formes génériques) pour classifier CIFAR-10 (10 classes seulement) : au lieu de tout réapprendre depuis zéro, on adapte juste la dernière couche !
 
 **Objectif** :
 
@@ -559,12 +569,12 @@ Dans cet exercice, vous allez utiliser un modèle pré-entraîné (ResNet18) et 
 
     .. code-block:: python
     
-        # Modèle A
-        model_scratch = models.resnet18(pretrained=False)
+        # Modèle A : poids initialisés aléatoirement
+        model_scratch = models.resnet18(weights=None)
         model_scratch.fc = nn.Linear(model_scratch.fc.in_features, 10)
         
-        # Modèle B
-        model_transfer = models.resnet18(pretrained=True)
+        # Modèle B : poids appris sur ImageNet (téléchargés automatiquement la première fois)
+        model_transfer = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
         # Geler toutes les couches
         for param in model_transfer.parameters():
             param.requires_grad = False
@@ -613,19 +623,21 @@ Dans cet exercice, vous allez utiliser un modèle pré-entraîné (ResNet18) et 
 .. spoiler::
     .. discoverList:: 
         1. Pour mesurer le temps : ``import time; start = time.time(); ... ; elapsed = time.time() - start``
-        2. Le modèle pré-entraîné a déjà appris des features génériques sur ImageNet
+        2. Le modèle pré-entraîné a déjà appris sur ImageNet des filtres qui détectent des motifs génériques (contours, textures, formes)
         3. En gelant les couches, on a moins de paramètres à entraîner → plus rapide
-        4. Le transfer learning devrait donner ~80-85% accuracy en quelques epochs
-        5. From scratch atteindra peut-être ~70-75% après 10 epochs
-        6. Si on dégèle tout, on risque de détruire les features pré-apprises (sauf si learning rate très faible)
+        4. Le modèle pré-entraîné atteint une bonne accuracy dès la première epoch
+        5. Comparez la train accuracy et la validation accuracy des deux modèles pour repérer l'overfitting
+        6. Si on dégèle tout, on risque de détruire les filtres pré-appris (sauf si learning rate très faible)
 
 
 **Résultats attendus :**
 
-- Modèle from scratch : convergence lente, accuracy finale ~70-75%
-- Modèle transfer learning : convergence rapide (2-3 epochs), accuracy finale ~80-85%
-- Temps par epoch : similaire pour les deux, mais transfer learning nécessite moins d'epochs
-- Le gap train/validation devrait être plus petit pour le transfer learning
+Exemple de résultats obtenus sur GPU (ils varient d'une exécution à l'autre) :
+
+- Modèle from scratch : convergence plus lente (≈ 62 % de validation accuracy après 1 epoch), test accuracy ≈ 81 % après 10 epochs, mais fort overfitting (train accuracy ≈ 97 %)
+- Modèle transfer learning : ≈ 78 % de validation accuracy dès la 1re epoch, puis plafonne vers 81 % (test accuracy ≈ 81 %), sans overfitting
+- Temps par epoch : environ 2,5 fois plus court pour le transfer learning (≈ 46 s contre ≈ 120 s), car il n'y a pas de rétropropagation dans les couches gelées
+- Après 10 epochs, les deux accuracies sont proches : le transfer learning apporte surtout la rapidité et l'absence d'overfitting. Pour dépasser ce plafond, il faut dégeler les dernières couches (question 11)
 
 
 .. slide::
@@ -652,7 +664,7 @@ Dans cet exercice, vous allez implémenter un système complet d'entraînement a
 **Consignes** :
 
 .. step::
-    1) Utiliser CIFAR-10 avec data augmentation et diviser en train/val/test (70%/15%/15%)
+    1) Charger CIFAR-10 avec de l'augmentation de données pour l'entraînement (comme le modèle B de l'exercice 3), diviser le training set en train (80 %) et validation (20 %), et garder le test set de CIFAR-10 pour l'évaluation finale. Comme dans l'exercice 3, la validation et le test ne doivent pas être augmentés.
 
 .. step::
     2) Créer un CNN de taille moyenne :
@@ -662,7 +674,7 @@ Dans cet exercice, vous allez implémenter un système complet d'entraînement a
         class MediumCNN(nn.Module):
             def __init__(self):
                 super().__init__()
-                self.features = nn.Sequential(
+                self.convolutions = nn.Sequential(
                     nn.Conv2d(3, 64, 3, padding=1),
                     nn.ReLU(),
                     nn.Conv2d(64, 64, 3, padding=1),
@@ -675,7 +687,8 @@ Dans cet exercice, vous allez implémenter un système complet d'entraînement a
                     nn.ReLU(),
                     nn.MaxPool2d(2),
                 )
-                self.classifier = nn.Sequential(
+                self.classification = nn.Sequential(
+                    nn.Flatten(),
                     nn.Linear(128 * 8 * 8, 256),
                     nn.ReLU(),
                     nn.Dropout(0.5),
@@ -683,9 +696,8 @@ Dans cet exercice, vous allez implémenter un système complet d'entraînement a
                 )
             
             def forward(self, x):
-                x = self.features(x)
-                x = x.view(x.size(0), -1)
-                x = self.classifier(x)
+                x = self.convolutions(x)
+                x = self.classification(x)
                 return x
 
 .. step::
@@ -775,17 +787,19 @@ Dans cet exercice, vous allez implémenter un système complet d'entraînement a
         
             from torch.optim.lr_scheduler import ReduceLROnPlateau
             
-            scheduler = ReduceLROnPlateau(optimizer, mode='min', 
-                                         factor=0.5, patience=3, verbose=True)
+            # Divise le learning rate par 2 si la validation loss ne baisse plus pendant 3 epochs
+            scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=3)
             
             # Dans la boucle d'entraînement, après validation :
             scheduler.step(val_loss)
+            lr = optimizer.param_groups[0]['lr']   # learning rate actuel (à stocker pour repérer quand il change)
 
 
 **Résultats attendus :**
 
-- Modèle A : overfitting après ~20 epochs, test accuracy ~75%
-- Modèle B : s'arrête à ~15-20 epochs, test accuracy ~78%
-- Modèle C : s'arrête à ~25-30 epochs avec LR réduit, test accuracy ~79-80%
-- Modèle C devrait avoir la meilleure généralisation
-- Le temps total d'entraînement est réduit pour B et C par rapport à A
+Les résultats varient d'une exécution à l'autre. Voici un exemple obtenu sur GPU (environ 20 minutes pour les 3 modèles) :
+
+- Modèle A : grâce à l'augmentation de données et au dropout, peu d'overfitting même après 50 epochs (gap train/val ≈ 1 %), test accuracy ≈ 83-84 %
+- Modèle B : s'arrête trop tôt (vers l'epoch 20, pour un temps divisé par plus de 2) car la validation loss fluctue d'une epoch à l'autre, test accuracy ≈ 79 %
+- Modèle C : le learning rate est réduit en fin d'entraînement (vers l'epoch 40), ce qui fait nettement baisser la loss ; meilleure test accuracy (≈ 84 %) et meilleure test loss
+- **Leçon** : l'early stopping fait gagner du temps, mais une patience trop faible arrête l'entraînement trop tôt

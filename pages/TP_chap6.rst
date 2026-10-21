@@ -72,7 +72,7 @@ Dans cet exercice, vous allez créer un dataset où certaines images contiennent
 
 **Résultat attendu Partie A :**
 
-- Dataset de ~140 images : 80 avec objet, 60 sans objet
+- Dataset de ~140 images : 100 avec objet, 40 sans objet
 - Structure correcte : ``dataset/images/`` et ``dataset/labels/``
 - Fichiers .txt au format YOLO pour les images positives uniquement
 
@@ -104,7 +104,7 @@ Dans cet exercice, vous allez créer un dataset où certaines images contiennent
 
 .. spoiler::
     .. discoverList::
-        1. **Architecture CNN** : Votre CNN doit prédire 5 valeurs : ``[has_object, x_center, y_center, width, height]``. Sortie finale avec ``nn.Sigmoid()`` pour borner entre 0 et 1. Proposez une architecture simple (3-4 conv layers + pooling) avec des couches Linear dont la dernière est ``nn.Linear(nb_features, 5)``.
+        1. **Architecture CNN** : Votre CNN doit prédire 5 valeurs : ``[has_object, x_center, y_center, width, height]``. Sortie finale avec ``nn.Sigmoid()`` pour borner entre 0 et 1. Proposez une architecture simple, construite comme au chapitre 5 avec deux blocs ``nn.Sequential`` : un bloc ``convolutions`` (3-4 couches de convolution + pooling) puis un bloc de couches ``nn.Linear`` dont la dernière est ``nn.Linear(nb_entrees, 5)``.
         2. **Dataset PyTorch** : Pour les images SANS objet (pas de .txt), retournez ``target = torch.tensor([0.0, 0.0, 0.0, 0.0, 0.0])``. Pour les images AVEC objet, parsez le fichier .txt et retournez ``target = torch.tensor([1.0, x_c, y_c, w, h])``.
         3. **Loss combinée** : BCE (Binary Cross Entropy) pour has_object (classification binaire), MSE (Mean Squared Error) pour bbox (régression). Utilisez un masque ``mask = target_obj > 0.5`` pour ne calculer loss_bbox QUE sur les images avec objet présent.
         4. **Entraînement** : Adam optimizer avec lr=1e-4, batch_size=4 ou 8. Implémentez early stopping avec patience=15 (arrêter si validation loss ne diminue pas pendant 15 epochs). Sauvegardez le meilleur modèle avec ``torch.save(model.state_dict(), 'best_model_no_aug.pth')``.
@@ -116,8 +116,9 @@ Dans cet exercice, vous allez créer un dataset où certaines images contiennent
 **Résultat attendu Partie B :**
 
 - Modèle CNN custom entraîné (sauvegardé dans ``best_model_no_aug.pth``)
-- Accuracy sur test set : ~70% (dépend de la qualité du dataset)
-- Mean IoU : ~0.5-0.6 pour les détections correctes
+- Accuracy sur le test set : très variable d'un entraînement à l'autre avec si peu d'images (entre 40 % et 100 % dans nos essais, le plus souvent autour de 75 %)
+- Mean IoU : ~0.5-0.75 pour les détections correctes
+- Les erreurs viennent surtout de la localisation (boîtes avec un IoU < 0.5), rarement de la présence ou de l'absence du cube
 
 .. slide::
 
@@ -126,18 +127,20 @@ Dans cet exercice, vous allez créer un dataset où certaines images contiennent
 **Consigne :** Écrire un programme qui :
 
 .. step::
-    1) Crée un fichier ``dataset.yaml`` pour YOLO :
+    1) Organise le dataset pour YOLO avec **le même split train/val/test que le CNN custom** (fonction ``prepare_yolo_from_existing_dataset`` de la section 8.1 du cours, avec la même graine), puis crée le fichier ``dataset.yaml`` (section 8.2 du cours) :
 
     .. code-block:: yaml
 
        # data_cube/dataset.yaml
        path: /chemin/absolu/vers/data_cube
-       train: images
-       val: images
-       test: images
+       train: images/train
+       val: images/val
+       test: images/test
        
        nc: 1
        names: ['nom_label']
+
+    ⚠️ Les images de test ne doivent jamais servir à l'entraînement : sinon, les métriques sur le test set sont faussement bonnes.
 
 .. step::
     2) Entraîne YOLO11 sur le dataset.
@@ -176,36 +179,26 @@ Dans cet exercice, vous allez créer un dataset où certaines images contiennent
 .. spoiler::
     .. discoverList::
         1. YOLO apprend automatiquement à ne rien détecter sur les images sans .txt
-        2. YOLO est généralement plus rapide grâce à son architecture optimisée
-        3. YOLO bénéficie du pré-entraînement sur COCO (80 classes, 1M+ images)
-        4. Transfer learning : YOLO a déjà appris des features génériques (contours, textures)
-        5. YOLO est préférable (rapidité, robustesse, communauté)
+        2. Mesurez le temps d'inférence des deux modèles sur les mêmes images (avec ``time.time()``) : un petit CNN peut être plus rapide que YOLO, qui doit en plus trier des centaines de boîtes candidates (NMS)
+        3. YOLO bénéficie du pré-entraînement sur COCO (80 classes, 118 000 images d'entraînement, voir la section 7.4 du cours)
+        4. Transfer learning : YOLO a déjà appris des filtres qui détectent des motifs génériques (contours, textures)
+        5. YOLO est préférable (précision, robustesse, communauté)
+        6. Ultralytics applique des augmentations **par défaut** : pour un entraînement vraiment sans augmentation, passez ``mosaic=0, fliplr=0, hsv_h=0, hsv_s=0, hsv_v=0, translate=0, scale=0`` à ``model.train``
+        7. Avec très peu d'images de validation, ``best.pt`` peut correspondre à une epoch du tout début, où les boîtes sont bien placées mais avec une confiance très faible : vérifiez les détections, et utilisez ``last.pt`` (dernière epoch) si besoin
 
 **Résultat attendu Partie C :**
 
-- YOLO11 entraîné (modèle dans ``runs/detect/yolo_cube_detect/weights/best.pt``)
-- Accuracy : ~90-98% (bien meilleure que CNN custom)
-- Mean IoU : ~0.85-0.95 (localisation très précise)
-- FPS : 20-50 fps sur CPU (vs 5-10 fps pour CNN custom)
-- YOLO clairement supérieur en production
+Exemple obtenu sur notre dataset (132 images, dont 21 images de test, les mêmes pour les deux modèles) :
 
-############################
+- YOLO11 : aucune erreur sur le test set, IoU moyen ≈ 0.93 (localisation très précise)
+- CNN custom : IoU moyen ≈ 0.6-0.75, accuracy très variable d'un entraînement à l'autre
+- Vitesse : le CNN custom est le plus rapide (≈ 250 images/s contre ≈ 95 pour YOLO sur CPU, chargement des images compris)
+- YOLO est le plus précis, surtout pour la localisation
+
 
 .. slide::
 
-⚖️ Exercice 2 : Détection multi-objets (2 classes)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Dans cet exercice, vous allez créer un détecteur capable de distinguer deux objets différents sur la même image.
-
-**Objectif :** Maîtriser la détection multi-classe et gérer plusieurs objets simultanés.
-
-**Matériel nécessaire :**
-
-- Deux objets distincts visuellement (ex: cube + cylindre)
-- Smartphone ou webcam
-
-**Partie A : Dataset multi-objets**
+**Partie D : Augmentation de données - Comparaison finale**
 
 **Consigne :** Écrire un programme qui :
 
@@ -252,11 +245,12 @@ Dans cet exercice, vous allez créer un détecteur capable de distinguer deux ob
     .. code-block:: python
 
        # TODO: Créer AugmentedYOLODataset avec augment=True pour train
-       # TODO: Entraîner avec mêmes hyperparamètres que Partie B
+       # TODO: Entraîner avec les mêmes hyperparamètres que dans la partie B
        # TODO: Comparer train loss et val loss (vérifier overfitting réduit)
        # TODO: Sauvegarder dans 'best_model_with_aug.pth'
-    
-    4) Entraîne YOLO avec AVEC augmentation.
+
+.. step::
+    4) Entraîne YOLO AVEC augmentation.
 
 .. step::
     5) Compare les 4 modèles finaux :
@@ -296,21 +290,23 @@ Dans cet exercice, vous allez créer un détecteur capable de distinguer deux ob
 
 .. spoiler::
     .. discoverList::
-        1. L'augmentation réduit l'overfitting (gap train/val plus petit)
+        1. L'augmentation réduit souvent l'overfitting (gap train/val plus petit), mais pas toujours : avec très peu d'images, elle peut aussi rendre l'apprentissage plus difficile pour un petit CNN
         2. Le rééquilibrage évite le biais : sans lui, le modèle détecte trop souvent
         3. YOLO reste supérieur car il combine pré-entraînement + architecture optimisée
         4. Flip horizontal : x_center → 1 - x_center, y_center inchangé, w et h inchangés
         5. Augmentation adaptée détection : éviter rotations fortes (change orientation objet)
         6. Color jitter OK car n'affecte pas les coordonnées spatiales
+        7. La validation et le test ne doivent pas être augmentés : créez un dataset avec ``augment=True`` pour l'entraînement et un avec ``augment=False``, puis appliquez ``random_split`` aux deux avec la même graine (comme dans l'exercice 3 du TP 5), ou réutilisez les indices du découpage de la partie B (``train_dataset.indices``) avec ``torch.utils.data.Subset``. Rééquilibrez **après** le découpage, et seulement le train
 
 **Résultat attendu Partie D :**
 
-- CNN sans aug : 60-70% accuracy, gap train/val ~15-20%
-- CNN avec aug : 68-75% accuracy, gap train/val ~5-10% (meilleure généralisation)
-- YOLO11 : 90-98% accuracy, gap train/val ~2-3% (le meilleur)
-- Conclusion : Augmentation aide, mais YOLO reste imbattable
+Exemple obtenu sur notre dataset (même test set de 21 images pour les 4 modèles, résultats moyennés sur une dizaine d'entraînements pour le CNN) :
 
-############################
+- CNN sans augmentation : résultats très variables d'un entraînement à l'autre (accuracy moyenne ≈ 70 %, IoU moyen ≈ 0.55)
+- CNN avec augmentation : **moins bon** dans presque tous nos essais (accuracy moyenne ≈ 50 %, IoU moyen ≈ 0.35) : avec seulement 64 images de cube, ce petit CNN n'arrive pas à profiter de l'augmentation
+- YOLO11, avec ou sans augmentation : aucune erreur sur le test set, IoU moyen ≈ 0.93, gap train/val nul
+- Conclusion : l'augmentation n'est pas magique ; sur un petit dataset, c'est le pré-entraînement de YOLO qui fait la différence
+
 
 .. slide::
 
@@ -434,10 +430,8 @@ Dans cet exercice, vous allez créer un détecteur capable de distinguer deux ob
 **Résultat attendu Partie B :**
 
 - YOLO multi-classe entraîné
-- mAP@0.5 global : ~0.75-0.85
-- mAP@0.5 par classe : ~0.70-0.90 pour chaque objet
+- Exemple obtenu sur notre dataset (125 images simples, fond uni) : mAP@0.5 ≈ 0.99 et mAP@0.5:0.95 ≈ 0.89 (≈ 0.90 pour le cube, ≈ 0.88 pour le cylindre). Les valeurs dépendent beaucoup de votre dataset. pour chaque objet
 
-############################
 
 .. slide::
 
@@ -595,7 +589,7 @@ Comprendre l'impact de l'augmentation sur la généralisation et réduire l'over
     .. code-block:: python
 
        # TODO: Créer AugmentedYOLODataset avec augment=True pour train
-       # TODO: Entraîner avec mêmes hyperparamètres que Partie B
+       # TODO: Entraîner avec les mêmes hyperparamètres que dans l'exercice 1 (partie B)
        # TODO: Comparer train loss et val loss (vérifier overfitting réduit)
        # TODO: Sauvegarder dans 'best_model_with_aug.pth'
     
@@ -640,19 +634,22 @@ Comprendre l'impact de l'augmentation sur la généralisation et réduire l'over
 
 .. spoiler::
     .. discoverList::
-        1. L'augmentation réduit l'overfitting (gap train/val plus petit)
+        1. L'augmentation réduit souvent l'overfitting (gap train/val plus petit), mais pas toujours : avec très peu d'images, elle peut aussi rendre l'apprentissage plus difficile pour un petit CNN
         2. Le rééquilibrage évite le biais : sans lui, le modèle détecte trop souvent
         3. YOLO reste supérieur car il combine pré-entraînement + architecture optimisée
         4. Flip horizontal : x_center → 1 - x_center, y_center inchangé, w et h inchangés
         5. Augmentation adaptée détection : éviter rotations fortes (change orientation objet)
         6. Color jitter OK car n'affecte pas les coordonnées spatiales
+        7. La validation et le test ne doivent pas être augmentés : créez un dataset avec ``augment=True`` pour l'entraînement et un avec ``augment=False``, puis appliquez ``random_split`` aux deux avec la même graine (comme dans l'exercice 3 du TP 5), ou réutilisez les indices du découpage de la partie B (``train_dataset.indices``) avec ``torch.utils.data.Subset``. Rééquilibrez **après** le découpage, et seulement le train
 
 **Résultat attendu :**
 
-- CNN sans aug : 60-70% accuracy, gap train/val ~15-20%
-- CNN avec aug : 68-75% accuracy, gap train/val ~5-10% (meilleure généralisation)
-- YOLO11 : 90-98% accuracy, gap train/val ~2-3% (le meilleur)
-- Conclusion : Augmentation aide, mais YOLO reste imbattable
+Exemple obtenu sur notre dataset (même test set de 21 images pour les 4 modèles, résultats moyennés sur une dizaine d'entraînements pour le CNN) :
+
+- CNN sans augmentation : résultats très variables d'un entraînement à l'autre (accuracy moyenne ≈ 70 %, IoU moyen ≈ 0.55)
+- CNN avec augmentation : **moins bon** dans presque tous nos essais (accuracy moyenne ≈ 50 %, IoU moyen ≈ 0.35) : avec seulement 64 images de cube, ce petit CNN n'arrive pas à profiter de l'augmentation
+- YOLO11, avec ou sans augmentation : aucune erreur sur le test set, IoU moyen ≈ 0.93, gap train/val nul
+- Conclusion : l'augmentation n'est pas magique ; sur un petit dataset, c'est le pré-entraînement de YOLO qui fait la différence
 
 
 .. slide::
@@ -693,6 +690,7 @@ Comprendre les bases de la détection vidéo et mesurer les performances en temp
     1) Créer ou utiliser une vidéo de test (30-60 secondes) :
     
     **Scénario recommandé** :
+
     - 0-10s : Aucun objet visible
     - 10-20s : Objet entre dans le champ, se déplace
     - 20-30s : Objet sort du champ
@@ -758,7 +756,7 @@ Comprendre les bases de la détection vidéo et mesurer les performances en temp
         1. FPS réel = 1 / temps_traitement_moyen
         2. Temps réel nécessite généralement >25-30 FPS pour fluidité
         3. Variation temps : complexité variable de l'image, nombre d'objets
-        4. Optimisation du temps d'entraînement : réduire le nombre de pixels par exemple 640→320
+        4. Pour accélérer l'inférence : réduire le nombre de pixels, par exemple 640→320 (paramètre ``imgsz`` de ``model.predict``)
         5. VideoWriter : même fps que la vidéo source pour synchronisation
         6. Utiliser ``model.predict(frame, verbose=False)`` pour éviter logs
         7. Pour mesurer FPS : ``fps = 1.0 / (time.time() - start_time)``

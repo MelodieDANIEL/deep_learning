@@ -31,7 +31,7 @@ Résumé des concepts clés du chapitre 5
 📖 2. Couches de convolution
 -------------------
 
-**Paramètres clés de ``conv2d``** :
+**Paramètres clés de ``nn.Conv2d``** :
 
 - ``in_channels`` : nombre de canaux en entrée (3 pour RGB)
 - ``out_channels`` : nombre de filtres à apprendre
@@ -42,6 +42,8 @@ Résumé des concepts clés du chapitre 5
 **Calcul de la taille de sortie** : $$H_{out} = \left\lfloor \frac{H_{in} + 2 \times \text{padding} - \text{kernel_size}}{\text{stride}} \right\rfloor + 1$$
 
 **Le padding** : essentiel pour ne pas perdre d'information sur les bords.
+
+**Cartes de caractéristiques** (*feature maps*) : chaque filtre produit une carte qui indique où son motif apparaît dans l'image. Une couche avec 64 filtres produit 64 cartes, qui deviennent les 64 canaux d'entrée de la couche suivante.
 
 .. slide::
 
@@ -59,6 +61,13 @@ Résumé des concepts clés du chapitre 5
 - Apporte une invariance aux petites translations
 - Augmente le champ réceptif
 
+**Architecture d'un CNN** (avec ``nn.Sequential``) :
+
+- un bloc ``convolutions`` qui extrait les caractéristiques : (``nn.Conv2d`` → ``nn.ReLU`` → ``nn.MaxPool2d``) répété plusieurs fois,
+- un bloc ``classification`` qui calcule les scores des classes : ``nn.Flatten`` → couches ``nn.Linear``.
+
+⚠️ La taille d'entrée de la première couche ``nn.Linear`` dépend de la taille des images : nombre de filtres × $$H_{final}$$ × $$W_{final}$$.
+
 .. slide::
 
 📖 4. Datasets et transformations d'images
@@ -72,20 +81,12 @@ Résumé des concepts clés du chapitre 5
 - Charge les images depuis le disque (ou depuis la mémoire avec ``preload``) et applique les transformations dans ``__getitem__``, pour que les augmentations aléatoires changent à chaque époque
 - ``torchvision.datasets`` fournit des datasets prêts à l'emploi (MNIST, CIFAR-10, etc.)
 
-**Prétraitement (toujours nécessaire)** :
+**Transformations** (chapitre 4, section 5.4) : on passe un ``transforms.Compose`` au paramètre ``transform`` du ``Dataset`` :
 
-- ``ToTensor()`` : convertit en tenseur PyTorch
-- ``Normalize(mean, std)`` : centre les valeurs autour de 0
+- pour l'entraînement : augmentation (``RandomHorizontalFlip``, ``RandomRotation``, ``ColorJitter``…) + prétraitement,
+- pour la validation et le test : prétraitement seul (``Resize``, ``ToTensor``, ``Normalize``).
 
-**Augmentation (train uniquement)** :
-
-- ``RandomHorizontalFlip()`` : retourne horizontalement
-- ``RandomRotation()`` : rotation aléatoire
-- ``ColorJitter()`` : modifie luminosité/contraste
-
-💡 **Pourquoi pas d'augmentation pour val/test ?** On veut évaluer sur les vraies images.
-
-✓ **Bonnes pratiques** : Augmentation uniquement pour l'entraînement, jamais pour validation/test
+💡 **Pourquoi pas d'augmentation pour val/test ?** On veut évaluer le modèle sur les vraies images.
 
 .. slide::
 
@@ -104,9 +105,3 @@ Résumé des concepts clés du chapitre 5
    - Permet de reprendre exactement où on s'est arrêté
 
 ✓ **Bonnes pratiques** : Préférer ``state_dict()`` au modèle complet, sauvegarder le meilleur modèle basé sur validation loss, inclure epoch et optimizer dans les checkpoints
-
-
-
-
-
-

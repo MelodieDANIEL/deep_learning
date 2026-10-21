@@ -39,7 +39,12 @@ Pour des cas simples avec **1 seul objet par image**, on peut utiliser une appro
 6.1. Architecture ultra-simple
 ~~~~~~~~~~~~~~~~~~~
 
-Le modèle est constitué d'un **backbone CNN** (4 couches Conv2D + MaxPool) suivi d'un **head de régression** (2 couches FC) qui prédit directement les 4 coordonnées normalisées. Dans l'exemple, l’entrée $$224×224$$ est réduite **4 fois** par MaxPool(2): $$224→112→56→28→14$$; la carte de features finale est donc $$14×14$$. Si vous changez la taille d’entrée ou le nombre de couches à stride 2, la taille de la grille changera.
+Comme au chapitre 5 (section 3.3), le modèle est construit avec deux blocs ``nn.Sequential`` :
+
+- un bloc ``convolutions`` (4 couches Conv2D + ReLU + MaxPool), appelé *backbone* en anglais, qui extrait les caractéristiques de l'image ;
+- un bloc ``regression`` (2 couches fully-connected), appelé *head* en anglais, qui remplace le bloc ``classification`` du chapitre 5 et prédit directement les 4 coordonnées normalisées.
+
+Dans l'exemple, l'entrée $$224×224$$ est réduite **4 fois** par MaxPool(2) : $$224→112→56→28→14$$ ; les cartes de caractéristiques finales font donc $$14×14$$. Si vous changez la taille d'entrée ou le nombre de couches de pooling, cette taille changera, et donc aussi la taille d'entrée de la première couche ``nn.Linear``.
 
 .. code-block:: python
 
@@ -60,41 +65,35 @@ Le modèle est constitué d'un **backbone CNN** (4 couches Conv2D + MaxPool) sui
        
        def __init__(self):
            super().__init__()
-           
-           # Backbone simple : Conv2D + MaxPool (comme chapitre 5)
-           self.conv1 = nn.Conv2d(3, 16, kernel_size=3, padding=1)
-           self.pool1 = nn.MaxPool2d(2)  # 224 -> 112
-           
-           self.conv2 = nn.Conv2d(16, 32, kernel_size=3, padding=1)
-           self.pool2 = nn.MaxPool2d(2)  # 112 -> 56
-           
-           self.conv3 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
-           self.pool3 = nn.MaxPool2d(2)  # 56 -> 28
-           
-           self.conv4 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
-           self.pool4 = nn.MaxPool2d(2)  # 28 -> 14
-           
-           # Après 4 MaxPool: 224→112→56→28→14
-           # Taille finale: [B, 128, 14, 14]
-           
-           # Head de régression : 4 sorties (x, y, w, h)
-           self.fc1 = nn.Linear(128 * 14 * 14, 128)
-           self.fc2 = nn.Linear(128, 4)  # x_center, y_center, width, height
-       
+
+           # Bloc convolutions (backbone) : Conv2D + ReLU + MaxPool, comme au chapitre 5
+           self.convolutions = nn.Sequential(
+               nn.Conv2d(3, 16, kernel_size=3, padding=1),
+               nn.ReLU(),
+               nn.MaxPool2d(2),                              # 224 -> 112
+               nn.Conv2d(16, 32, kernel_size=3, padding=1),
+               nn.ReLU(),
+               nn.MaxPool2d(2),                              # 112 -> 56
+               nn.Conv2d(32, 64, kernel_size=3, padding=1),
+               nn.ReLU(),
+               nn.MaxPool2d(2),                              # 56 -> 28
+               nn.Conv2d(64, 128, kernel_size=3, padding=1),
+               nn.ReLU(),
+               nn.MaxPool2d(2),                              # 28 -> 14 : [B, 128, 14, 14]
+           )
+
+           # Bloc de régression (head) : 4 sorties (x_center, y_center, width, height)
+           self.regression = nn.Sequential(
+               nn.Flatten(),                                 # [B, 128*14*14]
+               nn.Linear(128 * 14 * 14, 128),
+               nn.ReLU(),
+               nn.Linear(128, 4),
+               nn.Sigmoid(),                                 # sorties dans [0, 1]
+           )
+
        def forward(self, x):
-           # Backbone
-           x = self.pool1(F.relu(self.conv1(x)))
-           x = self.pool2(F.relu(self.conv2(x)))
-           x = self.pool3(F.relu(self.conv3(x)))
-           x = self.pool4(F.relu(self.conv4(x)))
-           
-           # Flatten
-           x = x.view(x.size(0), -1)  # [B, 128*14*14]
-           
-           # Régression
-           x = F.relu(self.fc1(x))
-           x = torch.sigmoid(self.fc2(x))  # Sortie dans [0, 1]
-           
+           x = self.convolutions(x)
+           x = self.regression(x)
            return x  # [B, 4] : (x_center, y_center, w, h) normalisés
 
 
@@ -271,134 +270,134 @@ Calcul de l'**IoU moyen** (Intersection over Union) sur le test set.
 .. code-block:: python
 
    def calculate_iou(box1, box2):
-    """
-    Calcule l'IoU (Intersection over Union) entre deux boîtes.
-    
-    Args:
-        box1, box2: tensors ou arrays de forme [x1, y1, x2, y2]
-    
-    Returns:
-        iou: float entre 0 et 1
-    """
-    # Convertir en numpy si nécessaire
-    if torch.is_tensor(box1):
-        box1 = box1.numpy()
-    if torch.is_tensor(box2):
-        box2 = box2.numpy()
-    
-    # Calculer l'intersection
-    x1_inter = max(box1[0], box2[0])
-    y1_inter = max(box1[1], box2[1])
-    x2_inter = min(box1[2], box2[2])
-    y2_inter = min(box1[3], box2[3])
-    
-    # Aire de l'intersection
-    inter_width = max(0, x2_inter - x1_inter)
-    inter_height = max(0, y2_inter - y1_inter)
-    inter_area = inter_width * inter_height
-    
-    # Aire de chaque boîte
-    box1_area = (box1[2] - box1[0]) * (box1[3] - box1[1])
-    box2_area = (box2[2] - box2[0]) * (box2[3] - box2[1])
-    
-    # Aire de l'union
-    union_area = box1_area + box2_area - inter_area
-    
-    # IoU
-    if union_area == 0:
-        return 0.0
-    
-    iou = inter_area / union_area
-    return iou
+       """
+       Calcule l'IoU (Intersection over Union) entre deux boîtes.
+
+       Args:
+           box1, box2: tensors ou arrays de forme [x1, y1, x2, y2]
+
+       Returns:
+           iou: float entre 0 et 1
+       """
+       # Convertir en numpy si nécessaire
+       if torch.is_tensor(box1):
+           box1 = box1.numpy()
+       if torch.is_tensor(box2):
+           box2 = box2.numpy()
+
+       # Calculer l'intersection
+       x1_inter = max(box1[0], box2[0])
+       y1_inter = max(box1[1], box2[1])
+       x2_inter = min(box1[2], box2[2])
+       y2_inter = min(box1[3], box2[3])
+
+       # Aire de l'intersection
+       inter_width = max(0, x2_inter - x1_inter)
+       inter_height = max(0, y2_inter - y1_inter)
+       inter_area = inter_width * inter_height
+
+       # Aire de chaque boîte
+       box1_area = (box1[2] - box1[0]) * (box1[3] - box1[1])
+       box2_area = (box2[2] - box2[0]) * (box2[3] - box2[1])
+
+       # Aire de l'union
+       union_area = box1_area + box2_area - inter_area
+
+       # IoU
+       if union_area == 0:
+           return 0.0
+
+       iou = inter_area / union_area
+       return iou
 
 
    @torch.no_grad()
    def evaluate_all_dataset(model, dataset, img_size=224, iou_threshold=0.5):
-      """
-      Évalue le modèle sur toutes les images du dataset.
-      
-      Args:
-         model: modèle PyTorch
-         dataset: dataset PyTorch
-         img_size: taille des images (224x224)
-         iou_threshold: seuil pour considérer une détection comme correcte
-      
-      Returns:
-         dict avec les métriques (IoU moyen, précision, etc.)
-      """
-      model.eval()
-      
-      ious = []
-      correct_detections = 0
-      total_images = len(dataset)
-      
-      print(f"📊 Évaluation sur {total_images} images...\n")
-      
-      for i in tqdm(range(total_images), desc="Évaluation"):
-         img, target = dataset[i]
-         
-         # Prédiction
-         img_batch = img.unsqueeze(0).to(device)
-         pred = model(img_batch)[0].cpu()
-         
-         # Convertir la prédiction en format [x1, y1, x2, y2]
-         x_c, y_c, w, h = pred.numpy()
-         x1_pred = (x_c - w/2) * img_size
-         y1_pred = (y_c - h/2) * img_size
-         x2_pred = (x_c + w/2) * img_size
-         y2_pred = (y_c + h/2) * img_size
-         pred_box = np.array([x1_pred, y1_pred, x2_pred, y2_pred])
-         
-         # Si il y a une ground truth
-         if len(target['boxes']) > 0:
+       """
+       Évalue le modèle sur toutes les images du dataset.
+
+       Args:
+           model: modèle PyTorch
+           dataset: dataset PyTorch
+           img_size: taille des images (224x224)
+           iou_threshold: seuil pour considérer une détection comme correcte
+
+       Returns:
+           dict avec les métriques (IoU moyen, précision, etc.)
+       """
+       model.eval()
+
+       ious = []
+       correct_detections = 0
+       total_images = len(dataset)
+
+       print(f"📊 Évaluation sur {total_images} images...\n")
+
+       for i in tqdm(range(total_images), desc="Évaluation"):
+           img, target = dataset[i]
+
+           # Prédiction
+           img_batch = img.unsqueeze(0).to(device)
+           pred = model(img_batch)[0].cpu()
+
+           # Convertir la prédiction en format [x1, y1, x2, y2]
+           x_c, y_c, w, h = pred.numpy()
+           x1_pred = (x_c - w/2) * img_size
+           y1_pred = (y_c - h/2) * img_size
+           x2_pred = (x_c + w/2) * img_size
+           y2_pred = (y_c + h/2) * img_size
+           pred_box = np.array([x1_pred, y1_pred, x2_pred, y2_pred])
+
+           # Si il y a une ground truth
+           if len(target['boxes']) > 0:
                gt_box = target['boxes'][0].numpy()
-               
+
                # Calculer l'IoU
                iou = calculate_iou(gt_box, pred_box)
                ious.append(iou)
-               
+
                # Compter comme correct si IoU > threshold
                if iou >= iou_threshold:
-                  correct_detections += 1
-      
-      # Calculer les métriques
-      mean_iou = np.mean(ious) if ious else 0.0
-      precision = correct_detections / total_images if total_images > 0 else 0.0
-      
-      results = {
-         'mean_iou': mean_iou,
-         'precision': precision,
-         'correct_detections': correct_detections,
-         'total_images': total_images,
-         'iou_threshold': iou_threshold,
-         'all_ious': ious
-      }
-      
-      return results
+                   correct_detections += 1
+
+       # Calculer les métriques
+       mean_iou = np.mean(ious) if ious else 0.0
+       precision = correct_detections / total_images if total_images > 0 else 0.0
+
+       results = {
+           'mean_iou': mean_iou,
+           'precision': precision,
+           'correct_detections': correct_detections,
+           'total_images': total_images,
+           'iou_threshold': iou_threshold,
+           'all_ious': ious
+       }
+
+       return results
 
 
    def print_evaluation_results(results):
-      """Affiche les résultats d'évaluation de manière lisible."""
-      print("\n" + "="*60)
-      print("📊 RÉSULTATS DE L'ÉVALUATION")
-      print("="*60)
-      print(f"\n📈 Métriques globales :")
-      print(f"   • IoU moyen            : {results['mean_iou']:.4f} ({results['mean_iou']*100:.2f}%)")
-      print(f"   • Précision            : {results['precision']:.4f} ({results['precision']*100:.2f}%)")
-      print(f"   • Seuil IoU            : {results['iou_threshold']}")
-      print(f"\n✅ Détections correctes  : {results['correct_detections']} / {results['total_images']}")
-      print(f"❌ Détections incorrectes : {results['total_images'] - results['correct_detections']} / {results['total_images']}")
-      
-      # Distribution des IoU
-      ious = results['all_ious']
-      if ious:
-         print(f"\n📊 Distribution des IoU :")
-         print(f"   • Min  : {min(ious):.4f}")
-         print(f"   • Max  : {max(ious):.4f}")
-         print(f"   • Médiane : {np.median(ious):.4f}")
-         print(f"   • Écart-type : {np.std(ious):.4f}")
-      
-      print("="*60 + "\n")
+       """Affiche les résultats d'évaluation de manière lisible."""
+       print("\n" + "="*60)
+       print("📊 RÉSULTATS DE L'ÉVALUATION")
+       print("="*60)
+       print(f"\n📈 Métriques globales :")
+       print(f"   • IoU moyen            : {results['mean_iou']:.4f} ({results['mean_iou']*100:.2f}%)")
+       print(f"   • Précision            : {results['precision']:.4f} ({results['precision']*100:.2f}%)")
+       print(f"   • Seuil IoU            : {results['iou_threshold']}")
+       print(f"\n✅ Détections correctes  : {results['correct_detections']} / {results['total_images']}")
+       print(f"❌ Détections incorrectes : {results['total_images'] - results['correct_detections']} / {results['total_images']}")
+
+       # Distribution des IoU
+       ious = results['all_ious']
+       if ious:
+           print(f"\n📊 Distribution des IoU :")
+           print(f"   • Min  : {min(ious):.4f}")
+           print(f"   • Max  : {max(ious):.4f}")
+           print(f"   • Médiane : {np.median(ious):.4f}")
+           print(f"   • Écart-type : {np.std(ious):.4f}")
+
+       print("="*60 + "\n")
 
 
    # Évaluer sur le test set
@@ -427,139 +426,139 @@ Affichage des prédictions sur une grille d'images avec GT (vert) et prédiction
 
    @torch.no_grad()
    def visualize_best_worst_predictions(model, dataset, results, img_size=224, num_samples=4):
-      """
-      Affiche les meilleures et pires prédictions du modèle.
-      
-      Args:
-         model: modèle PyTorch
-         dataset: dataset PyTorch
-         results: résultats de l'évaluation (dict)
-         img_size: taille des images
-         num_samples: nombre d'exemples à afficher pour chaque catégorie
-      """
-      model.eval()
-      
-      # Trier les images par IoU
-      ious = results['all_ious']
-      sorted_indices = np.argsort(ious)
-      
-      # Indices des meilleures et pires prédictions
-      best_indices = sorted_indices[-num_samples:][::-1]  # Les N meilleures
-      worst_indices = sorted_indices[:num_samples]  # Les N pires
-      
-      # Créer la figure
-      fig, axes = plt.subplots(2, num_samples, figsize=(20, 10))
-      
-      # Afficher les meilleures prédictions
-      print("✅ MEILLEURES PRÉDICTIONS :")
-      for i, idx in enumerate(best_indices):
-         img, target = dataset[idx]
-         
-         # Prédiction
-         img_batch = img.unsqueeze(0).to(device)
-         pred = model(img_batch)[0].cpu()
-         
-         # Convertir l'image pour affichage
-         img_np = img.permute(1, 2, 0).numpy()
-         
-         ax = axes[0, i]
-         ax.imshow(img_np)
-         ax.axis('off')
-         
-         # Dessiner la GT en vert
-         if len(target['boxes']) > 0:
+       """
+       Affiche les meilleures et pires prédictions du modèle.
+
+       Args:
+           model: modèle PyTorch
+           dataset: dataset PyTorch
+           results: résultats de l'évaluation (dict)
+           img_size: taille des images
+           num_samples: nombre d'exemples à afficher pour chaque catégorie
+       """
+       model.eval()
+
+       # Trier les images par IoU
+       ious = results['all_ious']
+       sorted_indices = np.argsort(ious)
+
+       # Indices des meilleures et pires prédictions
+       best_indices = sorted_indices[-num_samples:][::-1]  # Les N meilleures
+       worst_indices = sorted_indices[:num_samples]  # Les N pires
+
+       # Créer la figure
+       fig, axes = plt.subplots(2, num_samples, figsize=(20, 10))
+
+       # Afficher les meilleures prédictions
+       print("✅ MEILLEURES PRÉDICTIONS :")
+       for i, idx in enumerate(best_indices):
+           img, target = dataset[idx]
+
+           # Prédiction
+           img_batch = img.unsqueeze(0).to(device)
+           pred = model(img_batch)[0].cpu()
+
+           # Convertir l'image pour affichage
+           img_np = img.permute(1, 2, 0).numpy()
+
+           ax = axes[0, i]
+           ax.imshow(img_np)
+           ax.axis('off')
+
+           # Dessiner la GT en vert
+           if len(target['boxes']) > 0:
                box_gt = target['boxes'][0].numpy()
                x1, y1, x2, y2 = box_gt
                width_gt = x2 - x1
                height_gt = y2 - y1
-               
+
                rect_gt = patches.Rectangle(
-                  (x1, y1), width_gt, height_gt,
-                  linewidth=2, edgecolor='green', facecolor='none',
-                  label='GT'
+                   (x1, y1), width_gt, height_gt,
+                   linewidth=2, edgecolor='green', facecolor='none',
+                   label='GT'
                )
                ax.add_patch(rect_gt)
-         
-         # Dessiner la prédiction en rouge
-         x_c, y_c, w, h = pred.numpy()
-         x1_pred = (x_c - w/2) * img_size
-         y1_pred = (y_c - h/2) * img_size
-         width_pred = w * img_size
-         height_pred = h * img_size
-         
-         rect_pred = patches.Rectangle(
+
+           # Dessiner la prédiction en rouge
+           x_c, y_c, w, h = pred.numpy()
+           x1_pred = (x_c - w/2) * img_size
+           y1_pred = (y_c - h/2) * img_size
+           width_pred = w * img_size
+           height_pred = h * img_size
+
+           rect_pred = patches.Rectangle(
                (x1_pred, y1_pred), width_pred, height_pred,
                linewidth=2, edgecolor='red', facecolor='none',
                linestyle='--', label='Pred'
-         )
-         ax.add_patch(rect_pred)
-         
-         iou_val = ious[idx]
-         ax.set_title(f'IoU: {iou_val:.3f}', fontsize=12, color='green', fontweight='bold')
-         ax.legend(loc='upper right', fontsize=8)
-         
-         print(f"   Image {idx}: IoU = {iou_val:.4f}")
-      
-      # Afficher les pires prédictions
-      print("\n❌ PIRES PRÉDICTIONS :")
-      for i, idx in enumerate(worst_indices):
-         img, target = dataset[idx]
-         
-         # Prédiction
-         img_batch = img.unsqueeze(0).to(device)
-         pred = model(img_batch)[0].cpu()
-         
-         # Convertir l'image pour affichage
-         img_np = img.permute(1, 2, 0).numpy()
-         
-         ax = axes[1, i]
-         ax.imshow(img_np)
-         ax.axis('off')
-         
-         # Dessiner la GT en vert
-         if len(target['boxes']) > 0:
+           )
+           ax.add_patch(rect_pred)
+
+           iou_val = ious[idx]
+           ax.set_title(f'IoU: {iou_val:.3f}', fontsize=12, color='green', fontweight='bold')
+           ax.legend(loc='upper right', fontsize=8)
+
+           print(f"   Image {idx}: IoU = {iou_val:.4f}")
+
+       # Afficher les pires prédictions
+       print("\n❌ PIRES PRÉDICTIONS :")
+       for i, idx in enumerate(worst_indices):
+           img, target = dataset[idx]
+
+           # Prédiction
+           img_batch = img.unsqueeze(0).to(device)
+           pred = model(img_batch)[0].cpu()
+
+           # Convertir l'image pour affichage
+           img_np = img.permute(1, 2, 0).numpy()
+
+           ax = axes[1, i]
+           ax.imshow(img_np)
+           ax.axis('off')
+
+           # Dessiner la GT en vert
+           if len(target['boxes']) > 0:
                box_gt = target['boxes'][0].numpy()
                x1, y1, x2, y2 = box_gt
                width_gt = x2 - x1
                height_gt = y2 - y1
-               
+
                rect_gt = patches.Rectangle(
-                  (x1, y1), width_gt, height_gt,
-                  linewidth=2, edgecolor='green', facecolor='none',
-                  label='GT'
+                   (x1, y1), width_gt, height_gt,
+                   linewidth=2, edgecolor='green', facecolor='none',
+                   label='GT'
                )
                ax.add_patch(rect_gt)
-         
-         # Dessiner la prédiction en rouge
-         x_c, y_c, w, h = pred.numpy()
-         x1_pred = (x_c - w/2) * img_size
-         y1_pred = (y_c - h/2) * img_size
-         width_pred = w * img_size
-         height_pred = h * img_size
-         
-         rect_pred = patches.Rectangle(
+
+           # Dessiner la prédiction en rouge
+           x_c, y_c, w, h = pred.numpy()
+           x1_pred = (x_c - w/2) * img_size
+           y1_pred = (y_c - h/2) * img_size
+           width_pred = w * img_size
+           height_pred = h * img_size
+
+           rect_pred = patches.Rectangle(
                (x1_pred, y1_pred), width_pred, height_pred,
                linewidth=2, edgecolor='red', facecolor='none',
                linestyle='--', label='Pred'
-         )
-         ax.add_patch(rect_pred)
-         
-         iou_val = ious[idx]
-         ax.set_title(f'IoU: {iou_val:.3f}', fontsize=12, color='red', fontweight='bold')
-         ax.legend(loc='upper right', fontsize=8)
-         
-         print(f"   Image {idx}: IoU = {iou_val:.4f}")
-      
-      # Titres des lignes
-      axes[0, 0].text(-50, img_size/2, '✅ BEST', rotation=90, 
-                        fontsize=16, fontweight='bold', color='green',
-                        va='center', ha='center')
-      axes[1, 0].text(-50, img_size/2, '❌ WORST', rotation=90, 
-                        fontsize=16, fontweight='bold', color='red',
-                        va='center', ha='center')
-      
-      plt.tight_layout()
-      plt.show()
+           )
+           ax.add_patch(rect_pred)
+
+           iou_val = ious[idx]
+           ax.set_title(f'IoU: {iou_val:.3f}', fontsize=12, color='red', fontweight='bold')
+           ax.legend(loc='upper right', fontsize=8)
+
+           print(f"   Image {idx}: IoU = {iou_val:.4f}")
+
+       # Titres des lignes
+       axes[0, 0].text(-50, img_size/2, '✅ BEST', rotation=90, 
+           fontsize=16, fontweight='bold', color='green',
+           va='center', ha='center')
+       axes[1, 0].text(-50, img_size/2, '❌ WORST', rotation=90, 
+           fontsize=16, fontweight='bold', color='red',
+           va='center', ha='center')
+
+       plt.tight_layout()
+       plt.show()
 
 
    # Visualiser les meilleures et pires prédictions
@@ -586,12 +585,18 @@ Nous allons maintenant utiliser **YOLOv11** (Ultralytics) pour entraîner un dé
 7.1. Introduction à YOLO
 ~~~~~~~~~~~~~~~~~~~
 
-**YOLO** divise l'image en une **grille** (ex: $$7×7$$, $$13×13$$, etc.) et pour chaque **cellule** de la grille, prédit :
+**YOLO** découpe l'image en une **grille** de cellules et, pour chaque **cellule**, prédit en une seule passe :
 
-- **Plusieurs boîtes englobantes candidates** (typiquement 3-9 selon les versions) grâce aux **anchors**
-- Chaque boîte est représentée par : **(x, y, w, h)** relatives au centre de la cellule
-- **Objectness** : probabilité qu'un objet soit présent dans cette boîte
-- **Classes** : probabilités pour chaque classe (si objet détecté)
+- **une boîte englobante candidate** : YOLO11 prédit directement les distances entre le centre de la cellule et les 4 bords de la boîte (gauche, haut, droite, bas) ;
+- **un score pour chaque classe** : la probabilité que la boîte contienne un objet de cette classe. Le plus grand de ces scores sert de **score de confiance** de la boîte.
+
+Pour détecter des objets de tailles très différentes, YOLO11 utilise **3 grilles** plus ou moins fines. Pour une image $$640×640$$ :
+
+- une grille $$80×80$$ (cellules de 8 pixels) pour les petits objets,
+- une grille $$40×40$$ (cellules de 16 pixels) pour les objets moyens,
+- une grille $$20×20$$ (cellules de 32 pixels) pour les gros objets.
+
+➡️ **Au total** : $$80×80 + 40×40 + 20×20 = 8400$$ **boîtes candidates** par image ! Avec le dataset COCO (80 classes), chaque boîte candidate est donc décrite par $$4 + 80 = 84$$ valeurs.
 
 **Avantages de YOLO :**
 
@@ -600,7 +605,7 @@ Nous allons maintenant utiliser **YOLOv11** (Ultralytics) pour entraîner un dé
 - ✅ **Précis** : performances supérieures à Faster R-CNN
 - ✅ **Facile à utiliser** : librairie Ultralytics assez simple
 
-**YOLOv11** est la dernière version stable (2024) avec des améliorations significatives par rapport à YOLOv8 (2023) : l'architecture est plus optimisée et la précision est améliorée tout en étant plus rapide. 
+**YOLO11** (2024) améliore YOLOv8 (2023) : son architecture est plus optimisée, il est plus précis tout en étant plus rapide.
 
 .. note::
 
@@ -613,24 +618,20 @@ Nous allons maintenant utiliser **YOLOv11** (Ultralytics) pour entraîner un dé
 
 .. slide::
 
-7.2. Concepts clés : Anchors et NMS
+7.2. Concepts clés : anchors et NMS
 ~~~~~~~~~~~~~~~~~~~
 
 **C'est quoi un anchor (ancre) ?**
 
-Un anchor est une boîte de référence prédéfinie avec des proportions spécifiques (largeur/hauteur).
+Dans plusieurs anciennes versions de YOLO (par exemple YOLOv2, YOLOv3, YOLOv5 ou YOLOv7), chaque cellule ne prédisait pas ses boîtes « à partir de rien » : elle partait de plusieurs **anchors**, des boîtes de référence prédéfinies avec des proportions différentes, par exemple :
 
-**Exemple d'anchors :** 
+- un petit carré ($$0.2 × 0.2$$ de l'image) pour les petits objets,
+- un rectangle vertical ($$0.1 × 0.3$$) pour les personnes debout,
+- un rectangle horizontal ($$0.4 × 0.2$$) pour les voitures.
 
-- Anchor 1 : petit carré ($$0.2 × 0.2$$ de l'image) → pour détecter petits objets
+Le modèle **ajustait** ces anchors (en les décalant et en les redimensionnant) pour coller aux objets réels. Inconvénient : il fallait choisir les tailles des anchors en fonction du dataset.
 
-- Anchor 2 : rectangle vertical ($$0.1 × 0.3$$) → pour personnes debout
-
-- Anchor 3 : rectangle horizontal ($$0.4 × 0.2$$) → pour voitures
-
-Le modèle **ajuste** ces anchors (décale et redimensionne) pour coller aux objets réels. C'est plus efficace que de prédire la taille depuis zéro !
-
-➡️ **Au total** : Si grille $$13×13$$ avec 3 anchors par cellule = $$13×13×3$$ = **507 boîtes candidates** par image !
+Depuis YOLOv8, YOLO est **sans anchor** (*anchor-free*) : comme on l'a vu dans la section 7.1, YOLO11 prédit directement la boîte à partir du centre de chaque cellule. C'est plus simple, et le modèle s'adapte mieux à des objets de formes inhabituelles.
 
 .. slide::
 
@@ -638,19 +639,22 @@ Le modèle **ajuste** ces anchors (décale et redimensionne) pour coller aux obj
 
 Problème : Plusieurs boîtes détectent souvent le **même objet** (ex: 5 boîtes qui se chevauchent sur une voiture).
 
-**NMS élimine les doublons en 3 étapes :**
+Avant le NMS, on élimine d'abord les boîtes candidates dont le score de confiance est trop faible (paramètre ``conf``, par exemple 0.25) : la grande majorité des 8 400 boîtes candidates ne contiennent aucun objet.
 
-1. **Trier** les boîtes par score de confiance (objectness) décroissant
+**NMS élimine ensuite les doublons en 4 étapes :**
+
+1. **Trier** les boîtes restantes par score de confiance décroissant
 
 2. **Garder** la boîte avec le meilleur score
 
-3. **Supprimer** toutes les boîtes qui se chevauchent trop (IoU > seuil, ex: 0.5) avec la boîte gardée
+3. **Supprimer** toutes les boîtes de la même classe qui se chevauchent trop (IoU > seuil, ex: 0.5) avec la boîte gardée
 
 4. Répéter pour les boîtes restantes
 
 **Exemple :**
 
-- Avant NMS : 507 boîtes candidates
+- Au départ : 8 400 boîtes candidates
+- Après le seuil de confiance : quelques dizaines de boîtes
 
 - Après NMS : 3-10 détections finales (les meilleures, sans doublons)
 
@@ -723,13 +727,13 @@ YOLOv11 propose plusieurs tailles. Nous utilisons **YOLOv11n (Nano)** pour le co
    # Charger YOLOv11 Nano (le plus rapide)
    model = YOLO('yolo11n.pt')
    
-   print(f"✅ Modèle YOLOv11n chargé (3M paramètres, 80+ FPS)")
+   print(f"✅ Modèle YOLOv11n chargé (2.6M paramètres, 80+ FPS)")
 
 .. note::
 
    📦 **Autres modèles disponibles** (pour information)
    
-   - ``yolo11n.pt`` : Nano (3M params, 80+ FPS) ← **on utilise celui-ci**
+   - ``yolo11n.pt`` : Nano (2.6M params, 80+ FPS) ← **on utilise celui-ci**
    - ``yolo11s.pt`` : Small (9M params, 60 FPS)
    - ``yolo11m.pt`` : Medium (20M params, 45 FPS)
    - ``yolo11l.pt`` : Large (26M params, 35 FPS)
@@ -879,8 +883,8 @@ Une fois le modèle entraîné, vous pouvez l'utiliser pour détecter des objets
    # Prédiction sur une image
    results = model.predict(
        source='path/to/image.jpg',  # Chemin vers votre image, dossier, vidéo, ou URL.
-       conf=0.5,                    # Seuil de confiance minimum. Le modèle ne garde que les détections avec une confiance $$≥ 50%$$.
-       iou=0.45,                    # Seuil NMS (élimination des doublons). Élimine les boîtes qui se chevauchent trop (IoU $$ > 45%$$) pour éviter les doublons.
+       conf=0.5,                    # Seuil de confiance minimum. Le modèle ne garde que les détections avec une confiance ≥ 50 %.
+       iou=0.45,                    # Seuil NMS (élimination des doublons). Élimine les boîtes qui se chevauchent trop (IoU > 45 %) pour éviter les doublons.
        show=False,                  # Ne pas afficher automatiquement
        save=False                   # Ne pas sauvegarder automatiquement
    )
@@ -1302,7 +1306,7 @@ Maintenant que nous avons entraîné et testé les deux modèles sur **exactemen
        Compare les performances de SimpleBBoxRegressor et YOLO.
        
        Args:
-           simple_results: dict des résultats de SimpleBBoxRegressor (section 7.4)
+           simple_results: dict des résultats de SimpleBBoxRegressor (section 6.4)
            yolo_metrics: métriques YOLO retournées par model.val()
        """
        print("\n" + "="*70)

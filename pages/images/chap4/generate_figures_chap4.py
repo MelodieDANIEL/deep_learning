@@ -389,42 +389,40 @@ def fig_transforms():
     save(fig, "chap4_augmentations.png")
 
 
-def fig_filtres(gray):
-    zone = gray[40:320, 260:600]  # ballon + croisement des lignes
-    x = torch.tensor(zone, dtype=torch.float32).unsqueeze(0).unsqueeze(0) / 255.0  # (1, 1, H, W)
+def fig_filtres():
+    # Même code que dans le chapitre 5 (section 1.5), avec savefig au lieu de plt.show()
+    gris = transforms.ToTensor()(Image.open(IMG_PATH).convert('L'))   # (1, 482, 644), valeurs dans [0, 1]
+    x = gris[:, 40:320, 260:600].unsqueeze(0)                         # (1, 1, 280, 340) : zone du ballon + dimension du batch
 
-    g1d = torch.exp(-torch.arange(-3, 4, dtype=torch.float32) ** 2 / (2 * 1.5 ** 2))
-    gauss = torch.outer(g1d, g1d)
-    gauss = gauss / gauss.sum()
-    noyaux = [
-        ("Identité (3×3)", torch.tensor([[0., 0, 0], [0, 1, 0], [0, 0, 0]])),
-        ("Flou moyen (7×7)", torch.ones(7, 7) / 49),
-        ("Flou gaussien (7×7, σ = 1.5)", gauss),
-        ("Accentuation (3×3)", torch.tensor([[0., -1, 0], [-1, 5, -1], [0, -1, 0]])),
-        ("Sobel x (3×3) → contours verticaux\n(rouge > 0, blanc ≈ 0, bleu < 0)", torch.tensor([[-1., 0, 1], [-2, 0, 2], [-1, 0, 1]])),
-        ("Sobel y (3×3) → contours horizontaux\n(rouge > 0, blanc ≈ 0, bleu < 0)", torch.tensor([[-1., -2, -1], [0, 0, 0], [1, 2, 1]])),
-    ]
-    sorties = []
-    for titre, k in noyaux:
-        k = k.unsqueeze(0).unsqueeze(0)  # (1, 1, kH, kW)
-        y = F.conv2d(x, k, padding=k.shape[-1] // 2)[0, 0]
-        sorties.append((titre, y))
-    gx, gy = sorties[4][1], sorties[5][1]
-    sorties.append(("Norme du gradient\n√(Sobel x² + Sobel y²)", torch.sqrt(gx ** 2 + gy ** 2)))
+    ligne = torch.tensor([1., 6, 15, 20, 15, 6, 1])                  # coefficients du flou gaussien 7 × 7 (somme = 64)
+    filtres = {
+        'Identité': torch.tensor([[0., 0, 0], [0, 1, 0], [0, 0, 0]]),
+        'Flou moyen (7×7)': torch.ones(7, 7) / 49,
+        'Flou gaussien (7×7)': ligne.reshape(7, 1) * ligne.reshape(1, 7) / 64**2,
+        'Accentuation': torch.tensor([[0., -1, 0], [-1, 5, -1], [0, -1, 0]]),
+        'Sobel x': torch.tensor([[-1., 0, 1], [-2, 0, 2], [-1, 0, 1]]),
+        'Sobel y': torch.tensor([[-1., -2, -1], [0, 0, 0], [1, 2, 1]]),
+    }
+
+    sorties = {}
+    for nom, filtre in filtres.items():
+        n = filtre.shape[0]
+        sorties[nom] = F.conv2d(x, filtre.reshape(1, 1, n, n))[0, 0]
+    sorties['Norme du gradient'] = torch.sqrt(sorties['Sobel x']**2 + sorties['Sobel y']**2)
 
     fig, axes = plt.subplots(2, 4, figsize=(17, 7.6))
-    for ax, (titre, y) in zip(axes.ravel(), sorties):
-        y = y[4:-4, 4:-4]  # on n'affiche pas les bords (effet du padding par des zéros)
-        if "Sobel" in titre and "Norme" not in titre:
-            lim = y.abs().max().item()
-            ax.imshow(y, cmap="seismic", vmin=-lim, vmax=lim)
-        elif "Norme" in titre:
-            ax.imshow(y, cmap="gray")
+    for k, (nom, sortie) in enumerate(sorties.items()):
+        ax = axes[k // 4, k % 4]
+        if nom.startswith('Sobel'):
+            lim = sortie.abs().max().item()
+            ax.imshow(sortie, cmap='seismic', vmin=-lim, vmax=lim)
+        elif nom == 'Norme du gradient':
+            ax.imshow(sortie, cmap='gray')
         else:
-            ax.imshow(y.clamp(0, 1), cmap="gray", vmin=0, vmax=1)
-        ax.set_title(titre, fontsize=11)
-        ax.axis("off")
-    axes.ravel()[-1].axis("off")
+            ax.imshow(sortie, cmap='gray', vmin=0, vmax=1)
+        ax.set_title(nom)
+        ax.axis('off')
+    axes[1, 3].axis('off')
     save(fig, "chap5_filtres_convolution.png", dossier=os.path.join(HERE, "..", "chap5"))
 
 
@@ -483,5 +481,5 @@ if __name__ == "__main__":
     fig_batch()
     fig_batch_operations()
     fig_interpolation()
-    fig_filtres(gray)
+    fig_filtres()
     fig_taches(img)

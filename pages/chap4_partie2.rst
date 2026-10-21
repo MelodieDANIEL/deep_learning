@@ -734,7 +734,7 @@ Dans cet exercice, vous allez transformer le ciel bleu de l'image en ciel de nui
 .. spoiler::
     .. discoverList::
         1. ``img[:, :, c].ravel()`` aplatit le canal ``c`` pour l'histogramme (section 4.4 du cours)
-        2. Affichez la valeur d'un pixel du ciel, par exemple ``img[50, 50]`` : le ciel est clair et plus bleu que rouge
+        2. Affichez la valeur d'un pixel du ciel, par exemple ``img[50, 50]`` : le ciel est clair et plus bleu que vert
         3. Combinez plusieurs conditions avec ``&``, et n'oubliez pas les parenthèses (section 4.3 du cours)
         4. ``img[masque] = [...]`` modifie tous les pixels du masque d'un coup
         5. Comme ``True`` vaut 1, ``masque.mean()`` donne la proportion de pixels sélectionnés
