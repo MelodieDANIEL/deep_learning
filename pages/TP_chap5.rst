@@ -34,7 +34,7 @@ On va travailler avec les données MNIST :
                                   download=True, transform=transform)
 
 .. note::
-    Pour simplifier cet exercice d'introduction, nous utilisons uniquement les datasets train et test, mais en pratique il faudrait aussi un dataset de validation pour surveiller l'overfitting pendant l'entraînement.
+    Pour simplifier cet exercice d'introduction, nous utilisons uniquement les datasets train et test, mais en pratique il faudrait aussi un dataset de validation pour surveiller l'overfitting pendant l'entraînement (chapitre 3, section 3.1).
 
 **Consigne :** Écrire un programme qui :
 
@@ -44,9 +44,9 @@ On va travailler avec les données MNIST :
     - **MLP classique** : aplatit l'image ($$1×28×28$$ → 784), puis 2 couches fully-connected de 128 neurones avec ReLU, sortie 10 classes
     - **CNN simple** : 
         
-        - 1 couche convolutive (1→16 filtres, kernel $$3×3$$, padding=1)
+        - 1 couche convolutive : 1 canal en entrée (image en niveaux de gris), 16 filtres $$3×3$$, padding=1
         - ReLU + MaxPooling $$2×2$$
-        - 1 couche convolutive (16→32 filtres, kernel $$3×3$$, padding=1)
+        - 1 couche convolutive : 16 canaux en entrée (les 16 cartes de caractéristiques de la couche précédente), 32 filtres $$3×3$$, padding=1
         - ReLU + MaxPooling $$2×2$$
         - Aplatir puis 1 couche fully-connected vers 10 classes
 
@@ -58,7 +58,7 @@ On va travailler avec les données MNIST :
     - Loss CrossEntropyLoss
 
 .. step:: 
-    3) Compare le nombre de paramètres de chaque modèle (utiliser ``sum(p.numel() for p in model.parameters())``)
+    3) Compare le nombre de paramètres de chaque modèle avec ``sum(p.numel() for p in model.parameters())`` : ``model.parameters()`` parcourt les poids et les biais de toutes les couches (comme pour l'optimiseur), et ``p.numel()`` (*number of elements*) donne le nombre de valeurs de chacun.
 
 .. step::
     4) Évalue la précision (accuracy) sur le test set pour les deux modèles
@@ -78,6 +78,9 @@ On va travailler avec les données MNIST :
 .. step::
     8) Pourquoi le CNN est-il plus efficace malgré moins de paramètres ?
 
+.. step::
+    9) Combien de paramètres a la première couche convolutive du CNN ? Retrouvez ce nombre par le calcul.
+
 
 **Astuce :**
 .. spoiler::
@@ -86,7 +89,7 @@ On va travailler avec les données MNIST :
         2. Pour calculer la taille après convolution et pooling : avec 2 pooling $$2×2$$, une image $$28×28$$ devient $$7×7$$  
         3. Pour l'accuracy : ``(predicted == labels).sum().item() / len(labels)``
         4. Utiliser ``torch.no_grad()`` lors de l'évaluation pour économiser la mémoire
-        5. Le CNN préserve la structure spatiale de l'image, ce qui est crucial pour la reconnaissance
+        5. Pour les questions 8 et 9, relisez les sections 1.2 et 2.1 du cours
 
 **Astuce avancée :**        
 .. spoiler::
@@ -145,7 +148,7 @@ On va travailler avec les données MNIST :
 **Résultat attendu :** 
 
 - MLP : 118 282 paramètres, accuracy sur le test set d'environ 97-98 %
-- CNN : 20 490 paramètres (presque 6 fois moins), accuracy sur le test set d'environ 98,5-99 %
+- CNN : 20 490 paramètres (presque 6 fois moins), accuracy sur le test set d'environ 98-99 %
 
 
 .. slide::
@@ -157,31 +160,22 @@ Dans cet exercice, vous allez explorer comment les paramètres ``padding`` et ``
 **Objectif :**  
 Comprendre l'impact du padding et du stride sur les dimensions spatiales et visualiser les cartes de caractéristiques.
 
-On va créer un mini-dataset synthétique avec des formes géométriques :
+On travaille sur une image synthétique : un carré blanc sur fond noir.
 
 .. code-block:: python
 
     import torch
     import matplotlib.pyplot as plt
-    
-    # Créer des images synthétiques avec des formes
-    def create_shape_image(shape_type='square'):
-        img = torch.zeros(1, 1, 28, 28)
-        if shape_type == 'square':
-            img[0, 0, 10:18, 10:18] = 1.0
-        elif shape_type == 'cross':
-            img[0, 0, 14, :] = 1.0
-            img[0, 0, :, 14] = 1.0
-        elif shape_type == 'diagonal':
-            for i in range(28):
-                img[0, 0, i, i] = 1.0
-        return img
+
+    # Image 28×28 en niveaux de gris, de forme (1, 1, 28, 28) : un carré blanc sur fond noir
+    carre = torch.zeros(1, 1, 28, 28)
+    carre[0, 0, 10:18, 10:18] = 1.0
 
 
 **Consigne :** Écrire un programme qui :
 
 .. step::
-    1) Crée 3 images : un carré, une croix, une diagonale
+    1) Affiche l'image du carré.
 
 .. step::
     2) Définit 4 configurations de convolution différentes :
@@ -194,12 +188,12 @@ On va créer un mini-dataset synthétique avec des formes géométriques :
 .. step::
     3) Pour chaque configuration :
     
-    - Applique la convolution avec 8 filtres sur une des images
+    - Applique la convolution avec 8 filtres sur l'image du carré
     - Calcule et affiche la taille de sortie
     - Vérifie avec la formule : $$H_{out} = \lfloor \frac{H_{in} + 2 \times padding - kernel\_size}{stride} \rfloor + 1$$
 
 .. step::
-    4) Visualise les 8 cartes de caractéristiques obtenues pour chaque configuration (une par filtre)
+    4) Visualise, à côté de l'image du carré, les 8 cartes de caractéristiques obtenues pour chaque configuration (une par filtre). Les filtres de ``nn.Conv2d`` sont tirés au hasard : ils ne sont pas encore entraînés (section 1.6 du cours). Observez surtout la taille des cartes et la position du carré.
 
 .. step::
     5) Applique ensuite un MaxPooling $$2×2$$ après la convolution et observe la nouvelle taille
@@ -219,15 +213,17 @@ On va créer un mini-dataset synthétique avec des formes géométriques :
 .. step::
     9) Pourquoi utilise-t-on souvent padding=1 avec kernel=3 ?
 
+.. step::
+    10) Quel padding faut-il choisir pour qu'un filtre $$7×7$$ (avec stride=1) conserve la taille de l'image ?
+
 
 **Astuce :**
 .. spoiler::
     .. discoverList::
         1. Utiliser ``nn.Conv2d(1, 8, kernel_size=k, stride=s, padding=p)``
-        2. Pour visualiser la carte n°``i`` : ``plt.imshow(cartes[0, i].detach(), cmap='viridis')``, où ``cartes`` est la sortie de la convolution (``.detach()`` est nécessaire car les poids de ``nn.Conv2d`` ont ``requires_grad=True``)
-        3. Config B (padding=1, stride=1, kernel=3) préserve la taille : $$28×28$$ → $$28×28$$
-        4. Sans padding, chaque convolution réduit la taille de (kernel_size - 1)
-        5. padding=1 avec kernel=3 est un choix standard car il préserve la taille
+        2. Pour visualiser la carte n°``i`` : ``plt.imshow(cartes[0, i].detach(), cmap='gray')``, où ``cartes`` est la sortie de la convolution (``.detach()`` est nécessaire car les poids de ``nn.Conv2d`` ont ``requires_grad=True``)
+        3. Pour la question 8, appliquez plusieurs fois de suite la config A au carré et affichez la taille après chaque convolution
+        4. Pour les questions 9 et 10, relisez le cas général de la section 2.3 du cours
 
 
 **Résultat attendu :**
@@ -239,11 +235,82 @@ Les tailles de sortie attendues pour une image $$28×28$$ :
 - Config C (k=3, s=2, p=0) : $$13×13$$
 - Config D (k=5, s=1, p=2) : $$28×28$$
 
-Après MaxPooling $$2×2$$, les tailles sont divisées par 2.
+Après MaxPooling $$2×2$$, les tailles sont divisées par 2, arrondies à l'entier inférieur : par exemple, $$13×13$$ devient $$6×6$$ pour la config C.
 
 
 .. slide::
-🌶️ Exercice 3 : CNN et Data Augmentation
+⚖️ Exercice 3 : Créer son propre Dataset d'images
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Dans cet exercice, vous allez créer un ``Dataset`` PyTorch qui charge, prétraite et étiquette automatiquement des images.
+
+.. note::
+
+   Cet exercice utilise les images de l'exercice 6 du chapitre 4 : `elephants.png <images/tp4/elephants.png>`_, `chien.jpg <images/tp4/chien.jpg>`_, `chat.jpg <images/tp4/chat.jpg>`_ et `cheval.jpg <images/tp4/cheval.jpg>`_. Placez-les dans le même dossier que votre notebook Jupyter.
+
+**Objectif :** Préparer des images pour l'entraînement d'un réseau de neurones avec un ``Dataset`` et un ``DataLoader``.
+
+**Consigne :** Écrire un programme qui :
+
+.. step::
+    1) Crée une classe ``MyDataset`` qui hérite de ``torch.utils.data.Dataset`` et qui prend en paramètres une liste de chemins d'images, une liste de labels et une transformation.
+
+.. step::
+    2) Prétraite automatiquement chaque image de la manière suivante :
+
+    - redimensionnement à 64 × 64 pixels,
+    - lissage avec un flou gaussien,
+    - conversion en tenseur,
+    - normalisation des valeurs de chaque canal entre −0.5 et 0.5.
+
+.. step::
+    3) Associe un label (aussi appelé étiquette ou vérité terrain) à chaque image : 0 pour l'éléphant, 1 pour le chien, 2 pour le chat et 3 pour le cheval.
+
+.. step::
+    4) Crée un ``DataLoader`` avec des batchs de 2 images mélangées, le parcourt en affichant la forme des images et les labels de chaque batch, puis affiche les images du dernier batch.
+
+.. step::
+    5) Crée une seconde version du dataset pour l'entraînement, avec de l'augmentation de données (miroir horizontal et rotation aléatoires), et vérifie que deux appels à ``dataset[0]`` renvoient des images différentes.
+
+.. warning::
+
+   ⚠️ Votre classe doit bien **hériter** de ``torch.utils.data.Dataset``, et il est impératif d'implémenter les méthodes ``__len__()`` et ``__getitem__()``.
+
+
+**Questions :**
+
+.. step::
+    6) Quelles valeurs de ``mean`` et de ``std`` faut-il donner à ``transforms.Normalize`` pour obtenir des valeurs entre −0.5 et 0.5 ?
+
+.. step::
+    7) Pourquoi faut-il appliquer les transformations dans ``__getitem__``, et pas une seule fois au chargement des images ?
+
+.. step::
+    8) Pourquoi ne faut-il pas utiliser d'augmentation de données pour la validation et le test ?
+
+.. step::
+    9) Quel est le rôle du ``Dataset`` et celui du ``DataLoader`` ? Pourquoi a-t-on besoin des deux ?
+
+
+**Astuce :**
+.. spoiler::
+    .. discoverList::
+        1. Revoyez la classe ``ImageFolderDataset`` de la section 4.1 du cours, et ``transforms.Compose`` dans la section 5.4 du chapitre 4
+        2. ``transforms.ToTensor()`` donne des valeurs dans [0, 1], et ``transforms.Normalize`` calcule ``(x - mean) / std``
+        3. Pour afficher une image normalisée, il faut d'abord annuler la normalisation (section 5.3 du chapitre 4)
+        4. ``torch.equal(a, b)`` vérifie si deux tenseurs sont identiques
+
+
+**Résultat attendu :**
+
+- ``len(dataset)`` vaut 4
+- ``dataset[0]`` renvoie une image de forme ``torch.Size([3, 64, 64])``, avec des valeurs entre −0.5 et 0.5, et le label 0
+- Chaque batch du ``DataLoader`` contient des images de forme ``torch.Size([2, 3, 64, 64])`` et 2 labels
+- Avec l'augmentation, ``torch.equal(dataset_train[0][0], dataset_train[0][0])`` renvoie le plus souvent ``False``
+
+
+.. slide::
+🌶️ Exercice 4 : CNN et Data Augmentation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Cet exercice vous guide d'un CNN et l'utilisation de data augmentation pour améliorer les performances.
@@ -336,6 +403,9 @@ Cet exercice vous guide d'un CNN et l'utilisation de data augmentation pour amé
 .. step::
     12) Quelle est la différence de performance sur le test set ?
 
+.. step::
+    13) Que se passerait-il si l'on oubliait ``model.eval()`` avant d'évaluer le modèle ?
+
 
 **Astuce :**
 .. spoiler::
@@ -345,7 +415,7 @@ Cet exercice vous guide d'un CNN et l'utilisation de data augmentation pour amé
         3. Pour une validation sans augmentation, chargez aussi le training set sans augmentation, puis appliquez ``random_split`` aux deux versions avec la même graine : ``generator=torch.Generator().manual_seed(42)``. Les mêmes images se retrouvent alors dans chaque sous-ensemble
         4. Construisez le modèle avec deux blocs ``nn.Sequential`` (``convolutions`` et ``classification``), comme dans la section 3.3 du cours ; ``nn.Dropout(0.5)`` se place dans le bloc ``classification``
         5. Pour la matrice de confusion : ``from sklearn.metrics import confusion_matrix, classification_report``
-        6. Utiliser ``model.train()`` avant l'entraînement et ``model.eval()`` avant l'évaluation
+        6. Utiliser ``model.train()`` avant l'entraînement et ``model.eval()`` avant l'évaluation. Pour la question 13, relisez ce que changent ces deux appels (chapitre 3, section 3.1)
         7. Sauvegarder avec : ``torch.save({'model_state_dict': model.state_dict(), 'accuracy': best_acc}, 'best_model.pth')``
         8. Le dropout aide aussi à éviter l'overfitting en désactivant aléatoirement 50 % des neurones pendant l'entraînement
 
@@ -359,74 +429,6 @@ Cet exercice vous guide d'un CNN et l'utilisation de data augmentation pour amé
 - Le Modèle B a une meilleure loss sur le test set (~0.64 vs ~0.72) : il se trompe moins souvent avec une forte confiance
 - **Avec plus d'epochs (20-30)**, le Modèle B devrait dépasser nettement A en test accuracy
 - **Leçon importante** : L'accuracy seule ne suffit pas ! Analysez toujours le gap train/val pour évaluer la vraie qualité du modèle
-
-
-.. slide::
-🌶️ Exercice 4 : Créer son propre Dataset d'images
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Dans cet exercice, vous allez créer un ``Dataset`` PyTorch qui charge, prétraite et étiquette automatiquement des images.
-
-.. note::
-
-   Cet exercice utilise les images de l'exercice 6 du chapitre 4 : `elephants.png <images/tp4/elephants.png>`_, `chien.jpg <images/tp4/chien.jpg>`_, `chat.jpg <images/tp4/chat.jpg>`_ et `cheval.jpg <images/tp4/cheval.jpg>`_. Placez-les dans le même dossier que votre notebook Jupyter.
-
-**Objectif :** Préparer des images pour l'entraînement d'un réseau de neurones avec un ``Dataset`` et un ``DataLoader``.
-
-**Consigne :** Écrire un programme qui :
-
-.. step::
-    1) Crée une classe ``MyDataset`` qui hérite de ``torch.utils.data.Dataset`` et qui prend en paramètres une liste de chemins d'images, une liste de labels et une transformation.
-
-.. step::
-    2) Prétraite automatiquement chaque image de la manière suivante :
-
-    - redimensionnement à 64 × 64 pixels,
-    - lissage avec un flou gaussien,
-    - conversion en tenseur,
-    - normalisation des valeurs de chaque canal entre −0.5 et 0.5.
-
-.. step::
-    3) Associe un label (aussi appelé étiquette ou vérité terrain) à chaque image : 0 pour l'éléphant, 1 pour le chien, 2 pour le chat et 3 pour le cheval.
-
-.. step::
-    4) Crée un ``DataLoader`` avec des batchs de 2 images mélangées, le parcourt en affichant la forme des images et les labels de chaque batch, puis affiche les images du dernier batch.
-
-.. step::
-    5) Crée une seconde version du dataset pour l'entraînement, avec de l'augmentation de données (miroir horizontal et rotation aléatoires), et vérifie que deux appels à ``dataset[0]`` renvoient des images différentes.
-
-.. warning::
-
-   ⚠️ Votre classe doit bien **hériter** de ``torch.utils.data.Dataset``, et il est impératif d'implémenter les méthodes ``__len__()`` et ``__getitem__()``.
-
-
-**Questions :**
-
-.. step::
-    6) Quelles valeurs de ``mean`` et de ``std`` faut-il donner à ``transforms.Normalize`` pour obtenir des valeurs entre −0.5 et 0.5 ?
-
-.. step::
-    7) Pourquoi faut-il appliquer les transformations dans ``__getitem__``, et pas une seule fois au chargement des images ?
-
-.. step::
-    8) Pourquoi ne faut-il pas utiliser d'augmentation de données pour la validation et le test ?
-
-
-**Astuce :**
-.. spoiler::
-    .. discoverList::
-        1. Revoyez la classe ``ImageFolderDataset`` de la section 4.1 du cours, et ``transforms.Compose`` dans la section 5.4 du chapitre 4
-        2. ``transforms.ToTensor()`` donne des valeurs dans [0, 1], et ``transforms.Normalize`` calcule ``(x - mean) / std``
-        3. Pour afficher une image normalisée, il faut d'abord annuler la normalisation (section 5.3 du chapitre 4)
-        4. ``torch.equal(a, b)`` vérifie si deux tenseurs sont identiques
-
-
-**Résultat attendu :**
-
-- ``len(dataset)`` vaut 4
-- ``dataset[0]`` renvoie une image de forme ``torch.Size([3, 64, 64])``, avec des valeurs entre −0.5 et 0.5, et le label 0
-- Chaque batch du ``DataLoader`` contient des images de forme ``torch.Size([2, 3, 64, 64])`` et 2 labels
-- Avec l'augmentation, ``torch.equal(dataset_train[0][0], dataset_train[0][0])`` renvoie le plus souvent ``False``
 
 
 .. slide::
@@ -502,15 +504,19 @@ Cet exercice propose de visualiser ce que les filtres convolutifs ont appris apr
 .. step::
     8) Comment évoluent les patterns détectés entre les couches ?
 
+.. step::
+    9) À quoi correspondent les 4 dimensions de la forme ``[16, 1, 3, 3]`` des poids de la première couche convolutive ?
+
 
 **Astuce :**
 .. spoiler::
     .. discoverList::
         1. Pour visualiser le filtre n°``i`` : ``plt.imshow(filtres[i, 0].cpu(), cmap='gray')``
         2. Les couches d'un ``nn.Sequential`` sont numérotées à partir de 0, et ``model.convolutions[:2]`` est un ``nn.Sequential`` qui ne contient que les couches n°0 et n°1. Pour obtenir les cartes : ``with torch.no_grad(): cartes = model.convolutions[:2](image)``, avec ``image`` de forme ``[1, 1, 28, 28]``
-        3. Les premiers filtres détectent souvent des contours horizontaux, verticaux, diagonaux
-        4. Les couches profondes détectent des motifs plus complexes et abstraits
-        5. Utiliser ``plt.subplots()`` pour créer une grille de visualisation
+        3. Utiliser ``plt.subplots()`` pour créer une grille de visualisation
+        4. Pour la question 6, comparez les filtres appris à ceux de la Figure 2 du cours (sections 1.5 et 1.6)
+        5. Pour les questions 7 et 8, comparez les cartes de la deuxième couche à celles de la première : reconnaît-on encore le chiffre ?
+        6. Pour la question 9, revoyez le format des filtres $$(C_{out}, C_{in}, k_H, k_W)$$ de la section 1.4 du cours
 
 
 **Résultats attendus :**
@@ -618,16 +624,19 @@ Dans cet exercice, vous allez utiliser un modèle pré-entraîné (ResNet18) et 
 .. step::
     11) Que se passerait-il si on dégelait aussi les couches intermédiaires ?
 
+.. step::
+    12) Combien de paramètres sont entraînés dans le modèle B ? Retrouvez ce nombre par le calcul.
+
 
 **Astuce :**
 .. spoiler::
     .. discoverList:: 
         1. Pour mesurer le temps : ``import time; start = time.time(); ... ; elapsed = time.time() - start``
-        2. Le modèle pré-entraîné a déjà appris sur ImageNet des filtres qui détectent des motifs génériques (contours, textures, formes)
-        3. En gelant les couches, on a moins de paramètres à entraîner → plus rapide
-        4. Le modèle pré-entraîné atteint une bonne accuracy dès la première epoch
-        5. Comparez la train accuracy et la validation accuracy des deux modèles pour repérer l'overfitting
-        6. Si on dégèle tout, on risque de détruire les filtres pré-appris (sauf si learning rate très faible)
+        2. Pour la question 8, comparez la validation accuracy des deux modèles après la première epoch
+        3. Comparez la train accuracy et la validation accuracy des deux modèles pour repérer l'overfitting
+        4. Pour la question 10, relisez la note sur ImageNet au début de l'exercice : qu'a déjà appris le modèle B avant l'entraînement ?
+        5. Pour la question 11, comptez les paramètres entraînés quand on dégèle aussi le dernier bloc de convolutions (``model_transfer.layer4``), sans relancer l'entraînement
+        6. Pour la question 12, ``print(model_transfer.fc)`` affiche la taille de la couche remplacée, et ``sum(p.numel() for p in model_transfer.parameters() if p.requires_grad)`` permet de vérifier votre calcul
 
 
 **Résultats attendus :**
@@ -664,7 +673,7 @@ Dans cet exercice, vous allez implémenter un système complet d'entraînement a
 **Consignes** :
 
 .. step::
-    1) Charger CIFAR-10 avec de l'augmentation de données pour l'entraînement (comme le modèle B de l'exercice 3), diviser le training set en train (80 %) et validation (20 %), et garder le test set de CIFAR-10 pour l'évaluation finale. Comme dans l'exercice 3, la validation et le test ne doivent pas être augmentés.
+    1) Charger CIFAR-10 avec de l'augmentation de données pour l'entraînement (comme le modèle B de l'exercice 4), diviser le training set en train (80 %) et validation (20 %), et garder le test set de CIFAR-10 pour l'évaluation finale. Comme dans l'exercice 4, la validation et le test ne doivent pas être augmentés.
 
 .. step::
     2) Créer un CNN de taille moyenne :
@@ -748,6 +757,9 @@ Dans cet exercice, vous allez implémenter un système complet d'entraînement a
 .. step::
     11) Quelle stratégie recommanderiez-vous pour un nouveau projet ?
 
+.. step::
+    12) À la fin de l'entraînement, comment recharger le meilleur modèle sauvegardé par ``EarlyStopping`` ?
+
 
 **Astuce :**
 .. spoiler::
@@ -793,6 +805,8 @@ Dans cet exercice, vous allez implémenter un système complet d'entraînement a
             # Dans la boucle d'entraînement, après validation :
             scheduler.step(val_loss)
             lr = optimizer.param_groups[0]['lr']   # learning rate actuel (à stocker pour repérer quand il change)
+
+        **Pour la question 12 :** relisez la section 5.1 du cours.
 
 
 **Résultats attendus :**

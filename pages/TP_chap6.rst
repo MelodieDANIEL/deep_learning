@@ -296,7 +296,7 @@ Exemple obtenu sur notre dataset (132 images, dont 21 images de test, les mêmes
         4. Flip horizontal : x_center → 1 - x_center, y_center inchangé, w et h inchangés
         5. Augmentation adaptée détection : éviter rotations fortes (change orientation objet)
         6. Color jitter OK car n'affecte pas les coordonnées spatiales
-        7. La validation et le test ne doivent pas être augmentés : créez un dataset avec ``augment=True`` pour l'entraînement et un avec ``augment=False``, puis appliquez ``random_split`` aux deux avec la même graine (comme dans l'exercice 3 du TP 5), ou réutilisez les indices du découpage de la partie B (``train_dataset.indices``) avec ``torch.utils.data.Subset``. Rééquilibrez **après** le découpage, et seulement le train
+        7. La validation et le test ne doivent pas être augmentés : créez un dataset avec ``augment=True`` pour l'entraînement et un avec ``augment=False``, puis appliquez ``random_split`` aux deux avec la même graine (comme dans l'exercice 4 du TP 5), ou réutilisez les indices du découpage de la partie B (``train_dataset.indices``) avec ``torch.utils.data.Subset``. Rééquilibrez **après** le découpage, et seulement le train
 
 **Résultat attendu Partie D :**
 
@@ -640,7 +640,7 @@ Comprendre l'impact de l'augmentation sur la généralisation et réduire l'over
         4. Flip horizontal : x_center → 1 - x_center, y_center inchangé, w et h inchangés
         5. Augmentation adaptée détection : éviter rotations fortes (change orientation objet)
         6. Color jitter OK car n'affecte pas les coordonnées spatiales
-        7. La validation et le test ne doivent pas être augmentés : créez un dataset avec ``augment=True`` pour l'entraînement et un avec ``augment=False``, puis appliquez ``random_split`` aux deux avec la même graine (comme dans l'exercice 3 du TP 5), ou réutilisez les indices du découpage de la partie B (``train_dataset.indices``) avec ``torch.utils.data.Subset``. Rééquilibrez **après** le découpage, et seulement le train
+        7. La validation et le test ne doivent pas être augmentés : créez un dataset avec ``augment=True`` pour l'entraînement et un avec ``augment=False``, puis appliquez ``random_split`` aux deux avec la même graine (comme dans l'exercice 4 du TP 5), ou réutilisez les indices du découpage de la partie B (``train_dataset.indices``) avec ``torch.utils.data.Subset``. Rééquilibrez **après** le découpage, et seulement le train
 
 **Résultat attendu :**
 

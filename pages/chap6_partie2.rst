@@ -119,7 +119,8 @@ Dans l'exemple, l'entrée $$224×224$$ est réduite **4 fois** par MaxPool(2) : 
 .. code-block:: python
 
    import torch.optim as optim
-   # Loss simple : MSE sur les coordonnées
+   # Loss simple : MSE sur les coordonnées, car c'est une régression (chapitre 2).
+   # Pour une classification, on utiliserait nn.CrossEntropyLoss (chapitre 3, section 6.1)
    criterion = nn.MSELoss()
    optimizer = optim.Adam(simple_model.parameters(), lr=1e-3)
    

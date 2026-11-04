@@ -48,7 +48,11 @@ Si la première couche cachée a 512 neurones :
 1.2. Solution : les réseaux convolutifs (CNN)
 ~~~~~~~~~~~~~~~~~~~
 
-Les réseaux de neurones convolutifs (CNN, de Convolutional Neural Networks en anglais) résolvent ces problèmes en utilisant des convolutions au lieu de couches entièrement connectées.
+Les réseaux de neurones convolutifs (CNN, de Convolutional Neural Networks en anglais) résolvent ces problèmes en utilisant des convolutions au lieu de couches entièrement connectées. Une convolution fait glisser un petit **filtre** (par exemple $$3×3$$) sur toute l'image : on verra comment dans les sections suivantes. Chacun des trois problèmes trouve ainsi sa solution :
+
+1. **Trop de paramètres → partage de poids** : le même petit filtre est appliqué sur toute l'image. Il n'a que quelques poids, quelle que soit la taille de l'image (calcul en section 2.1).
+2. **Perte de structure spatiale → traitement local** : le filtre travaille sur des pixels voisins, sans aplatir l'image. Les relations entre pixels voisins sont préservées.
+3. **Pas de généralisation spatiale → invariance par translation** : comme le même filtre parcourt toute l'image, un motif appris à un endroit est détecté partout (un visage reste un visage, qu'il soit en haut à gauche ou en bas à droite).
 
 .. slide::
 
@@ -58,7 +62,7 @@ Les réseaux de neurones convolutifs (CNN, de Convolutional Neural Networks en a
 Un filtre (aussi appelé *kernel* ou *noyau*) est une petite matrice de poids apprenables qui sert à détecter des motifs dans l'image.
 
 - **Taille typique** : $$3×3$$, $$5×5$$, ou $$7×7$$ pixels
-- **Fonctionnement** : le filtre "glisse" sur toute l'image (comme un tampon qu'on déplacerait)
+- **Fonctionnement** : le filtre "glisse" sur toute l'image, comme une petite fenêtre qu'on déplace pixel par pixel
 - **Détection** : à chaque position, il calcule une somme pondérée des pixels qu'il couvre
 - **Apprentissage** : les poids du filtre sont appris automatiquement pendant l'entraînement
 
@@ -80,7 +84,7 @@ Un filtre (aussi appelé *kernel* ou *noyau*) est une petite matrice de poids ap
 
 Dans la Figure 1, le filtre $$[1, 2, 1]$$ est d'abord aligné avec les valeurs $$[9, 4, 1]$$ du signal : $$9 \times 1 + 4 \times 2 + 1 \times 1 = 18$$. On décale ensuite le filtre d'un cran : $$4 \times 1 + 1 \times 2 + 0 \times 1 = 6$$, et ainsi de suite. Le signal convolué complet vaut $$[18, 6, 2, 6, 18]$$.
 
-Une convolution n'est donc rien de plus qu'une **succession de sommes pondérées** ! On remarque que le signal convolué est plus court que le signal d'origine : $$7 - 3 + 1 = 5$$ valeurs.
+Une convolution n'est donc rien de plus qu'une **succession de sommes pondérées** ! On remarque que le signal convolué est plus court que le signal d'origine : 5 valeurs au lieu de 7 (le détail du calcul est en section 2.2).
 
 .. slide::
 
@@ -132,10 +136,10 @@ Le passage brutal de 10 à 80 devient progressif (10 → 33,3 → 56,7) : l'imag
 
 .. slide::
 
-**Vérification avec PyTorch** : la fonction ``torch.nn.functional.conv2d`` applique une convolution avec un filtre que l'on choisit soi-même. Elle attend des tenseurs **à 4 dimensions** :
+**Vérification avec PyTorch** : la fonction ``torch.nn.functional.conv2d`` applique une convolution avec un filtre que l'on choisit soi-même. Elle attend des tenseurs **à 4 dimensions** (*in* : entrée, *out* : sortie) :
 
-- l'entrée : $$(N, C_{in}, H, W)$$ -> un batch d'images,
-- le filtre : $$(C_{out}, C_{in}, k_H, k_W)$$ -> $$C_{out}$$ filtres de taille $$k_H \times k_W$$, chacun appliqué sur les $$C_{in}$$ canaux.
+- l'entrée : $$(N, C_{in}, H, W)$$ -> un batch de $$N$$ images ayant chacune $$C_{in}$$ canaux (1 en niveaux de gris, 3 en RGB),
+- le filtre : $$(C_{out}, C_{in}, k_H, k_W)$$ -> $$C_{out}$$ est le **nombre de filtres**. Chaque filtre a une hauteur $$k_H$$ et une largeur $$k_W$$ (*k* pour *kernel*, le noyau) et s'applique sur les $$C_{in}$$ canaux de l'entrée.
 
 .. code-block:: python
 
@@ -153,10 +157,6 @@ Le passage brutal de 10 à 80 devient progressif (10 → 33,3 → 56,7) : l'imag
    print(F.conv2d(x, k))             # tensor([[[[  0., 210., 210.], ...]]]) -> forme (1, 1, 3, 3)
 
 Les paramètres ``padding`` et ``stride``, qui contrôlent la taille de la sortie, sont détaillés dans la section 2.
-
-.. note::
-
-   En toute rigueur, la convolution mathématique retourne le filtre avant de le faire glisser. PyTorch (comme toutes les bibliothèques de Deep Learning) calcule en réalité une *corrélation croisée*, sans retourner le filtre. Pour des filtres symétriques cela ne change rien, et dans un CNN les valeurs des filtres sont apprises : cela n'a donc aucune importance en pratique.
 
 .. slide::
 
@@ -195,11 +195,23 @@ Les filtres s'organisent de manière hiérarchique :
    -2   0   2                           0   0   0
    -1   0   1                           1   2   1
 
-💡 Le flou gaussien 3 × 3 est le produit de la colonne $$[1, 2, 1]$$ par la ligne $$[1, 2, 1]$$, divisé par 16 pour que la somme des valeurs vaille 1. On peut construire un flou gaussien plus grand de la même façon, par exemple en 7 × 7 avec $$[1, 6, 15, 20, 15, 6, 1]$$ (de somme 64).
+💡 Contrairement au flou moyen, le flou gaussien donne plus de poids au pixel central qu'aux pixels éloignés, selon une courbe en cloche (la gaussienne). Pour obtenir sa matrice 3 × 3, on multiplie chaque valeur de la colonne $$[1, 2, 1]$$ par chaque valeur de la ligne $$[1, 2, 1]$$ :
+
+.. code-block:: text
+
+   ×  |  1   2   1    <- ligne
+   ---+-------------
+   1  |  1   2   1
+   2  |  2   4   2
+   1  |  1   2   1
+   ^
+   colonne
+
+On divise ensuite par 16, la somme des 9 cases ($$1 + 2 + 1 + 2 + 4 + 2 + 1 + 2 + 1 = 16$$), pour que le filtre ne change pas la luminosité de l'image. Un flou gaussien plus grand, en 5 × 5, se construit de la même façon avec $$[1, 4, 6, 4, 1]$$ : la ligne a pour somme $$1 + 4 + 6 + 4 + 1 = 16$$, donc la somme des 25 cases vaut $$16 \times 16 = 256$$. Ces coefficients sont ceux du `triangle de Pascal <https://fr.wikipedia.org/wiki/Triangle_de_Pascal>`_ : chaque ligne s'obtient en additionnant deux à deux les valeurs voisines de la ligne précédente, ce qui revient à flouter une nouvelle fois.
 
 .. slide::
 
-Appliquons ces filtres sur une partie de l'image `ballon.jpg <images/chap4/ballon.jpg>`_ du chapitre 4 (placez-la dans le même dossier que votre notebook Jupyter). Les flous utilisent ici des filtres 7 × 7 pour que l'effet soit bien visible :
+Appliquons ces filtres sur une partie de l'image `ballon.jpg <images/chap4/ballon.jpg>`_ du chapitre 4 (placez-la dans le même dossier que votre notebook Jupyter) :
 
 .. code-block:: python
 
@@ -209,38 +221,24 @@ Appliquons ces filtres sur une partie de l'image `ballon.jpg <images/chap4/ballo
    from PIL import Image
    from torchvision import transforms
 
-   gris = transforms.ToTensor()(Image.open('ballon.jpg').convert('L'))   # (1, 482, 644), valeurs dans [0, 1]
+   gris = transforms.ToTensor()(Image.open('ballon.jpg').convert('L'))   # 'L' : niveaux de gris -> (1, 482, 644), valeurs dans [0, 1]
    x = gris[:, 40:320, 260:600].unsqueeze(0)                            # (1, 1, 280, 340) : zone du ballon + dimension du batch
 
-   ligne = torch.tensor([1., 6, 15, 20, 15, 6, 1])                     # coefficients du flou gaussien 7 × 7 (somme = 64)
    filtres = {
        'Identité': torch.tensor([[0., 0, 0], [0, 1, 0], [0, 0, 0]]),
-       'Flou moyen (7×7)': torch.ones(7, 7) / 49,
-       'Flou gaussien (7×7)': ligne.reshape(7, 1) * ligne.reshape(1, 7) / 64**2,   # (7, 1) * (1, 7) -> (7, 7) par broadcasting
+       'Flou moyen': torch.ones(3, 3) / 9,
+       'Flou gaussien': torch.tensor([[1., 2, 1], [2, 4, 2], [1, 2, 1]]) / 16,
        'Accentuation': torch.tensor([[0., -1, 0], [-1, 5, -1], [0, -1, 0]]),
        'Sobel x': torch.tensor([[-1., 0, 1], [-2, 0, 2], [-1, 0, 1]]),
        'Sobel y': torch.tensor([[-1., -2, -1], [0, 0, 0], [1, 2, 1]]),
    }
 
-   sorties = {}
-   for nom, filtre in filtres.items():
-       n = filtre.shape[0]                                              # taille du filtre : 3 ou 7
-       sorties[nom] = F.conv2d(x, filtre.reshape(1, 1, n, n))[0, 0]     # image 2D, plus petite de n - 1 pixels (pas de padding)
-   sorties['Norme du gradient'] = torch.sqrt(sorties['Sobel x']**2 + sorties['Sobel y']**2)   # combine Sobel x et Sobel y
-
-   fig, axes = plt.subplots(2, 4, figsize=(17, 7.6))
-   for k, (nom, sortie) in enumerate(sorties.items()):
-       ax = axes[k // 4, k % 4]
-       if nom.startswith('Sobel'):
-           lim = sortie.abs().max().item()
-           ax.imshow(sortie, cmap='seismic', vmin=-lim, vmax=lim)       # rouge : > 0, blanc : 0, bleu : < 0
-       elif nom == 'Norme du gradient':
-           ax.imshow(sortie, cmap='gray')
-       else:
-           ax.imshow(sortie, cmap='gray', vmin=0, vmax=1)               # valeurs < 0 en noir et > 1 en blanc
-       ax.set_title(nom)
-       ax.axis('off')
-   axes[1, 3].axis('off')                                               # 8e case vide
+   fig, axes = plt.subplots(2, 3, figsize=(15, 8))                       # 2 lignes × 3 colonnes
+   for k, nom in enumerate(filtres):
+       sortie = F.conv2d(x, filtres[nom].reshape(1, 1, 3, 3))           # (1, 1, 278, 338) : 2 pixels de moins (pas de padding)
+       axes[k // 3, k % 3].imshow(sortie[0, 0], cmap='gray', vmin=0, vmax=1)   # valeurs < 0 en noir, > 1 en blanc
+       axes[k // 3, k % 3].set_title(nom)
+       axes[k // 3, k % 3].axis('off')
    plt.show()
 
 .. slide::
@@ -258,8 +256,7 @@ Quelques remarques sur la Figure 2 :
 
 - Les filtres de **flou** ont une somme égale à 1 : la luminosité moyenne de l'image est conservée. Le flou gaussien donne plus de poids au pixel central et donne un résultat plus naturel que le flou moyen.
 - Le filtre d'**accentuation** renforce les différences entre un pixel et ses voisins : l'image paraît plus nette.
-- Les filtres de **Sobel** ont une somme égale à 0 : les zones uniformes donnent 0 (en blanc). Le résultat est positif (rouge) ou négatif (bleu) selon que l'on passe du sombre au clair ou du clair au sombre.
-- En combinant Sobel x et Sobel y avec la **norme du gradient** $$\sqrt{(\text{Sobel x})^2 + (\text{Sobel y})^2}$$, on obtient tous les **contours** de l'image, quelle que soit leur direction : le ballon et les lignes ressortent nettement, alors que l'herbe (texture fine) donne des valeurs plus faibles.
+- Les filtres de **Sobel** ont une somme égale à 0 : les zones uniformes donnent 0 (en noir). Les **contours** ressortent en blanc là où l'image passe du sombre au clair ; les passages du clair au sombre donnent des valeurs négatives, affichées elles aussi en noir.
 
 .. slide::
 
@@ -285,26 +282,10 @@ Fait remarquable : les premières couches d'un CNN entraîné apprennent souvent
 
 .. slide::
 
-1.7. Avantages des convolutions
-~~~~~~~~~~~~~~~~~~~
-
-1. **Partage de poids** : le même filtre est appliqué sur toute l'image, réduisant drastiquement le nombre de paramètres.
-2. **Invariance par translation** : un motif appris à un endroit peut être détecté ailleurs dans l'image (un visage reste un visage, qu'il soit en haut à gauche ou en bas à droite).
-3. **Préservation de la structure spatiale** : les convolutions traitent des régions locales, préservant les relations entre pixels voisins.
-
-**Exemple de gain en paramètres** :
-
-- Un filtre $$3×3$$ sur une image RGB → $$3 \times 3 \times 3 = 27$$ poids par filtre
-- Avec 64 filtres différents → $$64 \times 27 = 1728$$ paramètres au total
-
-Comparé aux 77 millions de paramètres du MLP, c'est une réduction spectaculaire !
-
-.. slide::
-
 📖 2. Les couches de convolution dans PyTorch
 ----------------------
 
-Comme nous l'avons vu dans la section 1.4, une convolution 2D applique un filtre sur une image en le faisant glisser sur toute la surface. Dans un CNN, on ne choisit pas les valeurs des filtres : PyTorch fournit ``nn.Conv2d`` pour créer des couches convolutives dont les filtres sont **appris** pendant l'entraînement.
+Jusqu'ici, on a utilisé la fonction ``F.conv2d`` en lui donnant nous-mêmes le filtre (flou, Sobel…). Dans un CNN, on ne choisit pas les valeurs des filtres : on utilise la **couche** ``nn.Conv2d``. Elle crée ses propres filtres, initialisés au hasard puis **appris** pendant l'entraînement, comme ``nn.Linear`` crée et apprend ses poids (chapitre 2). Le calcul de la convolution reste le même.
 
 2.1. Syntaxe de base
 ~~~~~~~~~~~~~~~~~~~
@@ -329,16 +310,25 @@ Comme nous l'avons vu dans la section 1.4, une convolution 2D applique un filtre
    y = conv(x)
    print(y.shape)  # torch.Size([1, 64, 224, 224])
 
+   # Les filtres sont stockés dans la couche, au même format que pour F.conv2d : (C_out, C_in, k_H, k_W)
+   print(conv.weight.shape)  # torch.Size([64, 3, 3, 3]) : 64 filtres 3×3 sur 3 canaux
+
 La sortie ``y`` contient 64 images de 224 × 224, une par filtre. On les appelle des **cartes de caractéristiques** (*feature maps* en anglais) : chaque carte indique **où** le motif détecté par son filtre apparaît dans l'image. Ces 64 cartes deviennent les 64 canaux d'entrée de la couche suivante.
+
+**Nombre de paramètres** : chaque filtre a $$3 \times 3 \times 3 = 27$$ poids ($$3×3$$ pixels sur les 3 canaux), plus un biais. Avec 64 filtres : $$64 \times (27 + 1) = 1792$$ paramètres, contre 77 millions pour la première couche du MLP de la section 1.1. C'est le **partage de poids** de la section 1.2.
 
 .. slide::
 
 2.2. Calcul de la taille de sortie
 ~~~~~~~~~~~~~~~~~~~
 
+La hauteur de la sortie $$H_{out}$$ se calcule à partir de la hauteur de l'image en entrée $$H_{in}$$ :
+
 .. math::
 
    H_{out} = \left\lfloor \frac{H_{in} + 2 \times \text{padding} - \text{kernel_size}}{\text{stride}} \right\rfloor + 1
+
+Les crochets $$\lfloor \; \rfloor$$ signifient « arrondi à l'entier inférieur ». La largeur $$W_{out}$$ se calcule avec la même formule, à partir de la largeur $$W_{in}$$. Avec les valeurs par défaut (``padding=0``, ``stride=1``), la formule devient $$H_{out} = H_{in} - \text{kernel_size} + 1$$ : c'est le $$7 - 3 + 1 = 5$$ du signal de la section 1.4.
 
 **Exemple avec padding=1, kernel_size=3, stride=1 sur une image 224×224** :
 
@@ -370,102 +360,25 @@ Avec un stride de 2, le filtre saute une position sur deux : la sortie est envir
 2.3. Padding
 ~~~~~~~~~~~~~
 
-La visualisation ci-dessous montre ce qui se passe avec et sans padding :
+Sans padding, un filtre $$3×3$$ ne peut pas se centrer sur les pixels du bord de l'image : il déborderait. Le **padding** ajoute des zéros autour de l'image pour que le filtre puisse se centrer partout :
 
 .. image:: images/convolution_padding_explanation.png
    :width: 100%
    :align: center
    :alt: Explication visuelle du padding dans les convolutions
 
-.. slide::
-
-Avec un filtre $$3×3$$ et **padding=0** : le filtre ne peut pas se centrer sur les pixels des bords (il déborderait de l'image). C'est à dire que le filtre ne peut se centrer ni sur toute la ligne du haut, ni sur toute la ligne du bas, ni sur toute la colonne de gauche, ni sur toute la colonne de droite.
-
-**Exemple concret : image $$5×5$$ avec filtre $$3×3$$**
-
-Pour comprendre ce qui se passe, regardons le filtre $$3×3$$ qui doit se centrer sur chaque pixel :
-
-.. code-block:: text
-
-   Image 5×5 :
-   ┌───┬───┬───┬───┬───┐
-   │ X │ X │ X │ X │ X │  ← Ligne du haut : impossible (5 pixels)
-   ├───┼───┼───┼───┼───┤
-   │ X │ ✓ │ ✓ │ ✓ │ X │  ← Ligne 2 : coins impossibles, centre OK
-   ├───┼───┼───┼───┼───┤
-   │ X │ ✓ │ ✓ │ ✓ │ X │  ← Ligne 3 : coins impossibles, centre OK
-   ├───┼───┼───┼───┼───┤
-   │ X │ ✓ │ ✓ │ ✓ │ X │  ← Ligne 4 : coins impossibles, centre OK
-   ├───┼───┼───┼───┼───┤
-   │ X │ X │ X │ X │ X │  ← Ligne du bas : impossible (5 pixels)
-   └───┴───┴───┴───┴───┘
-     ↑               ↑
-   Colonne         Colonne
-   gauche          droite
-   impossible      impossible
-   (5 pixels)      (5 pixels)
-
-**⚠️ Attention à ne pas confondre deux choses différentes :**
-
-1. **Nombre de positions impossibles** = 16 pixels (toute la bordure marquée X)
-   
-   - Ligne du haut : 5 pixels
-   - Ligne du bas : 5 pixels
-   - Colonne gauche : 5 pixels (dont 2 déjà comptés dans les lignes)
-   - Colonne droite : 5 pixels (dont 2 déjà comptés dans les lignes)
-   - **Total : 5 + 5 + 3 + 3 = 16 positions impossibles**
-
-2. **Réduction des dimensions** = passer de $$5×5$$ à $$3×3$$
-   
-   - **En hauteur** : ligne du haut + ligne du bas impossibles → **on perd 2 lignes**
-   - **En largeur** : colonne gauche + colonne droite impossibles → **on perd 2 colonnes**
-   - **Résultat** : $$5×5$$ devient $$3×3$$ (image de sortie réduite)
-
-**💡 En résumé** : on a 16 pixels de bordure où le filtre ne peut pas se positionner, mais cela se traduit par une **réduction de 2 en hauteur** (5→3) et **2 en largeur** (5→3), pas par une réduction de 16 pixels au total !
+- **Sans padding** (à gauche) : le filtre ne peut se centrer que sur les 9 pixels verts. On perd une ligne en haut, une en bas, une colonne à gauche et une à droite : l'image $$5×5$$ devient $$3×3$$, comme le donne la formule de la section 2.2.
+- **Avec padding=1** (à droite) : grâce à la bordure de zéros, le filtre peut se centrer sur les 25 pixels : la taille est préservée.
 
 .. slide::
-**Formule générale** : 
 
-Pour un filtre de taille $$k×k$$, on perd :
+**Cas général** : un filtre $$k×k$$ (``kernel_size=k``) s'étend sur $$\frac{k-1}{2}$$ pixels de chaque côté de son centre : 1 pixel pour un filtre $$3×3$$, 2 pixels pour un filtre $$5×5$$. Sans padding, il ne peut donc pas se centrer sur les $$\frac{k-1}{2}$$ premières lignes, ni sur les $$\frac{k-1}{2}$$ dernières : on perd $$2 \times \frac{k-1}{2} = k - 1$$ lignes au total. De même, on perd $$k - 1$$ colonnes. C'est la formule de la section 2.2 : $$H_{out} = H_{in} - k + 1$$. Par exemple :
 
-- **En hauteur** : (kernel_size - 1) lignes au total
-  
-  - $$\frac{kernel\_size - 1}{2}$$ lignes en haut
-  - $$\frac{kernel\_size - 1}{2}$$ lignes en bas
+- filtre $$3×3$$ sur une image $$5×5$$ → $$3×3$$
+- filtre $$5×5$$ sur une image $$7×7$$ → $$3×3$$
+- filtre $$5×5$$ sur une image $$5×5$$ → $$1×1$$ : un seul pixel !
 
-- **En largeur** : (kernel_size - 1) colonnes au total
-  
-  - $$\frac{kernel\_size - 1}{2}$$ colonnes à gauche
-  - $$\frac{kernel\_size - 1}{2}$$ colonnes à droite
-
-**Exemples détaillés** :
-
-1. **Filtre $$3×3$$ sur image $$5×5$$** :
-   
-   - Perte : (3-1) = 2 en hauteur, (3-1) = 2 en largeur
-   - Détail : 1 ligne en haut + 1 ligne en bas, 1 colonne à gauche + 1 colonne à droite
-   - **Résultat** : $$5×5$$ → $$3×3$$
-   - Calcul : hauteur = 5 - 2 = 3, largeur = 5 - 2 = 3
-
-2. **Filtre $$5×5$$ sur image $$7×7$$** :
-   
-   - Perte : (5-1) = 4 en hauteur, (5-1) = 4 en largeur
-   - Détail : 2 lignes en haut + 2 lignes en bas, 2 colonnes à gauche + 2 colonnes à droite
-   - **Résultat** : $$7×7$$ → $$3×3$$
-   - Calcul : hauteur = 7 - 4 = 3, largeur = 7 - 4 = 3
-
-3. **Filtre $$5×5$$ sur image $$5×5$$** :
-   
-   - Perte : (5-1) = 4 en hauteur, (5-1) = 4 en largeur
-   - Détail : 2 lignes en haut + 2 lignes en bas, 2 colonnes à gauche + 2 colonnes à droite
-   - **Résultat** : $$5×5$$ → $$1×1$$ (un seul pixel central valide !)
-   - Calcul : hauteur = 5 - 4 = 1, largeur = 5 - 4 = 1
-
-.. warning::
-   **💡 Règle simple** : Dimensions de sortie = Dimensions d'entrée - (kernel_size - 1)
-
-   **Solution pour ne rien perdre** : le padding qui ajoute des zéros autour pour que le filtre puisse se centrer partout !
-
+Pour conserver la taille, on ajoute de chaque côté autant de zéros que de pixels perdus : ``padding`` $$= \frac{k-1}{2}$$, soit ``padding=1`` pour un filtre $$3×3$$ et ``padding=2`` pour un filtre $$5×5$$. C'est pour cela qu'on a écrit ``padding=1`` dans l'exemple de la section 2.1.
 
 .. slide::
 
@@ -478,6 +391,8 @@ Les couches de pooling permettent de réduire progressivement la taille spatiale
 - **Apporte une invariance aux petites translations** : si un motif (par exemple un œil) se déplace légèrement dans l'image (de quelques pixels), le max pooling va quand même détecter la même valeur maximale dans la région. Cela rend le réseau plus robuste aux petits déplacements des objets
 - **Augmente le champ réceptif** : après un pooling, chaque neurone "voit" une région plus grande de l'image d'origine, ce qui lui permet de capturer des motifs plus globaux
 
+.. slide::
+
 3.1. Max Pooling
 ~~~~~~~~~~~~~~~~~~~
 
@@ -485,7 +400,8 @@ Le max pooling prend le maximum dans chaque région. C'est le type de pooling le
 
 .. code-block:: python
 
-   import torch.nn.functional as F
+   import torch
+   import torch.nn as nn
 
    # Exemple : matrice 4×4
    x = torch.tensor([[[[1., 2., 3., 4.],
@@ -496,10 +412,13 @@ Le max pooling prend le maximum dans chaque région. C'est le type de pooling le
    # Max pooling avec kernel 2×2 et stride 2
    # kernel_size=2 : on regarde des fenêtres de 2×2 pixels
    # stride=2 : on déplace la fenêtre de 2 pixels à chaque fois (pas de chevauchement)
-   y = F.max_pool2d(x, kernel_size=2, stride=2)
+   pool = nn.MaxPool2d(kernel_size=2, stride=2)
+   y = pool(x)
    print(y)
    # tensor([[[[ 6.,  8.],
    #           [14., 16.]]]])  # [1, 1, 2, 2] - taille divisée par 2
+
+.. slide::
 
 **Explication détaillée** : 
 
@@ -547,7 +466,8 @@ L'average pooling calcule la moyenne de chaque région.
 
 .. code-block:: python
 
-   y = F.avg_pool2d(x, kernel_size=2, stride=2)
+   pool = nn.AvgPool2d(kernel_size=2, stride=2)
+   y = pool(x)
    print(y)
    # tensor([[[[ 3.5,  5.5],
    #           [11.5, 13.5]]]])
@@ -566,7 +486,7 @@ L'average pooling calcule la moyenne de chaque région.
 Maintenant que nous avons vu les convolutions et le pooling, voici un exemple complet de CNN pour la classification d'images RGB de taille $$224×224$$ pixels en 10 classes. Comme au chapitre 2, on enchaîne les couches avec ``nn.Sequential``, en deux blocs :
 
 - un bloc ``convolutions`` qui extrait les caractéristiques de l'image (convolutions + ReLU + pooling),
-- un bloc ``classification`` qui calcule le score de chaque classe à partir de ces caractéristiques (couches fully-connected).
+- un bloc ``classification`` qui calcule, pour chaque image, le score de chaque classe à partir de ces caractéristiques (couches fully-connected).
 
 .. code-block:: python
 
@@ -586,7 +506,7 @@ Maintenant que nous avons vu les convolutions et le pooling, voici un exemple co
                nn.Flatten(),                                 # [batch, 64*56*56] = [batch, 200704]
                nn.Linear(64 * 56 * 56, 128),                 # [batch, 128]
                nn.ReLU(),
-               nn.Linear(128, num_classes),                  # [batch, num_classes] - scores pour chaque classe
+               nn.Linear(128, num_classes),                  # [batch, num_classes] - pour chaque image, un score par classe
            )
 
        def forward(self, x):
@@ -596,8 +516,8 @@ Maintenant que nous avons vu les convolutions et le pooling, voici un exemple co
 
 Quelques remarques sur ce code :
 
-- ``nn.MaxPool2d`` est la version « couche » de ``F.max_pool2d`` (section 3.1), utilisable dans un ``nn.Sequential``. Quand on ne précise pas le ``stride``, PyTorch utilise la même valeur que ``kernel_size`` : ici ``stride=2``.
-- ``nn.Flatten()`` aplatit tout sauf la dimension du batch : c'est l'équivalent de ``x.view(x.size(0), -1)``. Il transforme les 64 cartes de caractéristiques de 56 × 56 en un vecteur de 200 704 valeurs par image, que l'on peut donner aux couches ``nn.Linear``.
+- Dans ``nn.MaxPool2d``, quand on ne précise pas le ``stride``, PyTorch utilise la même valeur que ``kernel_size`` : ici ``stride=2``.
+- ``nn.Flatten()`` aplatit tout sauf la dimension du batch. Il transforme les 64 cartes de caractéristiques de 56 × 56 en un vecteur de 200 704 valeurs par image, que l'on peut donner aux couches ``nn.Linear``.
 
 .. slide::
 
@@ -616,7 +536,7 @@ Quelques remarques sur ce code :
    x = torch.randn(4, 3, 224, 224)  # batch de 4 images RGB 224×224
    output = model(x)
    print(f"Input shape: {x.shape}")
-   print(f"Output shape: {output.shape}")  # torch.Size([4, 10])
+   print(f"Output shape: {output.shape}")  # torch.Size([4, 10]) : 10 scores (un par classe) pour chacune des 4 images
 
 .. warning::
 
@@ -645,34 +565,26 @@ Quelques remarques sur ce code :
 
     Ici, on combine les deux : le ``Dataset`` applique les transformations à chaque chargement d'image.
 
-4.1. Créer une classe Dataset personnalisée avec transformations
+4.1. Créer une classe Dataset pour des images
 ~~~~~~~~~~~~~~~~~~~
 
-Exemple complet avec chargement depuis des fichiers et application de transformations :
+La structure est la même qu'au chapitre 3 (``__init__``, ``__len__``, ``__getitem__`` et l'option ``preload``). Pour des images, ``__getitem__`` ouvre le fichier avec PIL (chapitre 4), puis applique les transformations. Pour tester ce code, placez les photos `chien.jpg <images/tp4/chien.jpg>`_, `chat.jpg <images/tp4/chat.jpg>`_ et `cheval.jpg <images/tp4/cheval.jpg>`_ du TP du chapitre 4 dans le même dossier que votre notebook :
 
 .. code-block:: python
 
-   from torch.utils.data import Dataset
+   from torch.utils.data import Dataset, DataLoader
    from torchvision import transforms
    from PIL import Image
-   import os
 
    class ImageFolderDataset(Dataset):
        def __init__(self, image_paths, labels, transform=None, preload=False):
-           """
-           Args:
-               image_paths: Liste des chemins vers les images
-               labels: Liste des labels correspondants
-               transform: Transformations à appliquer (optionnel)
-               preload: Si True, toutes les images sont chargées en mémoire dès la création du dataset (optionnel)
-           """
-           self.image_paths = image_paths
-           self.labels = labels
-           self.transform = transform
-           self.preload = preload
+           self.image_paths = image_paths    # liste des chemins vers les images
+           self.labels = labels              # liste des labels correspondants
+           self.transform = transform        # transformations à appliquer (optionnel)
+           self.preload = preload            # True : toutes les images sont chargées en mémoire dès la création
            if preload:
                # Avantage : accès plus rapide aux images dans __getitem__, car elles sont déjà en RAM
-               # Inconvénient : consommation mémoire plus importante, car toutes les images sont chargées en RAM
+               # Inconvénient : consommation mémoire plus importante
                self.images = [Image.open(path).convert('RGB') for path in image_paths]
 
        def __len__(self):
@@ -680,47 +592,52 @@ Exemple complet avec chargement depuis des fichiers et application de transforma
 
        def __getitem__(self, idx):
            if self.preload:
-               image = self.images[idx]                                  # image déjà chargée en mémoire
+               image = self.images[idx]                                   # image déjà en mémoire
            else:
-               image = Image.open(self.image_paths[idx]).convert('RGB')  # chargement depuis le disque
-           label = self.labels[idx]
-
-           # Les transformations sont appliquées ici, à chaque appel, et pas au préchargement :
-           # ainsi les augmentations aléatoires (RandomHorizontalFlip, etc.) changent à chaque époque
+               image = Image.open(self.image_paths[idx]).convert('RGB')   # chargement depuis le disque
            if self.transform:
+               # appliquées ici, à chaque appel, et pas au préchargement :
+               # ainsi les augmentations aléatoires changent à chaque époque
                image = self.transform(image)
+           return image, self.labels[idx]
 
-           return image, label
+.. slide::
 
-   # Exemple d'utilisation avec transformations
-   train_paths = ['img1.jpg', 'img2.jpg', 'img3.jpg']  # Chemins vers vos images
-   train_labels = [0, 1, 0]  # Labels correspondants
+On définit ensuite les transformations (chapitre 4, section 5.4), puis on crée le ``Dataset`` et le ``DataLoader`` :
 
-   # Définir les transformations pour l'entraînement
+.. code-block:: python
+
+   # Entraînement : prétraitement + augmentation
    train_transform = transforms.Compose([
-       transforms.Resize((224, 224)),        # Redimensionner
-       transforms.RandomHorizontalFlip(),    # Augmentation
-       transforms.ToTensor(),                # Convertir en tenseur
-       transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
+       transforms.Resize((224, 224)),
+       transforms.RandomHorizontalFlip(),    # augmentation
+       transforms.ToTensor(),
+       transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
    ])
 
-   # Créer le dataset en passant les transformations
-   train_dataset = ImageFolderDataset(train_paths, train_labels, transform=train_transform)
-
-   # Utiliser le dataset
-   image, label = train_dataset[0]
-   print(image.shape)  # torch.Size([3, 224, 224])
-   
-   # Pour la validation/test, créer des transformations SANS augmentation
-   val_paths = ['val_img1.jpg', 'val_img2.jpg']  # Chemins vers vos images de validation
-   val_labels = [1, 0]  # Labels correspondants
-   
+   # Validation et test : prétraitement seul, SANS augmentation
    val_transform = transforms.Compose([
-       transforms.Resize((224, 224)),         # Redimensionner (pas d'augmentation !)
-       transforms.ToTensor(),                 # Convertir en tenseur
-       transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
+       transforms.Resize((224, 224)),
+       transforms.ToTensor(),
+       transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
    ])
-   val_dataset = ImageFolderDataset(val_paths, val_labels, transform=val_transform)
+
+   train_dataset = ImageFolderDataset(['chien.jpg', 'chat.jpg', 'cheval.jpg'], [0, 1, 2], transform=train_transform)
+   image, label = train_dataset[0]
+   print(image.shape, label)    # torch.Size([3, 224, 224]) 0 -> une seule image, de label 0
+
+   # Paramètres du DataLoader (rappel du chapitre 3)
+   train_loader = DataLoader(
+       train_dataset,
+       batch_size=2,     # nombre d'images par batch
+       shuffle=True,     # mélange les images à chaque époque : True pour l'entraînement, False pour la validation et le test
+       num_workers=0,    # nombre de processus qui chargent les images en parallèle (0, par défaut : dans le processus principal ; > 0 : plus rapide)
+   )
+   for images, labels in train_loader:
+       print(images.shape)       # torch.Size([2, 3, 224, 224]) : un batch de 2 images
+       break
+
+On a toujours besoin des deux, comme au chapitre 3 : le ``Dataset`` renvoie **une** image à la fois, et le ``DataLoader`` les regroupe en **batchs** pour l'entraînement. Le ``Dataset`` de validation se crée de la même façon, avec ses propres images et ``val_transform`` (exemple complet en section 6.1).
 
 💡 **Pourquoi pas d'augmentation pour la validation et le test ?** On veut évaluer le modèle sur les vraies images, pas sur des versions modifiées artificiellement (chapitre 4, section 5.4).
 
@@ -729,7 +646,7 @@ Exemple complet avec chargement depuis des fichiers et application de transforma
 4.2. Datasets d'image PyTorch intégrés
 ~~~~~~~~~~~~~~~~~~~
 
-PyTorch fournit de nombreux datasets prêts à l'emploi dans ``torchvision.datasets`` :
+PyTorch fournit de nombreux datasets prêts à l'emploi dans ``torchvision.datasets``. Ce sont des ``Dataset``, comme ``ImageFolderDataset`` : on les donne ensuite à un ``DataLoader`` de la même façon.
 
 .. code-block:: python
 
@@ -765,137 +682,42 @@ PyTorch fournit de nombreux datasets prêts à l'emploi dans ``torchvision.datas
 📖 5. Sauvegarder et charger les poids d'un modèle
 ----------------------
 
-Après avoir entraîné un modèle pendant des heures, il est essentiel de pouvoir sauvegarder son état pour le réutiliser plus tard sans avoir à tout ré-entraîner. Il est aussi possible de sauvegarder périodiquement pendant l'entraînement pour éviter de tout perdre en cas d'interruption. Aussi on peut reprendre l'entraînement plus tard. 
+Après l'entraînement, on sauvegarde les poids du modèle dans un fichier, pour pouvoir le réutiliser plus tard sans tout ré-entraîner.
 
-5.1. Sauvegarder un modèle complet
+5.1. Sauvegarder et charger les poids
 ~~~~~~~~~~~~~~~~~~~
-
-PyTorch offre deux approches pour sauvegarder un modèle :
-
-**Méthode 1 : Sauvegarder tout le modèle**
 
 .. code-block:: python
 
-   import torch
+   # Sauvegarder les poids après l'entraînement
+   torch.save(model.state_dict(), 'poids.pth')
 
-   # Entraînement du modèle
+   # Plus tard : recréer le modèle, puis charger les poids
    model = CNNWithPooling(num_classes=10)
-   # ... entraînement ...
+   model.load_state_dict(torch.load('poids.pth'))
+   model.eval()    # mode évaluation
 
-   # Sauvegarder le modèle complet
-   torch.save(model, 'model_complet.pth')
+``model.state_dict()`` contient tous les poids du modèle. Pour les recharger, il faut recréer un modèle avec exactement les mêmes couches.
 
-   # Charger le modèle complet
-   # weights_only=False est obligatoire depuis PyTorch 2.6 pour charger autre chose que des poids
-   # (à utiliser uniquement avec des fichiers dont vous connaissez la provenance)
-   model_charge = torch.load('model_complet.pth', weights_only=False)
-   model_charge.eval()  # passer en mode évaluation
-
-**⚠️ Attention** : cette méthode sauvegarde toute la structure du modèle. Si vous modifiez la définition de la classe, le chargement peut échouer. De plus, depuis PyTorch 2.6, ``torch.load`` refuse par défaut de charger un modèle complet (``UnpicklingError``) : il faut ajouter ``weights_only=False``.
-
-.. slide::
-
-5.2. Sauvegarder uniquement les poids (méthode recommandée)
+5.2. Reprendre un entraînement
 ~~~~~~~~~~~~~~~~~~~
 
-**Méthode 2 : Sauvegarder uniquement les paramètres (state_dict)**
+Pour pouvoir reprendre un entraînement interrompu, on sauvegarde aussi l'état de l'optimiseur et le numéro de l'époque, dans un dictionnaire :
 
 .. code-block:: python
 
-   # Sauvegarder uniquement les poids
-   torch.save(model.state_dict(), 'model_weights.pth')
-
-   # Charger les poids
-   model = CNNWithPooling(num_classes=10)  # créer d'abord une instance du modèle
-   model.load_state_dict(torch.load('model_weights.pth'))
-   model.eval()
-
-**💡 Avantages** :
-
-- Plus flexible : on peut modifier légèrement l'architecture
-- Fichier plus léger
-- Meilleure pratique recommandée par PyTorch
-
-.. code-block:: python
-
-   # Exemple : charger des poids dans un modèle avec architecture modifiée
-   torch.save(model.state_dict(), 'model_10classes.pth')  # modèle avec 10 classes
-   
-   new_model = CNNWithPooling(num_classes=5)  # nouveau modèle avec 5 classes
-   state_dict = torch.load('model_10classes.pth')
-   print(state_dict.keys())  # noms des poids : 'convolutions.0.weight', ..., 'classification.3.weight', 'classification.3.bias'
-
-   # Les couches d'un nn.Sequential sont numérotées à partir de 0 : dans le bloc classification,
-   # Flatten = 0, Linear = 1, ReLU = 2 et Linear = 3 (la dernière couche).
-   # Cette dernière couche a 10 sorties au lieu de 5 : ses poids sont incompatibles
-   del state_dict['classification.3.weight'], state_dict['classification.3.bias']
-   new_model.load_state_dict(state_dict, strict=False)  # charger en ignorant les couches manquantes
-
-.. warning::
-   **⚠️ Attention** : modifier l'architecture et charger partiellement les poids avec ``strict=False`` est dangereux ! Vous risquez de créer des incohérences dans le modèle. À éviter sauf si vous savez exactement ce que vous faites.
-
-.. slide::
-
-5.3. Sauvegarder l'état complet de l'entraînement
-~~~~~~~~~~~~~~~~~~~
-
-Pour reprendre l'entraînement exactement où vous l'aviez arrêté, sauvegardez également l'optimiseur et l'epoch :
-
-.. code-block:: python
-
-   # Sauvegarder tout l'état d'entraînement
-   checkpoint = {
+   # Sauvegarder (par exemple à la fin de chaque époque)
+   torch.save({
        'epoch': epoch,
        'model_state_dict': model.state_dict(),
        'optimizer_state_dict': optimizer.state_dict(),
-       'loss': loss,
-   }
-   torch.save(checkpoint, 'checkpoint.pth')
+   }, 'checkpoint.pth')
 
-   # Charger et reprendre l'entraînement
-   model = CNNWithPooling(num_classes=10)
-   optimizer = torch.optim.Adam(model.parameters())
-
+   # Reprendre l'entraînement
    checkpoint = torch.load('checkpoint.pth')
    model.load_state_dict(checkpoint['model_state_dict'])
    optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-   start_epoch = checkpoint['epoch']
-   loss = checkpoint['loss']
-
-   model.train()  # reprendre l'entraînement
-
-**Variante : Sauvegarder à chaque epoch**
-
-.. code-block:: python
-
-   import os
-   os.makedirs('checkpoints', exist_ok=True)
-   
-   # Boucle d'entraînement avec sauvegarde à chaque epoch
-   for epoch in range(num_epochs):
-       model.train()
-       # ... entraînement ...
-       
-       # Sauvegarder à chaque epoch
-       checkpoint = {
-           'epoch': epoch,
-           'model_state_dict': model.state_dict(),
-           'optimizer_state_dict': optimizer.state_dict(),
-           'train_loss': train_loss,
-           'val_loss': val_loss,
-       }
-       torch.save(checkpoint, f'checkpoints/checkpoint_epoch_{epoch}.pth')
-   
-   # Reprendre depuis un epoch spécifique (par exemple epoch 5)
-   checkpoint = torch.load('checkpoints/checkpoint_epoch_5.pth')
-   model.load_state_dict(checkpoint['model_state_dict'])
-   optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-   start_epoch = checkpoint['epoch'] + 1  # reprendre à l'epoch suivant
-   
-   # Continuer l'entraînement
-   for epoch in range(start_epoch, num_epochs):
-       # ... suite de l'entraînement ...
-       pass
+   start_epoch = checkpoint['epoch'] + 1    # reprendre à l'époque suivante
 
 .. slide::
 
@@ -912,7 +734,7 @@ Voici le pipeline standard pour entraîner un CNN avec toutes les techniques vue
    import torch
    import torch.nn as nn
    import torch.optim as optim
-   from torch.utils.data import Dataset, DataLoader
+   from torch.utils.data import Dataset, DataLoader, random_split
    from torchvision import transforms
    from PIL import Image
    import os
@@ -987,34 +809,16 @@ Voici le pipeline standard pour entraîner un CNN avec toutes les techniques vue
    all_paths = None  # Il faut spécifier les chemins, par exemple : ['path/img/image1.jpg', 'path/img/image2.jpg', ...]
    all_labels = None # Il faut spécifier les labels, par exemple : [0, 1, 2, ...]
 
-   # Diviser les données, par exemple, en train (70%), validation (15%) et test (15%)
-   # On mélange les indices une seule fois, puis on crée un Dataset par ensemble :
-   # cela permet d'appliquer des transformations différentes (augmentation uniquement pour le train).
-   # (random_split, vu au chapitre 3, renverrait des sous-ensembles qui partagent tous le même transform)
-   n = len(all_paths)
-   train_size = int(0.70 * n)
-   val_size = int(0.15 * n)
-   indices = torch.randperm(n).tolist()   # indices mélangés aléatoirement
-   train_idx = indices[:train_size]
-   val_idx = indices[train_size:train_size + val_size]
-   test_idx = indices[train_size + val_size:]
+   # Deux Datasets sur les mêmes images : avec augmentation (pour le train) et sans (pour val et test)
+   dataset_aug = CustomDataset(all_paths, all_labels, transform=train_transform)
+   dataset_sans_aug = CustomDataset(all_paths, all_labels, transform=val_transform)
 
-   train_dataset = CustomDataset(
-       [all_paths[i] for i in train_idx],
-       [all_labels[i] for i in train_idx],
-       transform=train_transform
-   )
-   val_dataset = CustomDataset(
-       [all_paths[i] for i in val_idx],
-       [all_labels[i] for i in val_idx],
-       transform=val_transform
-   )
-   test_dataset = CustomDataset(
-       [all_paths[i] for i in test_idx],
-       [all_labels[i] for i in test_idx],
-       transform=val_transform  # pas d'augmentation pour test comme pour val
-   )
-   
+   # Diviser en train (70 %), validation (15 %) et test (15 %) avec random_split (chapitre 3).
+   # Avec la même graine (seed), les deux Datasets sont découpés de la même façon.
+   proportions = [0.70, 0.15, 0.15]
+   train_dataset, _, _ = random_split(dataset_aug, proportions, generator=torch.Generator().manual_seed(42))
+   _, val_dataset, test_dataset = random_split(dataset_sans_aug, proportions, generator=torch.Generator().manual_seed(42))
+
    # Créer les DataLoaders
    train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True, num_workers=4)
    val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False)
@@ -1023,7 +827,7 @@ Voici le pipeline standard pour entraîner un CNN avec toutes les techniques vue
    # 4. Initialiser le modèle, la loss et l'optimiseur
    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
    model = CNN(num_classes=10).to(device)
-   criterion = nn.CrossEntropyLoss()
+   criterion = nn.CrossEntropyLoss()    # loss de classification (chapitre 3, section 6.1) : applique elle-même le softmax aux scores
    optimizer = optim.Adam(model.parameters(), lr=0.001)
 
    # 5. Créer un dossier pour les sauvegardes
@@ -1065,14 +869,16 @@ Voici le pipeline standard pour entraîner un CNN avec toutes les techniques vue
                loss = criterion(outputs, labels)
                val_loss += loss.item()
                
+               # torch.max renvoie le score maximal et sa position sur la dimension 1 (les classes) :
+               # la position est la classe prédite, le score lui-même n'est pas utile (_)
                _, predicted = torch.max(outputs, 1)
-               total += labels.size(0)
-               correct += (predicted == labels).sum().item()
+               total += labels.size(0)                         # nombre d'images vues (taille du batch)
+               correct += (predicted == labels).sum().item()   # nombre de bonnes prédictions dans le batch
        
-       # Calcul des moyennes
-       train_loss /= len(train_loader)
+       # Moyennes sur l'époque
+       train_loss /= len(train_loader)      # loss moyenne par batch (chapitre 3)
        val_loss /= len(val_loader)
-       val_acc = 100 * correct / total
+       val_acc = 100 * correct / total      # exactitude (accuracy, chapitre 3) en %
        
        print(f"Epoch [{epoch+1}/{num_epochs}]")
        print(f"  Train Loss: {train_loss:.4f}")
@@ -1127,7 +933,7 @@ Après l'entraînement, évaluez le modèle sur le test set pour obtenir les per
            loss = criterion(outputs, labels)
            test_loss += loss.item()
            
-           # Prédictions
+           # Prédictions : classe qui a le plus grand score (comme pour la validation)
            _, predicted = torch.max(outputs, 1)
            total += labels.size(0)
            correct += (predicted == labels).sum().item()
@@ -1189,7 +995,7 @@ Après l'entraînement, évaluez le modèle sur le test set pour obtenir les per
 
 1. Sauvegarder le meilleur modèle basé sur la validation loss
 2. Sauvegarder régulièrement des checkpoints pour pouvoir reprendre
-3. Préférer ``state_dict()`` à sauvegarder le modèle entier
+3. Sauvegarder les poids avec ``state_dict()`` (section 5)
 
 .. slide::
 

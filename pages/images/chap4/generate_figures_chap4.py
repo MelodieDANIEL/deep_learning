@@ -391,38 +391,24 @@ def fig_transforms():
 
 def fig_filtres():
     # Même code que dans le chapitre 5 (section 1.5), avec savefig au lieu de plt.show()
-    gris = transforms.ToTensor()(Image.open(IMG_PATH).convert('L'))   # (1, 482, 644), valeurs dans [0, 1]
+    gris = transforms.ToTensor()(Image.open(IMG_PATH).convert('L'))   # 'L' : niveaux de gris -> (1, 482, 644), valeurs dans [0, 1]
     x = gris[:, 40:320, 260:600].unsqueeze(0)                         # (1, 1, 280, 340) : zone du ballon + dimension du batch
 
-    ligne = torch.tensor([1., 6, 15, 20, 15, 6, 1])                  # coefficients du flou gaussien 7 × 7 (somme = 64)
     filtres = {
         'Identité': torch.tensor([[0., 0, 0], [0, 1, 0], [0, 0, 0]]),
-        'Flou moyen (7×7)': torch.ones(7, 7) / 49,
-        'Flou gaussien (7×7)': ligne.reshape(7, 1) * ligne.reshape(1, 7) / 64**2,
+        'Flou moyen': torch.ones(3, 3) / 9,
+        'Flou gaussien': torch.tensor([[1., 2, 1], [2, 4, 2], [1, 2, 1]]) / 16,
         'Accentuation': torch.tensor([[0., -1, 0], [-1, 5, -1], [0, -1, 0]]),
         'Sobel x': torch.tensor([[-1., 0, 1], [-2, 0, 2], [-1, 0, 1]]),
         'Sobel y': torch.tensor([[-1., -2, -1], [0, 0, 0], [1, 2, 1]]),
     }
 
-    sorties = {}
-    for nom, filtre in filtres.items():
-        n = filtre.shape[0]
-        sorties[nom] = F.conv2d(x, filtre.reshape(1, 1, n, n))[0, 0]
-    sorties['Norme du gradient'] = torch.sqrt(sorties['Sobel x']**2 + sorties['Sobel y']**2)
-
-    fig, axes = plt.subplots(2, 4, figsize=(17, 7.6))
-    for k, (nom, sortie) in enumerate(sorties.items()):
-        ax = axes[k // 4, k % 4]
-        if nom.startswith('Sobel'):
-            lim = sortie.abs().max().item()
-            ax.imshow(sortie, cmap='seismic', vmin=-lim, vmax=lim)
-        elif nom == 'Norme du gradient':
-            ax.imshow(sortie, cmap='gray')
-        else:
-            ax.imshow(sortie, cmap='gray', vmin=0, vmax=1)
-        ax.set_title(nom)
-        ax.axis('off')
-    axes[1, 3].axis('off')
+    fig, axes = plt.subplots(2, 3, figsize=(15, 8))
+    for k, nom in enumerate(filtres):
+        sortie = F.conv2d(x, filtres[nom].reshape(1, 1, 3, 3))
+        axes[k // 3, k % 3].imshow(sortie[0, 0], cmap='gray', vmin=0, vmax=1)
+        axes[k // 3, k % 3].set_title(nom)
+        axes[k // 3, k % 3].axis('off')
     save(fig, "chap5_filtres_convolution.png", dossier=os.path.join(HERE, "..", "chap5"))
 
 
