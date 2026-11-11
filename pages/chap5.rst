@@ -938,7 +938,9 @@ Après l'entraînement, évaluez le modèle sur le test set pour obtenir les per
            total += labels.size(0)
            correct += (predicted == labels).sum().item()
            
-           # Sauvegarder pour analyse détaillée (optionnel)
+           # Garder les prédictions et les labels de chaque batch pour la matrice de confusion (optionnel) :
+           # .cpu() ramène le tenseur du GPU vers le CPU et .numpy() le convertit en tableau NumPy (chapitre 4, section 2.3),
+           # puis .extend() ajoute ses valeurs une par une à la liste
            all_predictions.extend(predicted.cpu().numpy())
            all_labels.extend(labels.cpu().numpy())
    
@@ -959,6 +961,8 @@ Après l'entraînement, évaluez le modèle sur le test set pour obtenir les per
    from sklearn.metrics import classification_report, confusion_matrix
    import numpy as np
    
+   # Pour chaque classe : precision, recall et f1-score (chapitre 3, section 6.2),
+   # et support = nombre d'images de cette classe dans le test set
    print("\nRapport de classification:")
    print(classification_report(all_labels, all_predictions))
    

@@ -49,9 +49,9 @@ Dans cet exercice, vous allez créer des images de toutes pièces, sans charger 
 .. spoiler::
     .. discoverList::
         1. ``np.zeros((H, W, 3), dtype=np.uint8)`` crée une image noire
-        2. ``img[:, a:b] = [r, g, b]`` colorie toutes les lignes des colonnes ``a`` à ``b - 1`` (section 3.3 du cours)
-        3. Un pixel ``(y, x)`` est dans le disque si $$(x - x_c)^2 + (y - y_c)^2 \le r^2$$, où $$(y_c, x_c)$$ est le centre de l'image
-        4. ``y = np.arange(H).reshape(H, 1)`` et ``x = np.arange(W).reshape(1, W)`` : grâce au broadcasting (chapitre 2), une condition sur ``x`` et ``y`` donne directement un masque de forme ``(H, W)`` (section 4.3 du cours)
+        2. ``img[:, debut:fin] = [r, g, b]`` colorie toutes les lignes des colonnes ``debut`` à ``fin - 1`` (section 3.3 du cours)
+        3. Un pixel ``(y, x)`` est dans le disque si $$(x - x_c)^2 + (y - y_c)^2 \le r^2$$, où $$(y_c, x_c)$$ est le centre de l'image et $$r$$ le rayon
+        4. ``y = np.arange(H).reshape(H, 1)`` et ``x = np.arange(W).reshape(1, W)`` (``np.arange`` fonctionne comme ``torch.arange``, chapitre 1) : grâce au broadcasting (chapitre 2), une condition sur ``x`` et ``y`` donne directement un masque de forme ``(H, W)`` (section 4.3 du cours). Vérifiez-le avec ``print((x + y).shape)``
         5. ``masque.sum()`` compte les ``True``
 
 
@@ -108,9 +108,10 @@ Dans cet exercice, vous allez créer une affiche dans le style d'Andy Warhol, en
         1. ``Image.open(...).convert('RGB')`` supprime le canal alpha
         2. ``img[:, :, 1:] = 0`` met à 0 les canaux G et B (pensez à travailler sur une copie !)
         3. ``img[:, :, ::-1]`` inverse l'ordre des canaux
-        4. ``np.stack([gris, gris, gris], axis=2)`` empile 3 fois le même canal le long d'une nouvelle 3e dimension
-        5. Créez une image noire de forme ``(2 * H, 2 * W, 3)``, puis placez chaque version dans sa case avec le slicing, comme pour la reconstitution des patchs de l'exercice 3
+        4. ``np.stack([gris, gris, gris], axis=2)`` empile 3 fois le même canal le long d'une nouvelle 3e dimension (comme ``torch.stack``, section 6.1 du cours)
+        5. Créez une image noire de forme ``(2 * H, 2 * W, 3)``, puis placez chaque version dans sa case avec le slicing, comme pour la reconstitution des patchs de l'exercice 3 du TP
         6. ``Image.fromarray(tableau).save('pop_art.png')`` sauvegarde un tableau ``uint8`` (section 2.1 du cours)
+        7. Question 5 : une des bibliothèques citées dans la section 1.3 du cours ne range pas les canaux dans l'ordre R, G, B. Cherchez laquelle
 
 
 **Résultat attendu :** une affiche de forme ``(720, 960, 3)``.
@@ -164,7 +165,7 @@ Dans cet exercice, vous allez découper le ballon de l'image ``ballon.jpg`` et l
     .. discoverList::
         1. Le recadrage du ballon est celui de la section 3.3 du cours : ``img[95:205, 405:520]``
         2. Le masque circulaire se construit comme le drapeau japonais de l'exercice supplémentaire 1
-        3. ``zone = savane[y0:y0+h, x0:x0+w]`` est une vue sur la zone de collage : modifier ``zone`` modifie ``savane`` (section 3.3 du cours)
+        3. ``zone = savane[y0:y0+h, x0:x0+w]`` est une vue sur la zone de collage, où ``(y0, x0)`` est le coin de collage et ``(h, w)`` la taille du ballon réduit : modifier ``zone`` modifie ``savane`` (section 3.3 du cours)
         4. ``zone[masque] = ballon[masque]`` ne copie que les pixels du disque (section 4.3 du cours)
 
 
@@ -184,7 +185,7 @@ L'image ``ballon.jpg`` est sombre : environ 80 % de ses pixels ont une valeur en
 
 **Objectif :** Améliorer le contraste d'une image avec une table de correspondance appliquée à tous les pixels, sans boucle.
 
-**Principe :** on construit une table ``lut`` de 256 cases qui donne, pour chaque valeur ``v`` de l'image d'origine, sa nouvelle valeur :
+**Principe :** on construit une table ``lut`` (*look-up table*) de 256 cases qui donne, pour chaque valeur ``v`` de l'image d'origine, sa nouvelle valeur :
 
 .. math::
 
@@ -214,7 +215,7 @@ L'image ``ballon.jpg`` est sombre : environ 80 % de ses pixels ont une valeur en
 **Questions :**
 
 .. step::
-    7) Que fait l'instruction ``lut[gris]`` ?
+    7) Expliquez ce que fait votre instruction de la question 4 : quelle est la forme du résultat, et que devient un pixel de valeur ``v`` ?
 
 .. step::
     8) Comment évoluent les valeurs sombres de l'herbe ? Pourquoi ?
@@ -230,9 +231,9 @@ L'image ``ballon.jpg`` est sombre : environ 80 % de ses pixels ont une valeur en
 .. spoiler::
     .. discoverList::
         1. ``Image.open('ballon.jpg').convert('L')`` charge l'image en niveaux de gris
-        2. ``np.bincount(gris.ravel(), minlength=256)`` compte le nombre de pixels de chaque valeur
+        2. ``np.bincount(gris.ravel(), minlength=256)`` compte le nombre de pixels de chaque valeur. ``minlength=256`` garantit 256 cases, même si l'image n'atteint pas la valeur 255
         3. ``np.cumsum(hist)`` calcule l'histogramme cumulé : la case ``v`` contient le nombre de pixels de valeur inférieure ou égale à ``v``
-        4. Utilisez un tableau d'entiers comme indices d'un autre tableau : ``lut[gris]`` a la même forme que ``gris``
+        4. Un tableau d'entiers peut servir d'indices à un autre tableau : testez ``np.array([10, 20, 30])[np.array([[2, 0], [1, 1]])]``
         5. ``TF.equalize`` (avec ``import torchvision.transforms.functional as TF``) attend un tenseur ``uint8`` de forme $$(C, H, W)$$ : ``torch.from_numpy(gris).unsqueeze(0)``
 
 

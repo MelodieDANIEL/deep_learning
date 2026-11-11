@@ -209,32 +209,29 @@ Exemple obtenu sur notre dataset (132 images, dont 21 images de test, les mêmes
 
        import torchvision.transforms as T
        import random
-       
-       class AugmentedYOLODataset(Dataset):
-           """Dataset avec augmentation adaptée à la détection."""
-           
-           def __init__(self, image_dir, label_dir, augment=False):
-               # TODO: Initialiser comme YOLODetectionDataset
-               
-               # TODO: Ajouter transformations d'augmentation
+
+       class AugmentedYOLODataset(YOLODetectionDataset):
+           """Dataset avec augmentation adaptée à la détection : même chargement que YOLODetectionDataset."""
+
+           def __init__(self, images_dir, labels_dir, classes_file, augment=False):
+               super().__init__(images_dir, labels_dir, classes_file)
+               self.augment = augment
+               # TODO: Ajouter les transformations d'augmentation
                # self.color_jitter = T.ColorJitter(brightness=0.3, contrast=0.3)
-               pass
-           
-           def horizontal_flip(self, image, bbox):
-               """Flip horizontal avec ajustement bbox."""
+
+           def horizontal_flip(self, image, boxes):
+               """Miroir horizontal de l'image (tenseur C×H×W) et des boîtes [x1, y1, x2, y2] en pixels."""
                image = T.functional.hflip(image)
-               if bbox is not None:
-                   bbox = bbox.copy()  # IMPORTANT: copier !
-                   bbox[0] = 1.0 - bbox[0]  # x_center inversé
-               return image, bbox
-           
+               boxes = boxes.clone()                                  # copie : l'annotation d'origine reste intacte
+               boxes[:, [0, 2]] = self.img_size - boxes[:, [2, 0]]    # x1' = 224 - x2 et x2' = 224 - x1
+               return image, boxes
+
            def __getitem__(self, idx):
-               # TODO: Charger image et label
-               # TODO: Si augment=True:
-               #   - 50% flip horizontal
-               #   - 80% color jitter
-               # TODO: Appliquer normalisation
-               pass
+               img, target = super().__getitem__(idx)   # img : tenseur 3×224×224 ; target['boxes'] : [N, 4] en pixels
+               # TODO: Si self.augment :
+               #   - 50 % des images : miroir horizontal (image ET target['boxes'])
+               #   - 80 % des images : color jitter
+               return img, target
 
 .. step::
     2) Rééquilibre le dataset (dupliquer les images sans objet pour avoir 50/50).
@@ -293,7 +290,7 @@ Exemple obtenu sur notre dataset (132 images, dont 21 images de test, les mêmes
         1. L'augmentation réduit souvent l'overfitting (gap train/val plus petit), mais pas toujours : avec très peu d'images, elle peut aussi rendre l'apprentissage plus difficile pour un petit CNN
         2. Le rééquilibrage évite le biais : sans lui, le modèle détecte trop souvent
         3. YOLO reste supérieur car il combine pré-entraînement + architecture optimisée
-        4. Flip horizontal : x_center → 1 - x_center, y_center inchangé, w et h inchangés
+        4. Miroir horizontal : seules les abscisses changent ; y, la largeur et la hauteur des boîtes sont inchangés
         5. Augmentation adaptée détection : éviter rotations fortes (change orientation objet)
         6. Color jitter OK car n'affecte pas les coordonnées spatiales
         7. La validation et le test ne doivent pas être augmentés : créez un dataset avec ``augment=True`` pour l'entraînement et un avec ``augment=False``, puis appliquez ``random_split`` aux deux avec la même graine (comme dans l'exercice 4 du TP 5), ou réutilisez les indices du découpage de la partie B (``train_dataset.indices``) avec ``torch.utils.data.Subset``. Rééquilibrez **après** le découpage, et seulement le train
@@ -383,8 +380,8 @@ Dans cet exercice, vous allez créer un détecteur capable de distinguer deux ob
 
     .. code-block:: yaml
 
-       # data_multiclass/dataset.yaml
-       path: /chemin/absolu/vers/data_multiclass
+       # data_yolo_multiclass/dataset.yaml
+       path: /chemin/absolu/vers/data_yolo_multiclass
        train: images/train
        val: images/val
        test: images/test
@@ -452,204 +449,182 @@ Cet exercice propose de visualiser et analyser les résultats de détection de v
 **Consignes** :
 
 .. step::
-    1) Utiliser le modèle CNN custom ou YOLO entraîné dans l'exercice 1
+    1) Charger les trois modèles entraînés dans l'exercice 1 : le CNN custom sans augmentation (``best_model_no_aug.pth``), le CNN custom avec augmentation (``best_model_with_aug.pth``) et YOLO11 (``weights/best.pt`` ou ``weights/last.pt`` dans le dossier ``runs/detect/`` de votre entraînement).
 
 .. step::
-    2) Créer une fonction qui affiche les meilleurs résultats de détection :
+    2) Écrire une fonction ``predire(model, dataset, i)`` qui renvoie la confiance et la boîte prédites pour l'image ``i``, avec la boîte au format ``[x1, y1, x2, y2]`` en pixels, pour les deux types de modèles :
+
+    - CNN custom : sortie ``[has_object, x_center, y_center, width, height]`` ;
+    - YOLO : ``result.boxes.conf`` et ``result.boxes.xyxy`` (section 7.7), en prédisant sur le fichier de l'image. S'il n'y a aucune boîte, la confiance vaut 0.
+
+.. step::
+    3) Créer une fonction qui affiche les meilleures détections, avec la vérité terrain (GT, *ground truth* : la boîte annotée) :
 
     .. code-block:: python
-    
-        def visualize_best_detections(model, test_images, test_labels, num_examples=6):
+
+        def visualize_best_detections(model, dataset, num_examples=6):
             """
-            Affiche les meilleures détections (IoU > 0.8)
+            Affiche les num_examples détections avec le meilleur IoU
             """
-            # TODO: Prédire sur test set
-            # TODO: Filtrer les détections avec has_object > 0.5 ET IoU > 0.8
-            # TODO: Afficher en grille 2x3:
-            #   - Image originale avec bbox GT (vert)
-            #   - Image avec bbox prédite (bleu)
-            #   - Titre: IoU = X.XX, Conf = X.XX
+            # TODO: Pour chaque image avec objet : prédire avec predire et calculer l'IoU
+            # TODO: Garder les détections de confiance > 0.5, triées par IoU décroissant
+            # TODO: Afficher les num_examples premières en grille 2×3, sur la même image :
+            #   - la boîte de la GT (vert)
+            #   - la boîte prédite (rouge, en pointillés)
+            #   - le titre : IoU = X.XX, confiance = X.XX
             pass
 
 .. step::
-    3) Créer une fonction pour visualiser les images sans objet (vrais négatifs) :
+    4) Créer une fonction qui affiche les images sans objet correctement identifiées (vrais négatifs) :
 
     .. code-block:: python
-    
-        def visualize_empty_images(model, test_images, test_labels, num_examples=6):
+
+        def visualize_empty_images(model, dataset, num_examples=6):
             """
-            Affiche les images correctement identifiées comme vides
+            Affiche les images sans objet correctement identifiées comme vides
             """
-            # TODO: Filtrer images où GT n'a pas d'objet (target[0] == 0)
-            # TODO: Filtrer où prédiction < 0.5 (correct)
-            # TODO: Afficher avec titre: "Conf vide: X.XX"
+            # TODO: Garder les images sans objet dans la GT
+            # TODO: Garder celles où la confiance prédite est ≤ 0.5
+            # TODO: Afficher avec le titre : confiance = X.XX
             pass
 
 .. step::
-    4) Créer une fonction pour visualiser les erreurs :
+    5) Créer une fonction qui affiche les erreurs :
 
     .. code-block:: python
-    
-        def visualize_errors(model, test_images, test_labels, num_examples=6):
+
+        def visualize_errors(model, dataset, num_examples=6):
             """
-            Affiche les cas problématiques
+            Affiche les cas problématiques, une ligne par cas
             """
-            # TODO: Cas 1: Faux positifs (détection sur fond vide)
-            # TODO: Cas 2: Faux négatifs (objet non détecté)
-            # TODO: Cas 3: Mauvaise localisation (IoU < 0.5 mais objet détecté)
-            # TODO: Afficher en 3 lignes
+            # TODO: Cas 1 : faux positifs (détection sur une image sans objet)
+            # TODO: Cas 2 : faux négatifs (objet non détecté)
+            # TODO: Cas 3 : mauvaise localisation (objet détecté, mais IoU < 0.5)
+            # TODO: Si un cas n'a aucun exemple, l'écrire dans sa ligne au lieu de laisser des cases vides
             pass
 
 .. step::
-    5) Comparer les visualisations entre CNN custom et YOLO11
+    6) Appliquer les trois fonctions aux trois modèles, sur le test set (``test_dataset``) puis sur le validation set (``val_dataset``) : avec une vingtaine d'images, un modèle peut ne faire aucune erreur sur l'un des deux.
 
 
 **Questions :**
 
 .. step::
-    6) Quel type d'erreur est le plus fréquent pour chaque modèle ?
+    7) Quel type d'erreur est le plus fréquent pour chaque modèle ?
 
 .. step::
-    7) Dans quelles conditions les modèles ont-ils le plus de difficultés ?
+    8) Dans quelles conditions les modèles ont-ils le plus de difficultés ?
 
 .. step::
-    8) YOLO fait-il des erreurs différentes du CNN custom ?
+    9) YOLO fait-il des erreurs différentes du CNN custom ?
 
 
 **Astuce :**
+
 .. spoiler::
     .. discoverList::
-        1. Pour dessiner les bbox : ``cv2.rectangle(img, (x_min, y_min), (x_max, y_max), color, 2)``
-        2. Convertir YOLO → xyxy : ``x_min = int((x_c - w/2) * img_width)``
-        3. Couleur GT : vert ``(0, 255, 0)``, prédiction : bleu ``(255, 0, 0)``
-        4. Pour les faux positifs : ``(GT sans objet) AND (pred > 0.5)``
-        5. Pour les faux négatifs : ``(GT avec objet) AND (pred < 0.5)``
-        6. Utilisez ``plt.subplots()`` pour créer des grilles de visualisation
+        1. Pour dessiner les boîtes, reprenez ``patches.Rectangle`` (sections 5.4 et 6.5).
+        2. Pour convertir la sortie du CNN en pixels, faites comme dans ``evaluate_all_dataset`` (section 6.4).
+        3. Image sans objet : aucune boîte dans ``target['boxes']`` avec le Dataset du cours (section 5.2), ou ``target[0] == 0`` avec celui de l'astuce 2 de la partie B de l'exercice 1.
+        4. Pour YOLO, retrouvez le fichier de l'image ``i`` avec ``dataset.indices[i]`` et ``dataset.dataset.image_files`` (sections 5.2 et 8.1).
+        5. TP, FP, TN et FN : mêmes définitions que dans l'exercice 1 (astuce 6 de la partie B).
+        6. Utilisez ``plt.subplots()`` pour les grilles, et ``ax.axis('off')`` pour les cases sans image.
 
 
-**Résultats attendus :**
+**Résultat attendu :**
 
-- 3 grilles de visualisation : meilleures détections, images vides, erreurs
-- Analyse comparative CNN vs YOLO : types d'erreurs, fréquence
-- Compréhension des cas difficiles (occlusion partielle, faible luminosité, etc.)
+- 3 grilles par modèle : meilleures détections, images vides, erreurs
+- Exemple sur notre dataset : YOLO ne fait aucune erreur, ni sur le test set ni sur le validation set ; le CNN se trompe surtout sur la localisation (IoU < 0.5), bien plus souvent avec augmentation
+- Analyse comparative CNN vs YOLO : types d'erreurs et fréquence
 
 
 .. slide::
 
-🌶️ Exercice supplémentaire 2 : Augmentation de données et comparaison finale
+⚖️ Exercice supplémentaire 2 : Effet de l'augmentation de données sur YOLO (2 classes)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Dans cet exercice, vous allez implémenter l'augmentation de données adaptée à la détection et comparer les résultats.
+Dans cet exercice, vous allez mesurer l'effet des augmentations appliquées par défaut par Ultralytics, sur le dataset à 2 classes de l'exercice 2.
 
-**Objectif :**  
-Comprendre l'impact de l'augmentation sur la généralisation et réduire l'overfitting.
+**Objectif :** Évaluer l'apport de l'augmentation de données pour YOLO avec le mAP@0.5:0.95 de chaque classe.
 
-**Consignes** :
+**Consigne :** Écrire un programme qui :
 
 .. step::
-    1) Créer un dataset augmenté avec rééquilibrage :
+    1) Reprend le modèle YOLO11 de l'exercice 2 (partie B) : il a été entraîné avec les augmentations par défaut d'Ultralytics.
+
+.. step::
+    2) Entraîne un second YOLO11 sur le même ``dataset.yaml``, avec les mêmes paramètres, mais sans augmentation (paramètres de l'astuce 6 de la partie C de l'exercice 1). Ces paramètres règlent la mosaïque (``mosaic`` : 4 images assemblées en une), le miroir horizontal (``fliplr``), les variations de teinte, de saturation et de luminosité (``hsv_h``, ``hsv_s``, ``hsv_v``), la translation (``translate``) et le zoom (``scale``) :
 
     .. code-block:: python
 
-       import torchvision.transforms as T
-       import random
-       
-       class AugmentedYOLODataset(Dataset):
-           """Dataset avec augmentation adaptée à la détection."""
-           
-           def __init__(self, image_dir, label_dir, augment=False):
-               # TODO: Initialiser comme YOLODetectionDataset
-               
-               # TODO: Ajouter transformations d'augmentation
-               # self.color_jitter = T.ColorJitter(brightness=0.3, contrast=0.3)
-               pass
-           
-           def horizontal_flip(self, image, bbox):
-               """Flip horizontal avec ajustement bbox."""
-               image = T.functional.hflip(image)
-               if bbox is not None:
-                   bbox = bbox.copy()  # IMPORTANT: copier !
-                   bbox[0] = 1.0 - bbox[0]  # x_center inversé
-               return image, bbox
-           
-           def __getitem__(self, idx):
-               # TODO: Charger image et label
-               # TODO: Si augment=True:
-               #   - 50% flip horizontal
-               #   - 80% color jitter
-               # TODO: Appliquer normalisation
-               pass
+       from ultralytics import YOLO
+
+       model = YOLO('yolo11n.pt')
+       results = model.train(
+           data='data_yolo_multiclass/dataset.yaml',            # YAML de l'exercice 2
+           epochs=50, imgsz=224, batch=4, patience=20,     # ADAPTEZ : les mêmes valeurs que dans l'exercice 2
+           project='runs/detect',
+           name='yolo11_multiclass_no_aug',
+           mosaic=0, fliplr=0, hsv_h=0, hsv_s=0, hsv_v=0, translate=0, scale=0   # augmentations désactivées
+       )
 
 .. step::
-    2) Rééquilibrer le dataset (dupliquer les images sans objet pour avoir 50/50)
-
-.. step::
-    3) Entraîner le CNN custom AVEC augmentation :
+    3) Évalue les deux modèles sur le test set (``split='test'``, section 8.4) et affiche un tableau comparatif. ``metrics.box.maps`` contient le mAP@0.5:0.95 de chaque classe, dans l'ordre de ``names`` :
 
     .. code-block:: python
 
-       # TODO: Créer AugmentedYOLODataset avec augment=True pour train
-       # TODO: Entraîner avec les mêmes hyperparamètres que dans l'exercice 1 (partie B)
-       # TODO: Comparer train loss et val loss (vérifier overfitting réduit)
-       # TODO: Sauvegarder dans 'best_model_with_aug.pth'
-    
-.. step::
-    4) Entraîner YOLO AVEC augmentation
+       # TODO: Afficher le tableau comparatif
+       # +-------------------------+-------------------+-------------------+
+       # | Métrique (test set)     | Sans augmentation | Avec augmentation |
+       # +-------------------------+-------------------+-------------------+
+       # | mAP@0.5                 | 0.XXX             | 0.XXX             |
+       # | mAP@0.5:0.95            | 0.XXX             | 0.XXX             |
+       # | mAP@0.5:0.95 objet_1    | 0.XXX             | 0.XXX             |
+       # | mAP@0.5:0.95 objet_2    | 0.XXX             | 0.XXX             |
+       # +-------------------------+-------------------+-------------------+
 
 .. step::
-    5) Comparer les 4 modèles finaux :
+    4) Ré-entraîne le modèle sans augmentation avec une autre graine (paramètre ``seed`` de ``model.train``, 0 par défaut) et un autre ``name``, puis ajoute sa colonne au tableau.
 
-    .. code-block:: python
-
-       # TODO: Charger les 4 modèles
-       # TODO: Évaluer sur le MÊME test set
-       # TODO: Afficher tableau comparatif complet
-       # +---------------------+---------------+---------------+-------------+-------------+
-       # | Métrique            | CNN No Aug    | CNN + Aug     | YOLO11      |YOLO11 + Aug |
-       # +---------------------+---------------+---------------+-------------+-------------+
-       # | Accuracy            | XX.XX%        | XX.XX%        | XX.XX%      |XX.XX%       |
-       # | Precision           | XX.XX%        | XX.XX%        | XX.XX%      |XX.XX%       |
-       # | Recall              | XX.XX%        | XX.XX%        | XX.XX%      |XX.XX%       |
-       # | Mean IoU            | 0.XXXX        | 0.XXXX        | 0.XXXX      |0.XXXX       |
-       # | Gap Train/Val (%)   | XX            | XX            | XX          | XX          |
-       # +---------------------+---------------+---------------+-------------+-------------+
+.. step::
+    5) Compare les courbes de loss train/val des entraînements avec et sans augmentation (``results.png``, section 7.5.4).
 
 
 **Questions :**
 
 .. step::
-    6) L'augmentation améliore-t-elle les performances du CNN custom ?
+    6) Que mesure le mAP@0.5:0.95 ? Pourquoi est-il plus exigeant que le mAP@0.5 ?
 
 .. step::
-    7) Le gap train/val est-il réduit avec l'augmentation ?
+    7) Le mAP@0.5 permet-il de départager les deux modèles ? Et le mAP@0.5:0.95 ?
 
 .. step::
-    8) Pourquoi l'augmentation seule ne suffit pas à rattraper YOLO ?
+    8) L'augmentation a-t-elle le même effet sur les deux classes ?
 
 .. step::
-    9) Quelle est l'importance du rééquilibrage (50/50) ?
+    9) L'écart entre les modèles avec et sans augmentation est-il plus grand que l'écart entre les deux graines (étape 4) ? Que pouvez-vous en conclure ?
+
+.. step::
+    10) Le gap train/val (écart entre la loss d'entraînement et la loss de validation) change-t-il avec l'augmentation ?
 
 
 **Astuce :**
 
 .. spoiler::
     .. discoverList::
-        1. L'augmentation réduit souvent l'overfitting (gap train/val plus petit), mais pas toujours : avec très peu d'images, elle peut aussi rendre l'apprentissage plus difficile pour un petit CNN
-        2. Le rééquilibrage évite le biais : sans lui, le modèle détecte trop souvent
-        3. YOLO reste supérieur car il combine pré-entraînement + architecture optimisée
-        4. Flip horizontal : x_center → 1 - x_center, y_center inchangé, w et h inchangés
-        5. Augmentation adaptée détection : éviter rotations fortes (change orientation objet)
-        6. Color jitter OK car n'affecte pas les coordonnées spatiales
-        7. La validation et le test ne doivent pas être augmentés : créez un dataset avec ``augment=True`` pour l'entraînement et un avec ``augment=False``, puis appliquez ``random_split`` aux deux avec la même graine (comme dans l'exercice 4 du TP 5), ou réutilisez les indices du découpage de la partie B (``train_dataset.indices``) avec ``torch.utils.data.Subset``. Rééquilibrez **après** le découpage, et seulement le train
+        1. mAP@0.5 et mAP@0.5:0.95 : relisez la note « Métriques COCO » de la section 7.6.
+        2. ``metrics.box.map50`` et ``metrics.box.map`` donnent les mAP calculés sur toutes les classes (section 8.4).
+        3. Pour vérifier les augmentations utilisées, ouvrez ``args.yaml`` dans le dossier de chaque entraînement (``runs/detect/<name>/``).
+        4. Ouvrez aussi ``train_batch0.jpg`` dans les deux dossiers : il montre des images d'entraînement telles que le modèle les a vues.
+        5. Dans ``results.png``, comparez ``train/box_loss`` et ``val/box_loss``. Attention : avec augmentation, la loss d'entraînement est calculée sur les images augmentées.
+
 
 **Résultat attendu :**
 
-Exemple obtenu sur notre dataset (même test set de 21 images pour les 4 modèles, résultats moyennés sur une dizaine d'entraînements pour le CNN) :
-
-- CNN sans augmentation : résultats très variables d'un entraînement à l'autre (accuracy moyenne ≈ 70 %, IoU moyen ≈ 0.55)
-- CNN avec augmentation : **moins bon** dans presque tous nos essais (accuracy moyenne ≈ 50 %, IoU moyen ≈ 0.35) : avec seulement 64 images de cube, ce petit CNN n'arrive pas à profiter de l'augmentation
-- YOLO11, avec ou sans augmentation : aucune erreur sur le test set, IoU moyen ≈ 0.93, gap train/val nul
-- Conclusion : l'augmentation n'est pas magique ; sur un petit dataset, c'est le pré-entraînement de YOLO qui fait la différence
+- Trois dossiers d'entraînement dans ``runs/detect/`` : celui de l'exercice 2 (avec augmentation) et deux sans augmentation (deux graines), chacun avec ``weights/best.pt``, ``results.png`` et ``args.yaml``
+- Dans le ``args.yaml`` des modèles sans augmentation : ``mosaic``, ``fliplr``, ``hsv_h``, ``hsv_s``, ``hsv_v``, ``translate`` et ``scale`` valent 0, et ``train_batch0.jpg`` ne montre aucune mosaïque
+- Un tableau de 4 lignes (mAP@0.5, mAP@0.5:0.95, mAP@0.5:0.95 de chaque classe) et 3 colonnes, calculé sur les mêmes images de test pour tous les modèles
+- Une conclusion argumentée : l'augmentation aide-t-elle YOLO sur ce dataset, et l'écart dépasse-t-il la variation d'un entraînement à l'autre ?
 
 
 .. slide::
@@ -659,42 +634,34 @@ Exemple obtenu sur notre dataset (même test set de 21 images pour les 4 modèle
 
 Cet exercice est une introduction au tracking d'objets en détectant frame par frame dans une vidéo.
 
-**Objectif :**  
+**Objectif :**
 Comprendre les bases de la détection vidéo et mesurer les performances en temps réel.
 
 .. note::
     **Qu'est-ce que le tracking ?**
-    
+
     Le tracking (suivi d'objets) consiste à détecter et identifier le **même objet** à travers les frames d'une vidéo. Dans cet exercice simplifié, vous allez uniquement **détecter** l'objet sur chaque frame indépendamment, **sans associer d'identité** entre les frames.
-    
-    **Limitation de cette approche :**
-    
-    - Si l'objet sort puis revient, vous ne savez pas que c'est le même
-    - Impossible de compter combien d'objets distincts sont apparus
-    - Pas de trajectoire ou d'historique de mouvement
-    
+
     Cette approche est utile pour :
-    
+
     - Détecter la présence/absence d'un objet en temps réel
-    - Mesurer les performances (FPS) de votre système
+    - Mesurer la vitesse de votre système en FPS (*frames per second* : nombre de frames traitées par seconde)
     - Préparer le terrain pour un vrai tracking avec identités
 
 **Matériel nécessaire :**
 
-- Vidéo MP4 de test (30-60 secondes)
-- Modèle YOLO entraîné (exercice 1 ou 2)
+- Une vidéo MP4 d'environ 40 secondes, filmée dans les mêmes conditions que votre dataset (même objet, même fond, même éclairage)
+- Un modèle YOLO entraîné (exercice 1 ou 2)
 
 **Consignes** :
 
 .. step::
-    1) Créer ou utiliser une vidéo de test (30-60 secondes) :
-    
-    **Scénario recommandé** :
+    1) Filmer la vidéo de test, par exemple avec ce scénario :
 
-    - 0-10s : Aucun objet visible
-    - 10-20s : Objet entre dans le champ, se déplace
-    - 20-30s : Objet sort du champ
-    - 30-40s : Objet réapparaît
+    - 0-10 s : aucun objet visible
+    - 10-20 s : l'objet entre dans le champ et se déplace
+    - 20-30 s : l'objet sort du champ
+    - 30-40 s : l'objet réapparaît
 
 .. step::
     2) Implémenter la détection frame par frame sur vidéo :
@@ -704,19 +671,19 @@ Comprendre les bases de la détection vidéo et mesurer les performances en temp
        import cv2
        from ultralytics import YOLO
        import time
-       
+
        def detect_on_video(model_path, video_path, output_path, conf_threshold=0.5):
-           """Détecte les objets sur chaque frame et sauvegarde la vidéo."""
+           """Détecte les objets sur chaque frame, sauvegarde la vidéo et renvoie les stats."""
            # TODO: Charger le modèle YOLO
            # TODO: Ouvrir la vidéo (fps, dimensions, nb_frames)
-           # TODO: Créer VideoWriter pour la sortie
-           # TODO: Boucle sur les frames:
-           #   - Lire frame
-           #   - Mesurer temps de traitement
-           #   - Prédiction YOLO
-           #   - Dessiner détections + info (frame, FPS)
-           #   - Sauvegarder frame
-           # TODO: Libérer ressources et afficher stats
+           # TODO: Créer le VideoWriter pour la sortie
+           # TODO: Boucle sur les frames :
+           #   - Lire la frame
+           #   - La cropper au centre et la redimensionner comme vos images d'entraînement (section 2.5)
+           #   - Mesurer le temps de la prédiction YOLO
+           #   - Dessiner les détections + infos (numéro de frame, FPS)
+           #   - Sauvegarder la frame
+           # TODO: Libérer les ressources, afficher et renvoyer les stats (nombre de détections et temps de chaque frame)
            pass
 
 .. step::
@@ -725,12 +692,12 @@ Comprendre les bases de la détection vidéo et mesurer les performances en temp
     .. code-block:: python
 
        import matplotlib.pyplot as plt
-       
+
        def plot_detection_stats(stats):
-           """Visualise les statistiques."""
-           # TODO: Graphique 1: Détections par frame (ligne)
-           # TODO: Graphique 2: Distribution nb objets (histogramme)
-           # TODO: Graphique 3: Temps de traitement (ligne + moyenne)
+           """Visualise les stats renvoyées par detect_on_video."""
+           # TODO: Graphique 1 : nombre de détections par frame (courbe)
+           # TODO: Graphique 2 : distribution du nombre d'objets (histogramme)
+           # TODO: Graphique 3 : temps de traitement par frame (courbe + moyenne)
            # TODO: Sauvegarder la figure
            pass
 
@@ -738,7 +705,7 @@ Comprendre les bases de la détection vidéo et mesurer les performances en temp
 **Questions :**
 
 .. step::
-    4) Quel est le FPS moyen de votre système ? Est-ce suffisant pour du temps réel (>30 fps) ?
+    4) Quel est le FPS moyen de votre système ? Est-ce suffisant pour traiter la vidéo en temps réel ?
 
 .. step::
     5) Pourquoi le temps de traitement varie-t-il d'une frame à l'autre ?
@@ -746,38 +713,45 @@ Comprendre les bases de la détection vidéo et mesurer les performances en temp
 .. step::
     6) Comment pourriez-vous améliorer la vitesse si elle est trop lente ?
 
-.. step::
-    7) Quelles sont les limitations de cette approche sans identité d'objets ?
-
 
 **Astuce :**
+
 .. spoiler::
     .. discoverList::
-        1. FPS réel = 1 / temps_traitement_moyen
-        2. Temps réel nécessite généralement >25-30 FPS pour fluidité
-        3. Variation temps : complexité variable de l'image, nombre d'objets
-        4. Pour accélérer l'inférence : réduire le nombre de pixels, par exemple 640→320 (paramètre ``imgsz`` de ``model.predict``)
-        5. VideoWriter : même fps que la vidéo source pour synchronisation
-        6. Utiliser ``model.predict(frame, verbose=False)`` pour éviter logs
-        7. Pour mesurer FPS : ``fps = 1.0 / (time.time() - start_time)``
+        1. Mesurez le temps avec ``time.time()`` juste avant et juste après ``model.predict(frame, conf=conf_threshold, verbose=False)`` (``verbose=False`` évite une ligne de log par frame).
+        2. FPS moyen = nombre de frames / somme des temps de prédiction. Appelez-le ``fps_traitement`` : ``fps`` est déjà la cadence de la vidéo (section 2.3), dont le ``VideoWriter`` a besoin.
+        3. Temps réel : comparez ``fps_traitement`` à la cadence de la vidéo.
+        4. Tracez le temps par frame : la première frame est-elle différente des autres ? Le temps change-t-il quand l'objet apparaît ?
+        5. Mesurez le FPS avec ``imgsz=224``, 320 et 640 (paramètre de ``model.predict``) : que constatez-vous ?
+        6. Le crop au centre et le redimensionnement sont ceux de ``extraire_frames_crop_redimensionner`` (section 2.5) : sans eux, l'objet n'a pas la même taille qu'à l'entraînement.
+        7. ``result.plot()`` renvoie la frame avec les boîtes, en BGR comme les frames d'OpenCV (section 7.7) : elle s'écrit directement dans la vidéo.
+        8. Texte sur une image : ``cv2.putText(image, f"FPS : {fps_traitement:.1f}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)``.
+        9. Vidéo de sortie : ``writer = cv2.VideoWriter(output_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (largeur, hauteur))``, puis ``writer.write(image)`` pour chaque frame et ``writer.release()`` à la fin. ``(largeur, hauteur)`` doit être exactement la taille des images écrites, sinon la vidéo reste vide, sans message d'erreur.
+
+
+**Résultat attendu :**
+
+- Une vidéo de sortie avec les boîtes, le numéro de frame et le FPS
+- Une figure de 3 graphiques : détections par frame, distribution du nombre d'objets, temps par frame
+- Exemple sur CPU (yolo11n entraîné en 224×224, frames croppées en 224×224) : ≈ 11 ms par prédiction, soit ≈ 90 FPS
 
 
 **Pour aller plus loin : Tracking avec identités**
 
 .. note::
     **Limitations du tracking frame par frame :**
-    
+
     Cette approche simple ne permet pas de :
-    
+
     - Savoir si c'est le **même objet** d'une frame à l'autre
     - **Compter** combien d'objets distincts sont apparus dans la vidéo
     - Suivre les **trajectoires** et analyser les mouvements
     - Gérer les **occlusions** temporaires (objet caché puis réapparaît)
-    
+
     **Solution : Tracking avec identités (Object ID)**
-    
+
     Pour un vrai système de tracking, il faut :
-    
+
     1. **Assigner un ID unique** à chaque objet détecté
     2. **Associer les détections** entre frames successives :
        - Comparer les positions (distance euclidienne)
@@ -788,12 +762,11 @@ Comprendre les bases de la détection vidéo et mesurer les performances en temp
        - Si l'objet réapparaît → retrouver son ID
        - Sinon → supprimer l'ID après N frames
 
-    
-    **Utilisation de YOLO pour le tracking avancé : https://docs.ultralytics.com/modes/track/**
-    
+    **Avec Ultralytics** : ``model.track`` attribue un identifiant à chaque objet suivi (voir la `documentation Ultralytics sur le tracking <https://docs.ultralytics.com/modes/track/>`_). Au premier appel, Ultralytics installe le paquet ``lap`` (connexion internet nécessaire).
+
     .. code-block:: python
-    
+
         from ultralytics import YOLO
-        model = YOLO('yolo11n.pt')
-        results = model.track(source='video.mp4', persist=True)  # Track avec IDs !
-        
+        model = YOLO('runs/detect/yolo11_my_object/weights/best.pt')   # ADAPTEZ le chemin (section 8.3)
+        for result in model.track(source='video.mp4', stream=True):    # stream=True : une frame à la fois, sans tout garder en mémoire
+            print(result.boxes.id)                                     # identifiants des objets suivis (None si aucun)

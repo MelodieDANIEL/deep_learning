@@ -21,7 +21,6 @@ On va travailler avec les données MNIST :
 
     import torch
     import torch.nn as nn
-    import torch.nn.functional as F
     from torchvision import datasets, transforms
     from torch.utils.data import DataLoader
 
@@ -306,14 +305,14 @@ Dans cet exercice, vous allez créer un ``Dataset`` PyTorch qui charge, prétrai
 - ``len(dataset)`` vaut 4
 - ``dataset[0]`` renvoie une image de forme ``torch.Size([3, 64, 64])``, avec des valeurs entre −0.5 et 0.5, et le label 0
 - Chaque batch du ``DataLoader`` contient des images de forme ``torch.Size([2, 3, 64, 64])`` et 2 labels
-- Avec l'augmentation, ``torch.equal(dataset_train[0][0], dataset_train[0][0])`` renvoie le plus souvent ``False``
+- Avec l'augmentation, ``torch.equal(train_dataset[0][0], train_dataset[0][0])`` renvoie le plus souvent ``False``
 
 
 .. slide::
 🌶️ Exercice 4 : CNN et Data Augmentation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Cet exercice vous guide d'un CNN et l'utilisation de data augmentation pour améliorer les performances.
+Dans cet exercice, vous allez entraîner un CNN avec et sans augmentation de données, puis comparer leurs performances.
 
 **Objectif :**
 
@@ -331,7 +330,7 @@ Cet exercice vous guide d'un CNN et l'utilisation de data augmentation pour amé
     - **Avec augmentation** : ``RandomHorizontalFlip``, ``RandomCrop(32, padding=4)``, ``ToTensor``, ``Normalize``
 
 .. step::
-    2) Divise le training set en train (80 %) et validation (20 %) avec ``random_split``. ⚠️ Les images de validation ne doivent **pas** être augmentées, même pour le modèle B.
+    2) Divise le training set en train (80 %) et validation (20 %) avec ``random_split``. Le test set est fourni à part par CIFAR-10 (10 000 images, avec ``train=False``, comme MNIST dans l'exercice 1) : on le garde pour l'évaluation finale (consigne 8). ⚠️ Les images de validation et de test ne doivent **pas** être augmentées, même pour le modèle B.
 
 .. step::
     3) Crée un CNN avec l'architecture suivante :
@@ -372,7 +371,7 @@ Cet exercice vous guide d'un CNN et l'utilisation de data augmentation pour amé
     - Validation loss et validation accuracy
 
 .. step::
-    6) Implémente un système de sauvegarde qui garde le meilleur modèle basé sur la validation accuracy
+    6) Implémente un système de sauvegarde qui garde le meilleur modèle : celui qui a la plus petite validation loss (comme dans la section 6.1 du cours)
 
 .. step::
     7) Trace 4 courbes sur un même graphique :
@@ -414,19 +413,19 @@ Cet exercice vous guide d'un CNN et l'utilisation de data augmentation pour amé
         2. ``RandomCrop(32, padding=4)`` ajoute 4 pixels noirs autour de l'image (32 × 32 → 40 × 40), puis découpe au hasard un carré de 32 × 32 : l'image est légèrement décalée
         3. Pour une validation sans augmentation, chargez aussi le training set sans augmentation, puis appliquez ``random_split`` aux deux versions avec la même graine : ``generator=torch.Generator().manual_seed(42)``. Les mêmes images se retrouvent alors dans chaque sous-ensemble
         4. Construisez le modèle avec deux blocs ``nn.Sequential`` (``convolutions`` et ``classification``), comme dans la section 3.3 du cours ; ``nn.Dropout(0.5)`` se place dans le bloc ``classification``
-        5. Pour la matrice de confusion : ``from sklearn.metrics import confusion_matrix, classification_report``
+        5. Pour la matrice de confusion et le rapport de classification : ``from sklearn.metrics import confusion_matrix, classification_report``. Le rapport donne, pour chaque classe, la précision, le rappel et le F1-score (chapitre 3, section 6.2), et le *support* : le nombre d'images de la classe dans le test set
         6. Utiliser ``model.train()`` avant l'entraînement et ``model.eval()`` avant l'évaluation. Pour la question 13, relisez ce que changent ces deux appels (chapitre 3, section 3.1)
-        7. Sauvegarder avec : ``torch.save({'model_state_dict': model.state_dict(), 'accuracy': best_acc}, 'best_model.pth')``
+        7. Sauvegarder avec : ``torch.save({'epoch': epoch, 'model_state_dict': model.state_dict(), 'val_loss': val_loss}, 'best_model.pth')`` (section 6.1 du cours)
         8. Le dropout aide aussi à éviter l'overfitting en désactivant aléatoirement 50 % des neurones pendant l'entraînement
 
 
 **Résultats attendus :**
 
-- **Modèle A** (sans augmentation) : test accuracy ~78 %, **mais fort overfitting** (gap train/val d'environ 13 % à la fin)
-- **Modèle B** (avec augmentation) : test accuracy ~78-79 %, **excellente généralisation** (gap train/val proche de 0 : la train accuracy est mesurée sur des images augmentées, plus difficiles, et avec le dropout actif)
-- **Observation importante** : Avec seulement 10 epochs, les deux modèles peuvent avoir des test accuracy similaires, **mais le Modèle B généralise beaucoup mieux**
-- Le Modèle A montre des signes clairs d'overfitting à partir de l'epoch 6 environ (la train accuracy continue à monter, la val accuracy stagne et la val loss remonte)
-- Le Modèle B a une meilleure loss sur le test set (~0.64 vs ~0.72) : il se trompe moins souvent avec une forte confiance
+- **Modèle A** (sans augmentation) : test accuracy ~77-78 %, **mais fort overfitting** (gap train/val de 12 à 13 % à la fin)
+- **Modèle B** (avec augmentation) : test accuracy ~79-80 %, **excellente généralisation** (gap train/val proche de 0 : la train accuracy est mesurée sur des images augmentées, plus difficiles, et avec le dropout actif)
+- **Observation importante** : Avec seulement 10 epochs, l'écart de test accuracy reste faible (de 1 à 3 points selon les exécutions), **mais le Modèle B généralise beaucoup mieux**
+- Le Modèle A montre des signes clairs d'overfitting à partir de l'epoch 6 ou 7 (la train accuracy continue à monter, la val accuracy stagne et la val loss remonte) : son meilleur modèle est celui de l'epoch 6 ou 7
+- Le Modèle B a une meilleure loss sur le test set (~0.60 vs ~0.70) : il se trompe moins souvent avec une forte confiance
 - **Avec plus d'epochs (20-30)**, le Modèle B devrait dépasser nettement A en test accuracy
 - **Leçon importante** : L'accuracy seule ne suffit pas ! Analysez toujours le gap train/val pour évaluer la vraie qualité du modèle
 
@@ -478,7 +477,7 @@ Cet exercice propose de visualiser ce que les filtres convolutifs ont appris apr
 
     .. code-block:: python
     
-        filtres = model.convolutions[0].weight.data  # première couche convolutive : forme [16, 1, 3, 3]
+        filtres = model.convolutions[0].weight.detach().cpu()  # première couche convolutive : forme [16, 1, 3, 3] (.detach() : sans gradient, .cpu() : pour Matplotlib)
 
 .. step::
     3) Visualiser les 16 filtres $$3×3$$ de la première couche sur une grille $$4×4$$
@@ -511,7 +510,7 @@ Cet exercice propose de visualiser ce que les filtres convolutifs ont appris apr
 **Astuce :**
 .. spoiler::
     .. discoverList::
-        1. Pour visualiser le filtre n°``i`` : ``plt.imshow(filtres[i, 0].cpu(), cmap='gray')``
+        1. Pour visualiser le filtre n°``i`` : ``plt.imshow(filtres[i, 0], cmap='gray')``
         2. Les couches d'un ``nn.Sequential`` sont numérotées à partir de 0, et ``model.convolutions[:2]`` est un ``nn.Sequential`` qui ne contient que les couches n°0 et n°1. Pour obtenir les cartes : ``with torch.no_grad(): cartes = model.convolutions[:2](image)``, avec ``image`` de forme ``[1, 1, 28, 28]``
         3. Utiliser ``plt.subplots()`` pour créer une grille de visualisation
         4. Pour la question 6, comparez les filtres appris à ceux de la Figure 2 du cours (sections 1.5 et 1.6)
@@ -597,8 +596,8 @@ Dans cet exercice, vous allez utiliser un modèle pré-entraîné (ResNet18) et 
 .. step::
     4) Pour chaque modèle, tracer :
     
-    - Evolution de la train loss et validation loss
-    - Evolution de la train accuracy et validation accuracy
+    - Évolution de la train loss et de la validation loss
+    - Évolution de la train accuracy et de la validation accuracy
 
 .. step::           
     5) Comparer le temps d'entraînement par epoch pour les deux modèles
@@ -813,7 +812,7 @@ Dans cet exercice, vous allez implémenter un système complet d'entraînement a
 
 Les résultats varient d'une exécution à l'autre. Voici un exemple obtenu sur GPU (environ 20 minutes pour les 3 modèles) :
 
-- Modèle A : grâce à l'augmentation de données et au dropout, peu d'overfitting même après 50 epochs (gap train/val ≈ 1 %), test accuracy ≈ 83-84 %
-- Modèle B : s'arrête trop tôt (vers l'epoch 20, pour un temps divisé par plus de 2) car la validation loss fluctue d'une epoch à l'autre, test accuracy ≈ 79 %
-- Modèle C : le learning rate est réduit en fin d'entraînement (vers l'epoch 40), ce qui fait nettement baisser la loss ; meilleure test accuracy (≈ 84 %) et meilleure test loss
+- Modèle A : grâce à l'augmentation de données et au dropout, peu d'overfitting même après 50 epochs (gap train/val ≈ 1 %), test accuracy ≈ 83 %
+- Modèle B : s'arrête trop tôt (vers l'epoch 20, pour un temps divisé par plus de 2) car la validation loss fluctue d'une epoch à l'autre, test accuracy ≈ 79-81 %
+- Modèle C : le learning rate est divisé par 2 quand la validation loss stagne (une ou plusieurs fois selon l'exécution), ce qui fait nettement baisser la loss ; meilleure test accuracy (≈ 84-85 %) et meilleure test loss
 - **Leçon** : l'early stopping fait gagner du temps, mais une patience trop faible arrête l'entraînement trop tôt

@@ -922,10 +922,10 @@ Une fois le modèle entraîné, vous pouvez l'utiliser pour détecter des objets
    
    # Ultralytics dessine automatiquement les boîtes avec labels
    # La méthode ``result.plot()`` dessine automatiquement : les boîtes englobantes avec couleurs par classe, les noms des classes et les scores de confiance.
-   img_with_boxes = result.plot()  # Image numpy avec boîtes dessinées
-   
+   img_with_boxes = result.plot()  # Image numpy avec boîtes dessinées, en BGR comme les images d'OpenCV (canaux bleu, vert, rouge)
+
    plt.figure(figsize=(12, 8))
-   plt.imshow(img_with_boxes)
+   plt.imshow(img_with_boxes[:, :, ::-1])  # ::-1 inverse l'ordre des canaux : BGR -> RGB, l'ordre attendu par matplotlib
    plt.axis('off')
    plt.title(f'{len(boxes)} objets détectés')
    # L'image s'affiche automatiquement dans le notebook
