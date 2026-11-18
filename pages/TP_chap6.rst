@@ -223,7 +223,7 @@ Exemple obtenu sur notre dataset (132 images, dont 21 images de test, les mêmes
                """Miroir horizontal de l'image (tenseur C×H×W) et des boîtes [x1, y1, x2, y2] en pixels."""
                image = T.functional.hflip(image)
                boxes = boxes.clone()                                  # copie : l'annotation d'origine reste intacte
-               boxes[:, [0, 2]] = self.img_size - boxes[:, [2, 0]]    # x1' = 224 - x2 et x2' = 224 - x1
+               boxes[:, [0, 2]] = image.shape[2] - boxes[:, [2, 0]]   # x1' = 224 - x2 et x2' = 224 - x1 (image.shape[2] = largeur = 224)
                return image, boxes
 
            def __getitem__(self, idx):
@@ -523,10 +523,10 @@ Cet exercice propose de visualiser et analyser les résultats de détection de v
 
 .. spoiler::
     .. discoverList::
-        1. Pour dessiner les boîtes, reprenez ``patches.Rectangle`` (sections 5.4 et 6.5).
+        1. Pour dessiner les boîtes, reprenez ``patches.Rectangle`` (sections 5.3 et 6.5).
         2. Pour convertir la sortie du CNN en pixels, faites comme dans ``evaluate_all_dataset`` (section 6.4).
-        3. Image sans objet : aucune boîte dans ``target['boxes']`` avec le Dataset du cours (section 5.2), ou ``target[0] == 0`` avec celui de l'astuce 2 de la partie B de l'exercice 1.
-        4. Pour YOLO, retrouvez le fichier de l'image ``i`` avec ``dataset.indices[i]`` et ``dataset.dataset.image_files`` (sections 5.2 et 8.1).
+        3. Image sans objet : aucune boîte dans ``target['boxes']`` avec le Dataset du cours (section 5.1), ou ``target[0] == 0`` avec celui de l'astuce 2 de la partie B de l'exercice 1.
+        4. Pour YOLO, retrouvez le fichier de l'image ``i`` avec ``dataset.indices[i]`` et ``dataset.dataset.image_files`` (sections 5.1 et 8.1).
         5. TP, FP, TN et FN : mêmes définitions que dans l'exercice 1 (astuce 6 de la partie B).
         6. Utilisez ``plt.subplots()`` pour les grilles, et ``ax.axis('off')`` pour les cases sans image.
 

@@ -50,8 +50,6 @@ Dans l'exemple, l'entrée $$224×224$$ est réduite **4 fois** par MaxPool(2) : 
 
    import torch
    import torch.nn as nn
-   import torch.nn.functional as F
-   from tqdm import tqdm # Pour les barres de progression
 
    # Vérifier si GPU disponible
    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -67,39 +65,40 @@ Dans l'exemple, l'entrée $$224×224$$ est réduite **4 fois** par MaxPool(2) : 
            super().__init__()
 
            # Bloc convolutions (backbone) : Conv2D + ReLU + MaxPool, comme au chapitre 5
+           # Entrée : [batch, 3, 224, 224]
            self.convolutions = nn.Sequential(
-               nn.Conv2d(3, 16, kernel_size=3, padding=1),
+               nn.Conv2d(3, 16, kernel_size=3, padding=1),   # [batch, 16, 224, 224]
                nn.ReLU(),
-               nn.MaxPool2d(2),                              # 224 -> 112
-               nn.Conv2d(16, 32, kernel_size=3, padding=1),
+               nn.MaxPool2d(2),                              # [batch, 16, 112, 112]
+               nn.Conv2d(16, 32, kernel_size=3, padding=1),  # [batch, 32, 112, 112]
                nn.ReLU(),
-               nn.MaxPool2d(2),                              # 112 -> 56
-               nn.Conv2d(32, 64, kernel_size=3, padding=1),
+               nn.MaxPool2d(2),                              # [batch, 32, 56, 56]
+               nn.Conv2d(32, 64, kernel_size=3, padding=1),  # [batch, 64, 56, 56]
                nn.ReLU(),
-               nn.MaxPool2d(2),                              # 56 -> 28
-               nn.Conv2d(64, 128, kernel_size=3, padding=1),
+               nn.MaxPool2d(2),                              # [batch, 64, 28, 28]
+               nn.Conv2d(64, 128, kernel_size=3, padding=1), # [batch, 128, 28, 28]
                nn.ReLU(),
-               nn.MaxPool2d(2),                              # 28 -> 14 : [B, 128, 14, 14]
+               nn.MaxPool2d(2),                              # [batch, 128, 14, 14]
            )
 
            # Bloc de régression (head) : 4 sorties (x_center, y_center, width, height)
            self.regression = nn.Sequential(
-               nn.Flatten(),                                 # [B, 128*14*14]
-               nn.Linear(128 * 14 * 14, 128),
+               nn.Flatten(),                                 # [batch, 128*14*14]
+               nn.Linear(128 * 14 * 14, 128),                # [batch, 128]
                nn.ReLU(),
-               nn.Linear(128, 4),
+               nn.Linear(128, 4),                            # [batch, 4]
                nn.Sigmoid(),                                 # sorties dans [0, 1]
            )
 
        def forward(self, x):
            x = self.convolutions(x)
            x = self.regression(x)
-           return x  # [B, 4] : (x_center, y_center, w, h) normalisés
+           return x  # [batch, 4] : (x_center, y_center, w, h) normalisés
 
 
    # Créer le modèle
    simple_model = SimpleBBoxRegressor().to(device)
-   num_params = sum(p.numel() for p in simple_model.parameters() if p.requires_grad)
+   num_params = sum(p.numel() for p in simple_model.parameters())
    print(f"✅ Modèle créé : {num_params:,} paramètres")
    print(f"📊 Architecture : Conv2D (16→32→64→128) + Flatten + FC(128→4)")
 
@@ -122,7 +121,7 @@ Dans l'exemple, l'entrée $$224×224$$ est réduite **4 fois** par MaxPool(2) : 
    # Loss simple : MSE sur les coordonnées, car c'est une régression (chapitre 2).
    # Pour une classification, on utiliserait nn.CrossEntropyLoss (chapitre 3, section 6.1)
    criterion = nn.MSELoss()
-   optimizer = optim.Adam(simple_model.parameters(), lr=1e-3)
+   optimizer = optim.Adam(simple_model.parameters(), lr=0.001)
    
    # Fonction de préparation des targets
    def prepare_single_box_target(targets, img_size=224):
@@ -164,77 +163,61 @@ Dans l'exemple, l'entrée $$224×224$$ est réduite **4 fois** par MaxPool(2) : 
 6.3. Entraînement (boucles train/val)
 ~~~~~~~~~~~~~~~~~~~
 
-Boucles simples d'entraînement et d'évaluation.
+Même boucle qu'au chapitre 5 (section 6.1), avec deux différences : le ``DataLoader`` renvoie un tuple d'images (``collate_fn``, section 5.2), qu'on regroupe en un tenseur avec ``torch.stack``, et les targets sont converties par ``prepare_single_box_target`` (section 6.2).
 
 .. code-block:: python
-   
-   # Fonctions d'entraînement
-   def train_simple_epoch(model, criterion, optimizer, loader):
-       model.train()
-       total_loss = 0
-       
-       for images, targets in tqdm(loader, desc="Training"):
-           images = torch.stack([img.to(device) for img in images])
-           
-           # Préparer les targets
-           batch_targets = prepare_single_box_target(targets)
-           
-           # Forward
-           preds = model(images)
-           loss = criterion(preds, batch_targets)
-           
-           # Backward
+
+   num_epochs = 20
+   best_val_loss = float('inf')
+   history = {'train_loss': [], 'val_loss': []}   # pour tracer les courbes ensuite
+
+   for epoch in range(num_epochs):
+       # PHASE D'ENTRAÎNEMENT
+       simple_model.train()
+       train_loss = 0.0
+
+       for images, targets in train_loader:
+           images = torch.stack(images).to(device)      # tuple de [3, 224, 224] -> [batch, 3, 224, 224]
+           boxes = prepare_single_box_target(targets)   # [batch, 4]
+
+           # Forward pass
+           outputs = simple_model(images)
+           loss = criterion(outputs, boxes)
+
+           # Backward pass et optimisation
            optimizer.zero_grad()
            loss.backward()
            optimizer.step()
-           
-           total_loss += loss.item() * images.size(0)
-       
-       return total_loss / len(loader.dataset)
-   
-   @torch.no_grad()
-   def eval_simple_epoch(model, criterion, loader):
-       model.eval()
-       total_loss = 0
-       
-       for images, targets in loader:
-           images = torch.stack([img.to(device) for img in images])
-           batch_targets = prepare_single_box_target(targets)
-           
-           preds = model(images)
-           loss = criterion(preds, batch_targets)
-           
-           total_loss += loss.item() * images.size(0)
-       
-       return total_loss / len(loader.dataset)
-   
-.. slide::
 
-**Lancer l'entraînement** :
+           train_loss += loss.item()
 
-.. code-block:: python
-   print("\n🚀 Entraînement du CNN simple...\n")
-   
-   num_epochs = 20
-   best_val = float('inf')
-   history = {'train_loss': [], 'val_loss': []}
-   
-   for epoch in range(num_epochs):
-       train_loss = train_simple_epoch(simple_model, criterion, optimizer, train_loader)
-       val_loss = eval_simple_epoch(simple_model, criterion, val_loader)
+       # PHASE DE VALIDATION
+       simple_model.eval()
+       val_loss = 0.0
 
+       with torch.no_grad():
+           for images, targets in val_loader:
+               images = torch.stack(images).to(device)
+               boxes = prepare_single_box_target(targets)
+               outputs = simple_model(images)
+               loss = criterion(outputs, boxes)
+               val_loss += loss.item()
+
+       # Moyennes sur l'époque
+       train_loss /= len(train_loader)      # loss moyenne par batch (chapitre 3)
+       val_loss /= len(val_loader)
        history['train_loss'].append(train_loss)
        history['val_loss'].append(val_loss)
-       
-       print(f"Epoch {epoch+1:02d} | Train: {train_loss:.4f} | Val: {val_loss:.4f}")
-       
-       if val_loss < best_val:
-           best_val = val_loss
+
+       print(f"Epoch [{epoch+1}/{num_epochs}] Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}")
+
+       # Sauvegarder le meilleur modèle (state_dict, chapitre 5 section 5)
+       if val_loss < best_val_loss:
+           best_val_loss = val_loss
            torch.save(simple_model.state_dict(), 'simple_bbox_regressor.pth')
-           print("  ✅ Meilleur modèle sauvegardé!")
-   
-   print("\n✅ Entraînement terminé!")
-   print(f"📁 Modèle sauvegardé : simple_bbox_regressor.pth")
+           print("  ✓ Meilleur modèle sauvegardé!")
+
+   print("Entraînement terminé!")
 
 .. note::
    
@@ -312,7 +295,6 @@ Calcul de l'**IoU moyen** (Intersection over Union) sur le test set.
        return iou
 
 
-   @torch.no_grad()
    def evaluate_all_dataset(model, dataset, img_size=224, iou_threshold=0.5):
        """
        Évalue le modèle sur toutes les images du dataset.
@@ -334,12 +316,13 @@ Calcul de l'**IoU moyen** (Intersection over Union) sur le test set.
 
        print(f"📊 Évaluation sur {total_images} images...\n")
 
-       for i in tqdm(range(total_images), desc="Évaluation"):
+       for i in range(total_images):
            img, target = dataset[i]
 
            # Prédiction
            img_batch = img.unsqueeze(0).to(device)
-           pred = model(img_batch)[0].cpu()
+           with torch.no_grad():
+               pred = model(img_batch)[0].cpu()
 
            # Convertir la prédiction en format [x1, y1, x2, y2]
            x_c, y_c, w, h = pred.numpy()
@@ -425,7 +408,6 @@ Affichage des prédictions sur une grille d'images avec GT (vert) et prédiction
 
 .. code-block:: python
 
-   @torch.no_grad()
    def visualize_best_worst_predictions(model, dataset, results, img_size=224, num_samples=4):
        """
        Affiche les meilleures et pires prédictions du modèle.
@@ -457,7 +439,8 @@ Affichage des prédictions sur une grille d'images avec GT (vert) et prédiction
 
            # Prédiction
            img_batch = img.unsqueeze(0).to(device)
-           pred = model(img_batch)[0].cpu()
+           with torch.no_grad():
+               pred = model(img_batch)[0].cpu()
 
            # Convertir l'image pour affichage
            img_np = img.permute(1, 2, 0).numpy()
@@ -507,7 +490,8 @@ Affichage des prédictions sur une grille d'images avec GT (vert) et prédiction
 
            # Prédiction
            img_batch = img.unsqueeze(0).to(device)
-           pred = model(img_batch)[0].cpu()
+           with torch.no_grad():
+               pred = model(img_batch)[0].cpu()
 
            # Convertir l'image pour affichage
            img_np = img.permute(1, 2, 0).numpy()
@@ -1005,8 +989,7 @@ Créons une fonction qui réutilise **le même split** que ``SimpleBBoxRegressor
        classes_file,
        output_dir='data_yolo',
        seed=42,
-       train_ratio=0.70,
-       val_ratio=0.15
+       proportions=[0.70, 0.15, 0.15]
    ):
        """
        Réorganise un dataset YOLO existant pour l'entraînement YOLO Ultralytics.
@@ -1018,8 +1001,7 @@ Créons une fonction qui réutilise **le même split** que ``SimpleBBoxRegressor
            classes_file: Fichier classes.txt (ex: 'dataset_yolo/classes.txt')
            output_dir: Dossier de sortie pour la structure YOLO (défaut: 'data_yolo')
            seed: Seed pour reproductibilité (défaut: 42, MÊME que SimpleBBoxRegressor)
-           train_ratio: Proportion du train set (défaut: 0.70)
-           val_ratio: Proportion du val set (défaut: 0.15)
+           proportions: proportions train/val/test (défaut: [0.70, 0.15, 0.15], MÊMES que section 5.2)
        
        Returns:
            Path vers le dossier output_dir, liste des classes
@@ -1047,19 +1029,14 @@ Créons une fonction qui réutilise **le même split** que ``SimpleBBoxRegressor
            print("❌ Aucune image trouvée ! Vérifiez le chemin.")
            return None, []
        
-       # 3. Créer le MÊME split que SimpleBBoxRegressor
-       total_size = len(image_files)
-       train_size = int(train_ratio * total_size)
-       val_size = int(val_ratio * total_size)
-       test_size = total_size - train_size - val_size
-       
+       # 3. Créer le MÊME split que SimpleBBoxRegressor (mêmes proportions et même graine qu'en section 5.2)
        train_indices, val_indices, test_indices = random_split(
            range(len(image_files)),
-           [train_size, val_size, test_size],
+           proportions,
            generator=torch.Generator().manual_seed(seed)
        )
        
-       print(f"📊 Split (seed={seed}) : {train_size} train, {val_size} val, {test_size} test")
+       print(f"📊 Split (seed={seed}) : {len(train_indices)} train, {len(val_indices)} val, {len(test_indices)} test")
        
        # 4. Copier les fichiers dans les bons dossiers
        splits = {

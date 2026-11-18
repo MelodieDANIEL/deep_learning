@@ -38,9 +38,9 @@ Au chapitre 5, nous avons travaillé sur la **classification d'images** : le mod
 .. code-block:: python
 
    # Classification : une image → une classe
-   output = model(image)  # Shape: [batch_size, num_classes]
-   predicted_class = torch.argmax(output, dim=1)
-   print(f"Cette image contient : {classes[predicted_class]}")
+   outputs = model(images)                # [batch, num_classes] : un score par classe
+   _, predicted = torch.max(outputs, 1)   # classe prédite pour chaque image (chapitre 5, section 6.1)
+   print(f"La première image contient : {classes[predicted[0]]}")
 
 .. slide::
 
@@ -82,26 +82,33 @@ Une **boîte englobante** est un rectangle défini par 4 valeurs. Il existe plus
 **Format 2 : (x, y, w, h)** —> coin + dimensions (Label Studio format standard)
 
 - ``x, y`` : coordonnées du coin supérieur gauche (en % )
-- ``w`` : largeur de la boîte
-- ``h`` : hauteur de la boîte
+- ``w`` : largeur de la boîte (en %)
+- ``h`` : hauteur de la boîte (en %)
 
 **Format 3 : (x_center, y_center, w, h) normalisé** (Label Studio format utilisé pour YOLO)
 
-- ``x_center, y_center`` : coordonnées du centre (normalisées entre 0 et 1)
-- ``w, h`` : largeur et hauteur (normalisées entre 0 et 1)
+- ``x_center, y_center`` : coordonnées du centre de la boîte (normalisées entre 0 et 1)
+- ``w`` = largeur de la **boîte** ÷ largeur de l'**image**, et ``h`` = hauteur de la **boîte** ÷ hauteur de l'**image** (entre 0 et 1). Ce sont les dimensions totales de la boîte, d'un bord à l'autre, pas depuis le centre
 
 .. code-block:: text
 
-   Exemple d'une image 640×480 pixels avec un objet :
+   Exemple d'une image 640×480 pixels (largeur 640, hauteur 480) avec un objet :
    
    Format PyTorch : [100, 50, 300, 250]
-   → Rectangle du pixel (100,50) au pixel (300,250)
+   → Rectangle du pixel (100,50) au pixel (300,250) : x1 = 100, y1 = 50, x2 = 300, y2 = 250
    
    Format Label Studio : [15.625, 10.417, 31.25, 41.67]
    → Coin en (15.625%, 10.417%), taille 31.25%×41.67% de l'image
    
    Format YOLO : [0.3125, 0.3125, 0.3125, 0.4167]
-   → Centre à 31.25% de la largeur/hauteur, boîte de 31.25%×41.67% de l'image
+   1) Centre de la boîte en pixels : au milieu des deux bords
+      x = (x1 + x2) / 2 = (100 + 300) / 2 = 200      y = (y1 + y2) / 2 = (50 + 250) / 2 = 150
+   2) Taille de la boîte en pixels : d'un bord à l'autre
+      largeur = x2 - x1 = 300 - 100 = 200            hauteur = y2 - y1 = 250 - 50 = 200
+   3) Normalisation : on divise les valeurs en x par la largeur de l'image (640)
+      et les valeurs en y par la hauteur de l'image (480)
+      x_center = 200 / 640 = 0.3125                  y_center = 150 / 480 = 0.3125
+      w        = 200 / 640 = 0.3125                  h        = 200 / 480 = 0.4167
 
 .. warning::
 
@@ -509,7 +516,7 @@ Au premier lancement, Label Studio vous demande de créer un compte.
 
    💡 **Travail collaboratif**
    
-   Si vous souhaitez travailler en équipe, vous pourrez inviter vos collègues via **"Invite People"** (voir section 3.5). Label Studio leur enverra automatiquement un email d'invitation.
+   Pour travailler à plusieurs sur le même projet, voir la section 3.5.
 
 **Si vous avez déjà un compte** : entrez simplement votre email et mot de passe pour vous connecter.
 
@@ -556,22 +563,6 @@ Après avoir choisi le template, une interface apparaît où vous pouvez défini
 3. Répétez pour chaque classe d'objet à détecter
 4. Cliquez sur "Save" pour valider
 
-**Si vous préférez éditer le code XML directement**, vous pouvez voir/modifier le code de configuration :
-
-**Exemple pour détecter des bouteilles et des gobelets** :
-
-.. code-block:: xml
-
-   <View>
-     <Image name="image" value="$image"/>
-     <RectangleLabels name="label" toName="image">
-       <Label value="bouteille" background="green"/>
-       <Label value="gobelet" background="blue"/>
-     </RectangleLabels>
-   </View>
-
-💡 **Astuce** : commencez avec une seule classe pour simplifier. Vous pourrez toujours ajouter des classes plus tard.
-
 .. slide::
 
 3.4. Annoter les images
@@ -609,61 +600,31 @@ Après avoir choisi le template, une interface apparaît où vous pouvez défini
 
 .. slide::
 
-3.5. Annotation collaborative : inviter des personnes
+3.5. Annotation collaborative
 ~~~~~~~~~~~~~~~~~~~
 
-Pour travailler en équipe sur l'annotation, suivez ces étapes :
+.. note::
 
-**Étape 1 : Inviter des personnes**
+   🏫 **À l'IUT : travailler en binôme (ou plus) sur des PC différents**
 
-1. Dans Label Studio, cliquez sur l'icône **Organization** (en haut à droite, icône avec plusieurs personnes)
+   Chaque PC a son propre Label Studio, avec ses propres comptes. Pour annoter le même projet, tout le groupe se connecte au Label Studio d'**une seule** personne :
 
-2. Allez dans l'onglet **"People"**
+   1. Une personne du groupe lance Label Studio (section 3.1) : il tourne sur ``http://localhost:8080``.
+   2. Cette personne récupère l'adresse IP de son PC en tapant ``ifconfig`` dans un terminal (ligne ``inet``, autre que ``127.0.0.1``), par exemple ``192.168.1.27``.
+   3. Les autres ouvrent cette adresse à la place de ``localhost`` dans leur navigateur, par exemple ``http://192.168.1.27:8080``.
+   4. Ils y créent un compte (**Sign up**) : un compte créé sur leur propre PC n'existe pas sur ce Label Studio. Ils voient ensuite directement les projets de la personne qui l'a lancé.
 
-3. Cliquez sur le bouton **"Invite People"**
-
-4. Entrez les adresses email de vos collègues (ex : ``marie.dubois@exemple.com``, ``paul.martin@exemple.com``)
-
-5. Choisissez le rôle pour chaque personne :
-   
-   - **Annotator** : peut uniquement annoter les images
-   - **Reviewer** : peut annoter ET valider/corriger les annotations des autres
-   - **Manager** : peut gérer les projets et les paramètres
-
-6. Cliquez sur **"Send Invitations"**
-
-7. Vos collègues recevront un email avec un lien pour créer leur compte
+   *Optionnel* : pour que seules les personnes invitées puissent créer un compte, lancez Label Studio avec ``DISABLE_SIGNUP_WITHOUT_LINK=true label-studio start``, puis envoyez aux autres le lien d'inscription donné par **Organization** → **"Invite People"** (en remplaçant ``localhost`` par l'adresse IP s'il y apparaît).
 
 .. slide::
 
-**Étape 2 : Ajouter les membres à votre projet**
+Une fois connectés au même Label Studio, tous les membres du groupe voient le même projet et peuvent annoter en même temps :
 
-Une fois les invitations acceptées :
+1. Ouvrez le projet d'annotation.
+2. Chacun clique sur **"Label All Tasks"** : Label Studio donne à chacun la prochaine image pas encore annotée, et jamais une image qu'un autre est en train d'annoter. Le travail se répartit donc tout seul.
+3. Quand toutes les images sont annotées, **une seule** personne exporte le dataset (section 4).
 
-1. Ouvrez votre projet d'annotation
-2. Allez dans **"Settings"** → **"Members"**
-3. Cliquez sur **"Add Member"**
-4. Sélectionnez les personnes dans la liste
-5. Assignez-leur le rôle approprié pour ce projet
-
-**Étape 3 : Répartir le travail (optionnel mais recommandé)**
-
-Pour éviter que deux personnes annotent les mêmes images :
-
-1. Dans le projet, onglet **"Tasks"** (liste des images)
-2. Sélectionnez un groupe d'images (ex : images 1-50)
-3. Menu **"Actions"** → **"Assign Annotators"**
-4. Choisissez la personne
-5. Répétez pour les autres groupes d'images
-
-**Exemple de workflow collaboratif** :
-
-- **Marie** (Annotator) : images 1-50
-- **Paul** (Annotator) : images 51-100
-- **Sophie** (Reviewer) : vérifie et corrige toutes les annotations
-- **Vous** (Manager) : supervise et exporte les données finales
-
-💡 **Astuce qualité** : faites annoter 10 images par deux personnes différentes et comparez. Un IoU (Intersection over Union) > 0.7 indique une bonne cohérence entre annotateurs.
+💡 **Astuce** : avant de commencer, mettez-vous d'accord sur la façon d'annoter (boîte collée aux bords de l'objet, objets à moitié visibles annotés ou non). Des annotations cohérentes entre les membres du groupe donnent un meilleur modèle.
 
 .. slide::
 
@@ -704,42 +665,21 @@ Le format **"YOLO with Images"** est un export complet proposé par Label Studio
 4.2. Structure du format YOLO
 ~~~~~~~~~~~~~~~~~~~
 
-**Format d'annotation YOLO** : un fichier texte par image avec des coordonnées normalisées.
+**Format d'annotation YOLO** : un fichier texte par image, avec une ligne par objet.
 
-**Exemple de fichier** ``labels/frame_00001.txt`` :
+**Exemple de fichier** ``labels/frame_00001.txt`` (deux objets) :
 
 .. code-block:: text
 
-   0 0.3125 0.3125 0.3125 0.4167
    1 0.6250 0.5417 0.1562 0.2500
+   0 0.3125 0.3125 0.3125 0.4167
 
 **Format d'une ligne** : ``class_id x_center y_center width height``
 
-**Toutes les valeurs sont normalisées entre 0 et 1** :
-
-- ``class_id`` : entier (0, 1, 2...) correspondant à l'index de la classe
-- ``x_center`` : position X du centre de la boîte / largeur de l'image
-- ``y_center`` : position Y du centre de la boîte / hauteur de l'image
-- ``width`` : largeur de la boîte / largeur de l'image
-- ``height`` : hauteur de la boîte / hauteur de l'image
+- ``class_id`` : entier (0, 1, 2...) correspondant à l'index de la classe dans ``classes.txt``
+- ``x_center y_center width height`` : la boîte au Format 3 (section 1.3), normalisée entre 0 et 1. La 2e ligne est la boîte de l'exemple de la section 1.3
 
 .. slide::
-
-**Exemple concret** (image $$640×480$$, objet de 100,50 à 300,200) :
-
-.. code-block:: python
-
-   # Coordonnées en pixels (format classique)
-   x1, y1, x2, y2 = 100, 50, 300, 200
-   img_width, img_height = 640, 480
-   
-   # Conversion en format YOLO
-   x_center = ((x1 + x2) / 2) / img_width   # Centre X : (100+300)/2 / 640 = 0.3125
-   y_center = ((y1 + y2) / 2) / img_height  # Centre Y : (50+200)/2 / 480 = 0.2604
-   width = (x2 - x1) / img_width            # Largeur : (300-100) / 640 = 0.3125
-   height = (y2 - y1) / img_height          # Hauteur : (200-50) / 480 = 0.3125
-   
-   # Résultat : "0 0.3125 0.2604 0.3125 0.3125"
 
 **Structure complète après export** :
 
@@ -772,37 +712,12 @@ Le format **"YOLO with Images"** est un export complet proposé par Label Studio
 4.3. Étapes pour exporter depuis Label Studio
 ~~~~~~~~~~~~~~~~~~~
 
-**1. Accéder à l'export**
+1. Ouvrez votre projet dans Label Studio et cliquez sur le bouton **"Export"** en haut de la page.
+2. Sélectionnez le format **"YOLO with Images"** (section 4.1). ⚠️ Le format **"YOLO"** seul n'exporte pas les images.
+3. Cliquez sur **"Export"** : Label Studio télécharge une archive ZIP, nommée généralement ``project-X-at-YYYY-MM-DD-HH-MM-XX.zip``.
+4. Décompressez l'archive (double-clic dessus) dans un dossier ``dataset_yolo/``.
 
-- Ouvrez votre projet dans Label Studio
-- En haut de la page, cliquez sur le bouton **"Export"**
-
-**2. Choisir le format**
-
-- Dans la liste des formats d'export, sélectionnez : **"YOLO"**
-- Label Studio génère automatiquement l'archive
-
-**3. Télécharger l'archive**
-
-- Cliquez sur **"Export"** pour télécharger le fichier ZIP
-- Le fichier se nomme généralement ``project-X-at-YYYY-MM-DD-HH-MM-XX.zip``
-
-**4. Extraire l'archive**
-
-.. code-block:: bash
-
-   # Décompresser l'archive
-   unzip project-1-at-2024-01-15-14-30-00.zip -d dataset_yolo/
-   
-   # Vérifier le contenu
-   ls -R dataset_yolo/
-   
-   # Vous devriez voir :
-   # dataset_yolo/
-   # ├── images/
-   # ├── labels/
-   # ├── classes.txt
-   # └── notes.json
+Vous devez obtenir la structure de la section 4.2 (``images/``, ``labels/``, ``classes.txt`` et ``notes.json``).
 
 .. slide::
 
@@ -871,32 +786,12 @@ Avant de commencer l'entraînement, vérifiez toujours que l'export est correct 
 📖 5. Créer un Dataset PyTorch pour le format YOLO
 ----------------------
 
-Maintenant que vous avez exporté votre dataset au format YOLO, créons un Dataset PyTorch personnalisé pour le charger.
+Maintenant que vous avez exporté votre dataset au format YOLO (structure de dossiers de la section 4.2), créons un Dataset PyTorch personnalisé pour le charger.
 
-5.1. Structure de dossiers YOLO
+5.1. Classe YOLODetectionDataset
 ~~~~~~~~~~~~~~~~~~~
 
-Après extraction de l'archive ZIP, votre dataset doit avoir cette structure :
-
-.. code-block:: text
-
-   dataset_yolo/
-   ├── images/              # Toutes vos images annotées
-   │   ├── frame_00001.jpg
-   │   ├── frame_00002.jpg
-   │   └── ...
-   ├── labels/              # Fichiers .txt (même nom que l'image)
-   │   ├── frame_00001.txt
-   │   ├── frame_00002.txt
-   │   └── ...
-   └── classes.txt          # Liste des classes (une par ligne)
-
-.. slide::
-
-5.2. Classe YOLODetectionDataset
-~~~~~~~~~~~~~~~~~~~
-
-Voici une implémentation complète qui charge le format YOLO et gère intelligemment le redimensionnement :
+Voici une implémentation complète qui charge le format YOLO. Les images ont déjà été recadrées et redimensionnées en $$224×224$$ à l'extraction (section 2.5), avant l'annotation : le Dataset n'a donc pas besoin de les redimensionner.
 
 .. code-block:: python
 
@@ -912,22 +807,18 @@ Voici une implémentation complète qui charge le format YOLO et gère intellige
        Compatible avec l'export YOLO de Label Studio.
        """
        
-       def __init__(self, images_dir, labels_dir, classes_file, img_size=224, custom_transforms=None):
+       def __init__(self, images_dir, labels_dir, classes_file, custom_transforms=None):
            """
            Args:
                images_dir: dossier contenant les images
                labels_dir: dossier contenant les labels .txt au format YOLO
                classes_file: chemin vers classes.txt
-               img_size: taille de redimensionnement (défaut: 224x224)
                custom_transforms: transformations à appliquer (optionnel)
            """
            self.images_dir = images_dir
            self.labels_dir = labels_dir
-           self.img_size = img_size
            self.custom_transforms = custom_transforms
            
-           # Pas de transformation automatique - on gérera le resize manuellement
-           # pour ajuster les coordonnées des bounding boxes en conséquence
            self.to_tensor = transforms.ToTensor()
            
            # Charger les noms de classes
@@ -954,26 +845,11 @@ Voici une implémentation complète qui charge le format YOLO et gère intellige
                target: dict avec 'boxes' (format [x1, y1, x2, y2] en pixels), 
                        'labels', 'image_id'
            """
-           # Charger l'image
+           # Charger l'image (déjà en 224×224 depuis l'extraction, section 2.5)
            img_filename = self.image_files[idx]
            img_path = os.path.join(self.images_dir, img_filename)
            img = Image.open(img_path).convert('RGB')
-           orig_width, orig_height = img.size
-           
-           # Calculer le ratio de resize pour garder l'aspect ratio
-           scale = self.img_size / max(orig_width, orig_height)
-           new_width = int(orig_width * scale)
-           new_height = int(orig_height * scale)
-           
-           # Resize en gardant l'aspect ratio
-           img = img.resize((new_width, new_height), Image.BILINEAR)
-           
-           # Créer une image carrée avec padding noir
-           padded_img = Image.new('RGB', (self.img_size, self.img_size), (0, 0, 0))
-           # Centrer l'image resizée
-           paste_x = (self.img_size - new_width) // 2
-           paste_y = (self.img_size - new_height) // 2
-           padded_img.paste(img, (paste_x, paste_y))
+           img_width, img_height = img.size
            
            # Charger le label correspondant
            label_filename = os.path.splitext(img_filename)[0] + '.txt'
@@ -994,23 +870,17 @@ Voici une implémentation complète qui charge le format YOLO et gère intellige
                            width = float(parts[3])
                            height = float(parts[4])
                            
-                           # Convertir du format YOLO normalisé vers pixels dans l'image originale
-                           x_center_orig = x_center * orig_width
-                           y_center_orig = y_center * orig_height
-                           width_orig = width * orig_width
-                           height_orig = height * orig_height
+                           # Convertir du format YOLO normalisé vers pixels (section 1.3)
+                           x_center = x_center * img_width
+                           y_center = y_center * img_height
+                           width = width * img_width
+                           height = height * img_height
                            
-                           # Appliquer le scale et le padding
-                           x_center_scaled = x_center_orig * scale + paste_x
-                           y_center_scaled = y_center_orig * scale + paste_y
-                           width_scaled = width_orig * scale
-                           height_scaled = height_orig * scale
-                           
-                           # Convertir en format [x1, y1, x2, y2]
-                           x1 = x_center_scaled - width_scaled / 2
-                           y1 = y_center_scaled - height_scaled / 2
-                           x2 = x_center_scaled + width_scaled / 2
-                           y2 = y_center_scaled + height_scaled / 2
+                           # Convertir en format [x1, y1, x2, y2] : coins de la boîte (Format 1, section 1.3)
+                           x1 = x_center - width / 2
+                           y1 = y_center - height / 2
+                           x2 = x_center + width / 2
+                           y2 = y_center + height / 2
                            
                            boxes.append([x1, y1, x2, y2])
                            labels.append(class_id + 1)  # +1 car background=0 dans certains modèles
@@ -1031,7 +901,7 @@ Voici une implémentation complète qui charge le format YOLO et gère intellige
                target['labels'] = torch.zeros((0,), dtype=torch.int64)
            
            # Convertir l'image en tensor
-           img = self.to_tensor(padded_img)
+           img = self.to_tensor(img)
            
            # Appliquer les transformations personnalisées si fournies
            if self.custom_transforms:
@@ -1043,18 +913,11 @@ Voici une implémentation complète qui charge le format YOLO et gère intellige
            """Retourne le nom d'une classe depuis son ID (class_id - 1 car on a ajouté 1)."""
            return self.classes[class_id - 1]
 
-.. note::
-
-   💡 **Gestion intelligente du redimensionnement**
-   
-   - L'image est redimensionnée **proportionnellement** pour éviter toute déformation
-   - Un **padding noir** est ajouté pour créer une image carrée
-   - Les **coordonnées des bounding boxes** sont automatiquement ajustées
-   - Les IDs de classes commencent à **1** (0 réservé au background)
+💡 Les IDs de classes commencent à **1** dans ``target['labels']`` (0 est réservé au fond, *background*, dans certains modèles) : ``get_class_name`` retire ce 1.
 
 .. slide::
 
-5.3. Créer les DataLoaders avec split automatique
+5.2. Créer les DataLoaders avec split automatique
 ~~~~~~~~~~~~~~~~~~~
 
 Chargez le dataset et créez les splits train/val/test :
@@ -1070,26 +933,20 @@ Chargez le dataset et créez les splits train/val/test :
        classes_file='dataset_yolo/classes.txt'
    )
 
-   # Split : 70% train, 15% val, 15% test
-   total_size = len(full_dataset)
-   train_size = int(0.70 * total_size)
-   val_size = int(0.15 * total_size)
-   test_size = total_size - train_size - val_size
-
-   train_dataset, val_dataset, test_dataset = random_split(
-       full_dataset, 
-       [train_size, val_size, test_size],
-       generator=torch.Generator().manual_seed(42)
-   )
+   # Diviser en train (70 %), validation (15 %) et test (15 %) avec random_split, comme au chapitre 5 (section 6.1)
+   proportions = [0.70, 0.15, 0.15]
+   train_dataset, val_dataset, test_dataset = random_split(full_dataset, proportions, generator=torch.Generator().manual_seed(42))
 
    print(f"\n📂 Split du dataset :")
    print(f"   Train : {len(train_dataset)} images")
    print(f"   Val   : {len(val_dataset)} images")
    print(f"   Test  : {len(test_dataset)} images")
 
-   # Créer les dataloaders
+   # collate_fn dit au DataLoader comment regrouper les exemples d'un batch. Par défaut, il empile les boîtes
+   # de toutes les images en un seul tenseur : impossible ici, car chaque image a un nombre différent de boîtes.
+   # zip(*batch) transforme [(img0, target0), (img1, target1), ...] en (img0, img1, ...) et (target0, target1, ...) :
+   # le DataLoader renvoie donc un tuple d'images et un tuple de targets
    def collate_fn(batch):
-       """Fonction nécessaire car chaque image a un nombre différent d'objets."""
        return tuple(zip(*batch))
 
    train_loader = DataLoader(
@@ -1122,7 +979,7 @@ Chargez le dataset et créez les splits train/val/test :
 
 .. slide::
 
-5.4. Visualiser les données chargées
+5.3. Visualiser les données chargées
 ~~~~~~~~~~~~~~~~~~~
 
 Toujours vérifier visuellement que le Dataset charge correctement les images et bounding boxes :
@@ -1181,7 +1038,7 @@ Toujours vérifier visuellement que le Dataset charge correctement les images et
 
 **Points à vérifier** :
 
-- ✅ Les images sont bien carrées ($$224×224$$ par défaut)
+- ✅ Les images sont bien carrées ($$224×224$$, section 2.5)
 - ✅ Les bounding boxes englobent correctement les objets
 - ✅ Les labels affichés correspondent aux objets
 - ✅ Pas de déformation visible des objets
