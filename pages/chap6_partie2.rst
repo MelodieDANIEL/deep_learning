@@ -31,8 +31,6 @@ Pour des cas simples avec **1 seul objet par image**, on peut utiliser une appro
    💡 **Quand utiliser cette approche ?**
    
    ✅ **OUI** : 1 objet par image, objet centré, peu de variations (ex: détection de visage, logo)
-   
-   ❌ **NON** : plusieurs objets, abscence de l'objet, objets qui se chevauchent, etc.
 
 .. slide::
     
@@ -110,7 +108,7 @@ Dans l'exemple, l'entrée $$224×224$$ est réduite **4 fois** par MaxPool(2) : 
 
 .. slide::
 
-6.2. Loss et optimiseur
+6.2. Loss, optimiseur et DataLoaders
 ~~~~~~~~~~~~~~~~~~~
 
 **Loss MSE** pour les coordonnées normalisées (x_center, y_center, width, height) + **préparation des targets**.
@@ -146,7 +144,7 @@ Dans l'exemple, l'entrée $$224×224$$ est réduite **4 fois** par MaxPool(2) : 
            width = torch.clamp(width, 0, 1)
            height = torch.clamp(height, 0, 1)
            
-           batch_targets.append(torch.tensor([x_center, y_center, width, height], device=device))
+           batch_targets.append(torch.tensor([x_center, y_center, width, height]))
        
        return torch.stack(batch_targets)
 
@@ -160,10 +158,33 @@ Dans l'exemple, l'entrée $$224×224$$ est réduite **4 fois** par MaxPool(2) : 
 
 .. slide::
 
+**Créer les DataLoaders** :
+
+.. code-block:: python
+
+   from torch.utils.data import DataLoader
+
+   # collate_fn dit au DataLoader comment regrouper en un batch la liste des couples (image, target) renvoyés par le Dataset.
+   # Par défaut, il empile les boîtes de toutes les images en un seul tenseur : impossible ici, car chaque image
+   # peut avoir un nombre différent de boîtes. On regroupe donc nous-mêmes les images et les boîtes à prédire :
+   def collate_fn(batch):
+       images = torch.stack([image for image, target in batch])               # [batch, 3, 224, 224]
+       boxes = prepare_single_box_target([target for image, target in batch])  # [batch, 4]
+       return images, boxes
+
+   train_loader = DataLoader(train_dataset, batch_size=4, shuffle=True, num_workers=2, collate_fn=collate_fn)
+   val_loader = DataLoader(val_dataset, batch_size=4, shuffle=False, num_workers=2, collate_fn=collate_fn)
+
+   images, boxes = next(iter(train_loader))
+   print(images.shape)   # torch.Size([4, 3, 224, 224]) : 4 images (batch_size=4) de 3×224×224
+   print(boxes.shape)    # torch.Size([4, 4]) : 4 boîtes (une par image), de 4 valeurs chacune (x_center, y_center, w, h)
+
+Comme au chapitre 5, chaque batch contient maintenant un tenseur d'images et un tenseur de cibles : ici les ``boxes``, à la place des ``labels``.
+
+.. slide::
+
 6.3. Entraînement (boucles train/val)
 ~~~~~~~~~~~~~~~~~~~
-
-Même boucle qu'au chapitre 5 (section 6.1), avec deux différences : le ``DataLoader`` renvoie un tuple d'images (``collate_fn``, section 5.2), qu'on regroupe en un tenseur avec ``torch.stack``, et les targets sont converties par ``prepare_single_box_target`` (section 6.2).
 
 .. code-block:: python
 
@@ -175,47 +196,47 @@ Même boucle qu'au chapitre 5 (section 6.1), avec deux différences : le ``DataL
        # PHASE D'ENTRAÎNEMENT
        simple_model.train()
        train_loss = 0.0
-
-       for images, targets in train_loader:
-           images = torch.stack(images).to(device)      # tuple de [3, 224, 224] -> [batch, 3, 224, 224]
-           boxes = prepare_single_box_target(targets)   # [batch, 4]
-
+       
+       for batch_idx, (images, boxes) in enumerate(train_loader):
+           images, boxes = images.to(device), boxes.to(device)
+           
            # Forward pass
            outputs = simple_model(images)
            loss = criterion(outputs, boxes)
-
+           
            # Backward pass et optimisation
            optimizer.zero_grad()
            loss.backward()
            optimizer.step()
-
+           
            train_loss += loss.item()
-
+       
        # PHASE DE VALIDATION
        simple_model.eval()
        val_loss = 0.0
-
+       
        with torch.no_grad():
-           for images, targets in val_loader:
-               images = torch.stack(images).to(device)
-               boxes = prepare_single_box_target(targets)
+           for images, boxes in val_loader:
+               images, boxes = images.to(device), boxes.to(device)
                outputs = simple_model(images)
                loss = criterion(outputs, boxes)
                val_loss += loss.item()
-
+       
        # Moyennes sur l'époque
        train_loss /= len(train_loader)      # loss moyenne par batch (chapitre 3)
        val_loss /= len(val_loader)
        history['train_loss'].append(train_loss)
        history['val_loss'].append(val_loss)
-
-       print(f"Epoch [{epoch+1}/{num_epochs}] Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}")
-
+       
+       print(f"Epoch [{epoch+1}/{num_epochs}]")
+       print(f"  Train Loss: {train_loss:.4f}")
+       print(f"  Val Loss: {val_loss:.4f}")
+       
        # Sauvegarder le meilleur modèle (state_dict, chapitre 5 section 5)
        if val_loss < best_val_loss:
            best_val_loss = val_loss
            torch.save(simple_model.state_dict(), 'simple_bbox_regressor.pth')
-           print("  ✓ Meilleur modèle sauvegardé!")
+           print(f"  ✓ Meilleur modèle sauvegardé!")
 
    print("Entraînement terminé!")
 
@@ -384,6 +405,9 @@ Calcul de l'**IoU moyen** (Intersection over Union) sur le test set.
        print("="*60 + "\n")
 
 
+   # Charger le meilleur modèle sauvegardé (section 6.3), comme au chapitre 5 (section 6.2)
+   simple_model.load_state_dict(torch.load('simple_bbox_regressor.pth'))
+
    # Évaluer sur le test set
    print("🎯 Évaluation complète du modèle sur le test set\n")
    test_results = evaluate_all_dataset(simple_model, test_dataset, img_size=224, iou_threshold=0.5)
@@ -535,10 +559,10 @@ Affichage des prédictions sur une grille d'images avec GT (vert) et prédiction
            print(f"   Image {idx}: IoU = {iou_val:.4f}")
 
        # Titres des lignes
-       axes[0, 0].text(-50, img_size/2, '✅ BEST', rotation=90, 
+       axes[0, 0].text(-50, img_size/2, 'BEST', rotation=90, 
            fontsize=16, fontweight='bold', color='green',
            va='center', ha='center')
-       axes[1, 0].text(-50, img_size/2, '❌ WORST', rotation=90, 
+       axes[1, 0].text(-50, img_size/2, 'WORST', rotation=90, 
            fontsize=16, fontweight='bold', color='red',
            va='center', ha='center')
 
@@ -603,22 +627,8 @@ Pour détecter des objets de tailles très différentes, YOLO11 utilise **3 gril
 
 .. slide::
 
-7.2. Concepts clés : anchors et NMS
+7.2. Concept clé : le NMS
 ~~~~~~~~~~~~~~~~~~~
-
-**C'est quoi un anchor (ancre) ?**
-
-Dans plusieurs anciennes versions de YOLO (par exemple YOLOv2, YOLOv3, YOLOv5 ou YOLOv7), chaque cellule ne prédisait pas ses boîtes « à partir de rien » : elle partait de plusieurs **anchors**, des boîtes de référence prédéfinies avec des proportions différentes, par exemple :
-
-- un petit carré ($$0.2 × 0.2$$ de l'image) pour les petits objets,
-- un rectangle vertical ($$0.1 × 0.3$$) pour les personnes debout,
-- un rectangle horizontal ($$0.4 × 0.2$$) pour les voitures.
-
-Le modèle **ajustait** ces anchors (en les décalant et en les redimensionnant) pour coller aux objets réels. Inconvénient : il fallait choisir les tailles des anchors en fonction du dataset.
-
-Depuis YOLOv8, YOLO est **sans anchor** (*anchor-free*) : comme on l'a vu dans la section 7.1, YOLO11 prédit directement la boîte à partir du centre de chaque cellule. C'est plus simple, et le modèle s'adapte mieux à des objets de formes inhabituelles.
-
-.. slide::
 
 **🧹 C'est quoi le NMS (Non-Maximum Suppression) ?**
 
@@ -791,13 +801,13 @@ Ultralytics génère automatiquement plusieurs fichiers de résultats dans ``run
 .. code-block:: python
 
    # Afficher les résultats de l'entraînement
-   from IPython.display import Image, display
+   from IPython.display import Image as ImageIPython, display   # renommé pour ne pas écraser Image de PIL (Dataset, section 5.1)
    
    # Afficher la courbe de loss
    results_path = 'runs/detect/yolo11_coco128/results.png'
    try:
        print(f"📊 Affichage des courbes d'entraînement YOLO\n")
-       display(Image(filename=results_path))
+       display(ImageIPython(filename=results_path))
        print(f"\n✅ Graphiques chargés depuis : {results_path}")
    except FileNotFoundError:
        print(f"⚠️ Fichier non trouvé : {results_path}")
@@ -828,7 +838,7 @@ Si vous voulez entraîner sur le dataset complet après avoir testé avec COCO12
 
 .. slide::
 
-7.6. Évaluation sur le test set
+7.6. Évaluation du modèle
 ~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
@@ -837,7 +847,7 @@ Si vous voulez entraîner sur le dataset complet après avoir testé avec COCO12
    model = YOLO('runs/detect/yolo11_coco128/weights/best.pt')
    print("✅ Modèle chargé !")
    
-   # Évaluer sur le validation set
+   # Évaluer sur le validation set (pour COCO128, ce sont les mêmes 128 images que l'entraînement : scores optimistes)
    metrics = model.val()
 
    print(f"📊 mAP@0.5: {metrics.box.map50:.3f}")
@@ -867,7 +877,7 @@ Une fois le modèle entraîné, vous pouvez l'utiliser pour détecter des objets
 
    # Prédiction sur une image
    results = model.predict(
-       source='path/to/image.jpg',  # Chemin vers votre image, dossier, vidéo, ou URL.
+       source=f"{data_dict['path']}/images/train2017/000000000009.jpg",  # Une image de COCO128 (section 7.5.2), ou le chemin vers votre image, dossier, vidéo, ou URL.
        conf=0.5,                    # Seuil de confiance minimum. Le modèle ne garde que les détections avec une confiance ≥ 50 %.
        iou=0.45,                    # Seuil NMS (élimination des doublons). Élimine les boîtes qui se chevauchent trop (IoU > 45 %) pour éviter les doublons.
        show=False,                  # Ne pas afficher automatiquement
@@ -922,7 +932,7 @@ Une fois le modèle entraîné, vous pouvez l'utiliser pour détecter des objets
 
    # Prédire sur un dossier
    results = model.predict(
-       source='datasets/coco/images/val2017/',
+       source=f"{data_dict['path']}/images/train2017",   # dossier des images de COCO128 (section 7.5.2)
        conf=0.5,
        save=True,            # Sauvegarder les images annotées
        project='runs/detect',
@@ -1252,7 +1262,8 @@ Testons YOLO sur les **15% d'images de test** (jamais vues pendant l'entraîneme
            conf=0.5,                   # ADAPTEZ : seuil de confiance
            save=True,
            project='runs/detect',
-           name='yolo_test_predictions'
+           name='yolo_test_predictions',
+           exist_ok=True               # même dossier pour toutes les images (sinon un nouveau dossier par image)
        )
        print(f"   ✅ {img_path.name}")
    
@@ -1272,20 +1283,42 @@ Testons YOLO sur les **15% d'images de test** (jamais vues pendant l'entraîneme
 8.5. Comparaison SimpleBBoxRegressor vs YOLO
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Maintenant que nous avons entraîné et testé les deux modèles sur **exactement le même dataset** (même split avec seed=42), comparons leurs performances :
+Maintenant que nous avons entraîné et testé les deux modèles sur **exactement le même dataset** (même split avec seed=42), comparons leurs performances. Pour comparer ce qui est comparable, YOLO est évalué avec **la même fonction** que ``SimpleBBoxRegressor`` (``evaluate_all_dataset``, section 6.4) : IoU moyen et proportion d'images avec IoU ≥ 0.5.
 
 .. code-block:: python
 
    import pandas as pd
    import matplotlib.pyplot as plt
 
-   def compare_models(simple_results, yolo_metrics):
+   # Pour utiliser evaluate_all_dataset (section 6.4), YOLO doit se comporter comme SimpleBBoxRegressor :
+   # model(images) doit renvoyer une boîte (x_center, y_center, w, h) normalisée par image
+   class YOLOCommeCNN:
+       def __init__(self, yolo_model):
+           self.yolo_model = yolo_model
+
+       def eval(self):
+           pass   # appelée par evaluate_all_dataset : rien à faire, predict() est déjà en mode évaluation
+
+       def __call__(self, images):
+           # __call__ s'exécute quand on écrit model(images), comme forward pour un nn.Module
+           # images : [1, 3, 224, 224], valeurs dans [0, 1] (Dataset de la partie 1, section 5.1)
+           result = self.yolo_model.predict(images, imgsz=224, verbose=False)[0]
+           if len(result.boxes) == 0:
+               return torch.zeros(1, 4)                   # aucune détection : boîte vide, donc IoU = 0
+           best = result.boxes.conf.argmax()              # 1 objet par image : on garde la boîte la plus confiante
+           return result.boxes.xywhn[best].unsqueeze(0)   # [1, 4] : (x_center, y_center, w, h) normalisés
+
+   # YOLO évalué sur les MÊMES images de test, avec la MÊME fonction que SimpleBBoxRegressor
+   yolo_results = evaluate_all_dataset(YOLOCommeCNN(yolo_model), test_dataset, img_size=224, iou_threshold=0.5)
+
+
+   def compare_models(simple_results, yolo_results):
        """
        Compare les performances de SimpleBBoxRegressor et YOLO.
        
        Args:
-           simple_results: dict des résultats de SimpleBBoxRegressor (section 6.4)
-           yolo_metrics: métriques YOLO retournées par model.val()
+           simple_results: résultats de evaluate_all_dataset pour SimpleBBoxRegressor (section 6.4)
+           yolo_results: résultats de evaluate_all_dataset pour YOLO
        """
        print("\n" + "="*70)
        print("📊 COMPARAISON SimpleBBoxRegressor vs YOLO")
@@ -1294,89 +1327,51 @@ Maintenant que nous avons entraîné et testé les deux modèles sur **exactemen
        # Créer un tableau comparatif
        comparison = pd.DataFrame({
            'Modèle': ['SimpleBBoxRegressor', 'YOLOv11n'],
-           'IoU Moyen': [
-               simple_results['mean_iou'],
-               yolo_metrics.box.map50  # mAP@0.5 est comparable à l'IoU
-           ],
-           'Précision': [
-               simple_results['precision'],
-               yolo_metrics.box.mp
-           ],
-           'Taille (paramètres)': [
-               '~3.3M',
-               '~2.6M'
-           ],
-           'Vitesse (relative)': [
-               'Rapide',
-               'Très rapide'
-           ]
+           'IoU Moyen': [simple_results['mean_iou'], yolo_results['mean_iou']],
+           'Précision (IoU ≥ 0.5)': [simple_results['precision'], yolo_results['precision']],
+           'Taille (paramètres)': ['~3.3M', '~2.6M'],
        })
        
        print("\n" + comparison.to_string(index=False))
        
-       # Graphique comparatif
+       # Graphique comparatif : IoU moyen et précision, pour les deux modèles
        fig, axes = plt.subplots(1, 2, figsize=(14, 5))
-       
-       # Graphique 1 : IoU / mAP
-       ax1 = axes[0]
        models = ['SimpleBBox\nRegressor', 'YOLOv11n']
-       scores = [simple_results['mean_iou'], yolo_metrics.box.map50]
        colors = ['#3498db', '#e74c3c']
        
-       bars1 = ax1.bar(models, scores, color=colors, alpha=0.7, edgecolor='black', linewidth=2)
-       ax1.set_ylabel('Score', fontsize=12, fontweight='bold')
-       ax1.set_title('IoU Moyen / mAP@0.5', fontsize=14, fontweight='bold')
-       ax1.set_ylim(0, 1)
-       ax1.grid(axis='y', alpha=0.3)
-       
-       # Ajouter les valeurs sur les barres
-       for bar, score in zip(bars1, scores):
-           height = bar.get_height()
-           ax1.text(bar.get_x() + bar.get_width()/2., height,
-                   f'{score:.3f}',
-                   ha='center', va='bottom', fontweight='bold', fontsize=11)
-       
-       # Graphique 2 : Précision
-       ax2 = axes[1]
-       precisions = [simple_results['precision'], yolo_metrics.box.mp]
-       
-       bars2 = ax2.bar(models, precisions, color=colors, alpha=0.7, edgecolor='black', linewidth=2)
-       ax2.set_ylabel('Score', fontsize=12, fontweight='bold')
-       ax2.set_title('Précision', fontsize=14, fontweight='bold')
-       ax2.set_ylim(0, 1)
-       ax2.grid(axis='y', alpha=0.3)
-       
-       # Ajouter les valeurs sur les barres
-       for bar, prec in zip(bars2, precisions):
-           height = bar.get_height()
-           ax2.text(bar.get_x() + bar.get_width()/2., height,
-                   f'{prec:.3f}',
-                   ha='center', va='bottom', fontweight='bold', fontsize=11)
+       for ax, cle, titre in [(axes[0], 'mean_iou', 'IoU moyen'), (axes[1], 'precision', 'Précision (IoU ≥ 0.5)')]:
+           scores = [simple_results[cle], yolo_results[cle]]
+           bars = ax.bar(models, scores, color=colors, alpha=0.7, edgecolor='black', linewidth=2)
+           ax.set_ylabel('Score', fontsize=12, fontweight='bold')
+           ax.set_title(titre, fontsize=14, fontweight='bold')
+           ax.set_ylim(0, 1)
+           ax.grid(axis='y', alpha=0.3)
+           # Ajouter les valeurs sur les barres
+           for bar, score in zip(bars, scores):
+               ax.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{score:.3f}',
+                       ha='center', va='bottom', fontweight='bold', fontsize=11)
        
        plt.tight_layout()
        plt.show()
        
        # Analyse
        print("\n📈 ANALYSE :")
-       
-       if simple_results['mean_iou'] > yolo_metrics.box.map50:
-           diff = (simple_results['mean_iou'] - yolo_metrics.box.map50) * 100
-           print(f"   ✅ SimpleBBoxRegressor gagne en IoU (+{diff:.1f}%)")
+       diff = (simple_results['mean_iou'] - yolo_results['mean_iou']) * 100
+       if diff > 0:
+           print(f"   ✅ SimpleBBoxRegressor gagne en IoU moyen (+{diff:.1f} points)")
        else:
-           diff = (yolo_metrics.box.map50 - simple_results['mean_iou']) * 100
-           print(f"   ✅ YOLO gagne en mAP (+{diff:.1f}%)")
+           print(f"   ✅ YOLO gagne en IoU moyen (+{-diff:.1f} points)")
        
        print("\n💡 RECOMMANDATIONS :")
        print("   • SimpleBBoxRegressor : Parfait pour 1 seul objet, rapide, simple à comprendre")
        print("   • YOLO : Meilleur pour plusieurs objets, plus robuste, plus générique")
-       print("   • Pour ce dataset (1 objet) : les deux sont comparables !")
        
        print("="*70 + "\n")
 
 
    # 🎯 UTILISATION
-   # Comparer les résultats (utilisez les variables des sections précédentes)
-   compare_models(test_results, test_metrics)
+   # Comparer les résultats (test_results : section 6.4)
+   compare_models(test_results, yolo_results)
 
 .. warning::
 
@@ -1385,7 +1380,7 @@ Maintenant que nous avons entraîné et testé les deux modèles sur **exactemen
    Assurez-vous d'avoir exécuté :
    
    1. Section 6.4 : ``test_results = evaluate_all_dataset(simple_model, test_dataset)``
-   2. Section 8.4 : ``test_metrics = yolo_model.val(data=str(yaml_path), split='test')``
+   2. Section 8.4 : ``yolo_model = YOLO(...)`` (chargement du meilleur modèle YOLO)
 
 .. note::
 

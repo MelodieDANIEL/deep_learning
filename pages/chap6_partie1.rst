@@ -917,14 +917,14 @@ Voici une implémentation complète qui charge le format YOLO. Les images ont d�
 
 .. slide::
 
-5.2. Créer les DataLoaders avec split automatique
+5.2. Découper le dataset avec random_split
 ~~~~~~~~~~~~~~~~~~~
 
-Chargez le dataset et créez les splits train/val/test :
+Chargez le dataset et découpez-le en train/val/test :
 
 .. code-block:: python
 
-   from torch.utils.data import DataLoader, random_split
+   from torch.utils.data import random_split
 
    # Charger le dataset YOLO
    full_dataset = YOLODetectionDataset(
@@ -942,38 +942,7 @@ Chargez le dataset et créez les splits train/val/test :
    print(f"   Val   : {len(val_dataset)} images")
    print(f"   Test  : {len(test_dataset)} images")
 
-   # collate_fn dit au DataLoader comment regrouper les exemples d'un batch. Par défaut, il empile les boîtes
-   # de toutes les images en un seul tenseur : impossible ici, car chaque image a un nombre différent de boîtes.
-   # zip(*batch) transforme [(img0, target0), (img1, target1), ...] en (img0, img1, ...) et (target0, target1, ...) :
-   # le DataLoader renvoie donc un tuple d'images et un tuple de targets
-   def collate_fn(batch):
-       return tuple(zip(*batch))
-
-   train_loader = DataLoader(
-       train_dataset,
-       batch_size=4,
-       shuffle=True,
-       num_workers=2,
-       collate_fn=collate_fn
-   )
-
-   val_loader = DataLoader(
-       val_dataset,
-       batch_size=4,
-       shuffle=False,
-       num_workers=2,
-       collate_fn=collate_fn
-   )
-
-   test_loader = DataLoader(
-       test_dataset,
-       batch_size=4,
-       shuffle=False,
-       num_workers=2,
-       collate_fn=collate_fn
-   )
-
-   print(f"\n✅ DataLoaders créés avec batch_size=4")
+Les ``DataLoader`` seront créés dans la partie 2 (section 6.2) : la façon de regrouper les boîtes en batchs dépend du modèle entraîné.
 
 💡 **Avantage de** ``random_split`` : pas besoin de créer manuellement les listes d'images pour chaque split ! Ici, c'est possible car les trois ensembles utilisent le même prétraitement, sans augmentation de données. Avec de l'augmentation pour l'entraînement, il faut des transformations différentes pour la validation et le test (voir chapitre 5, section 6.1).
 

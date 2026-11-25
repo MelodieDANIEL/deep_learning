@@ -330,7 +330,7 @@ Dans cet exercice, vous allez entraîner un CNN avec et sans augmentation de don
     - **Avec augmentation** : ``RandomHorizontalFlip``, ``RandomCrop(32, padding=4)``, ``ToTensor``, ``Normalize``
 
 .. step::
-    2) Divise le training set en train (80 %) et validation (20 %) avec ``random_split``. Le test set est fourni à part par CIFAR-10 (10 000 images, avec ``train=False``, comme MNIST dans l'exercice 1) : on le garde pour l'évaluation finale (consigne 8). ⚠️ Les images de validation et de test ne doivent **pas** être augmentées, même pour le modèle B.
+    2) Divise le training set en train (80 %) et validation (20 %) avec ``random_split`` et la graine 42. Le test set est fourni à part par CIFAR-10 (10 000 images, avec ``train=False``, comme MNIST dans l'exercice 1) : on le garde pour l'évaluation finale (consigne 8). ⚠️ Les images de validation et de test ne doivent **pas** être augmentées, même pour le modèle B.
 
 .. step::
     3) Crée un CNN avec l'architecture suivante :
@@ -358,11 +358,15 @@ Dans cet exercice, vous allez entraîner un CNN avec et sans augmentation de don
         Dropout(0.5)
         Linear(512, 10)
 
+    Gardez toutes les couches, y compris ``Dropout(0.5)`` : les résultats attendus ont été obtenus avec cette architecture.
+
 .. step::
-    4) Entraîne deux versions du modèle (10 epochs chacune) :
+    4) Entraîne deux versions du modèle :
     
     - Modèle A : sans data augmentation
     - Modèle B : avec data augmentation
+
+    avec les mêmes paramètres pour les deux : 10 epochs, batch size de 64, loss ``nn.CrossEntropyLoss`` et optimiseur Adam avec learning rate 0.001.
 
 .. step::
     5) Pour chaque epoch, calcule et stocke :
@@ -371,17 +375,16 @@ Dans cet exercice, vous allez entraîner un CNN avec et sans augmentation de don
     - Validation loss et validation accuracy
 
 .. step::
-    6) Implémente un système de sauvegarde qui garde le meilleur modèle : celui qui a la plus petite validation loss (comme dans la section 6.1 du cours)
+    6) Implémente un système de sauvegarde qui garde le meilleur modèle : celui qui a la plus petite validation loss (comme dans la section 6.1 du cours), dans un fichier par modèle (``best_model_A.pth`` et ``best_model_B.pth``)
 
 .. step::
-    7) Trace 4 courbes sur un même graphique :
+    7) Trace les courbes d'apprentissage dans une figure de 2 × 2 subplots, une ligne par modèle (A, puis B) :
     
-    - Train et validation loss (un subplot)
-    - Train et validation accuracy (un autre subplot)
-    - Faire cela pour les deux modèles A et B
+    - à gauche : train et validation loss
+    - à droite : train et validation accuracy
 
 .. step::
-    8) Évalue le meilleur modèle (A et B) sur le test set et affiche :
+    8) Recharge le meilleur modèle A et le meilleur modèle B (``load_state_dict``, section 5 du cours), évalue-les sur le test set et affiche :
     
     - Test accuracy finale
     - Matrice de confusion
@@ -409,13 +412,13 @@ Dans cet exercice, vous allez entraîner un CNN avec et sans augmentation de don
 **Astuce :**
 .. spoiler::
     .. discoverList::
-        1. Pour CIFAR-10 : ``transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])``
+        1. Normalisation à utiliser (moyennes et écarts-types des canaux R, V, B calculés sur ImageNet, très souvent utilisés pour des images couleur) : ``transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])``
         2. ``RandomCrop(32, padding=4)`` ajoute 4 pixels noirs autour de l'image (32 × 32 → 40 × 40), puis découpe au hasard un carré de 32 × 32 : l'image est légèrement décalée
         3. Pour une validation sans augmentation, chargez aussi le training set sans augmentation, puis appliquez ``random_split`` aux deux versions avec la même graine : ``generator=torch.Generator().manual_seed(42)``. Les mêmes images se retrouvent alors dans chaque sous-ensemble
         4. Construisez le modèle avec deux blocs ``nn.Sequential`` (``convolutions`` et ``classification``), comme dans la section 3.3 du cours ; ``nn.Dropout(0.5)`` se place dans le bloc ``classification``
-        5. Pour la matrice de confusion et le rapport de classification : ``from sklearn.metrics import confusion_matrix, classification_report``. Le rapport donne, pour chaque classe, la précision, le rappel et le F1-score (chapitre 3, section 6.2), et le *support* : le nombre d'images de la classe dans le test set
+        5. Pour la matrice de confusion et le rapport de classification : ``from sklearn.metrics import confusion_matrix, classification_report``. Les noms des 10 classes (en anglais) sont dans ``test_dataset.classes``. Le rapport donne, pour chaque classe, la précision, le rappel et le F1-score (chapitre 3, section 6.2), et le *support* : le nombre d'images de la classe dans le test set
         6. Utiliser ``model.train()`` avant l'entraînement et ``model.eval()`` avant l'évaluation. Pour la question 13, relisez ce que changent ces deux appels (chapitre 3, section 3.1)
-        7. Sauvegarder avec : ``torch.save({'epoch': epoch, 'model_state_dict': model.state_dict(), 'val_loss': val_loss}, 'best_model.pth')`` (section 6.1 du cours)
+        7. Sauvegarder avec : ``torch.save({'epoch': epoch, 'model_state_dict': model.state_dict(), 'val_loss': val_loss}, 'best_model_A.pth')`` (section 6.1 du cours)
         8. Le dropout aide aussi à éviter l'overfitting en désactivant aléatoirement 50 % des neurones pendant l'entraînement
 
 
